@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChronoRelic — Fiche Produit Professionnelle</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background: #08081a;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    /* ── PAGE A4 (impression) ── */
+    @media print {
+      body { background: white; color: #0f172a; }
+      .page { box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; }
+      .no-print { display: none !important; }
+      .tag { background: #ede9fe !important; color: #5b21b6 !important; }
+      .badge-free { background: #dcfce7 !important; color: #166534 !important; }
+      .badge-pro  { background: #f3e8ff !important; color: #6b21a8 !important; }
+      .feature-card { border: 1px solid #e2e8f0 !important; background: #f8fafc !important; }
+      .rarity-bar { background: #e2e8f0 !important; }
+      h1, h2, h3 { color: #0f172a !important; }
+      p, li { color: #334155 !important; }
+      .violet-text { color: #7c3aed !important; }
+      .gold-text { color: #d97706 !important; }
+      .footer-bar { background: #1e1b4b !important; }
+    }
+
+    .page {
+      max-width: 794px;
+      margin: 2rem auto;
+      background: #0e0e24;
+      border-radius: 16px;
+      box-shadow: 0 0 60px rgba(124,58,237,0.2);
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1a0e3f 0%, #0e1a40 50%, #1a0e3f 100%);
+      padding: 3rem 3rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(124,58,237,0.2), transparent 70%);
+      top: -100px; right: -100px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .logo-icon { font-size: 2.5rem; }
+    .logo-text {
+      font-size: 2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+    .header-meta {
+      text-align: right;
+    }
+    .tag {
+      display: inline-block;
+      background: rgba(124,58,237,0.25);
+      color: #a78bfa;
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 999px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+    .version { color: #475569; font-size: 0.75rem; }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      letter-spacing: -0.02em;
+    }
+    .violet-text {
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gold-text {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .tagline {
+      font-size: 1.1rem;
+      color: #94a3b8;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #a78bfa, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .stat-label { font-size: 0.7rem; color: #94a3b8; margin-top: 0.2rem; font-weight: 600; }
+
+    /* ── SECTIONS ── */
+    .section { padding: 2rem 3rem; }
+    .section + .section { border-top: 1px solid #1e1e42; }
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h2::before { content: ''; display: block; width: 4px; height: 1.25rem; background: linear-gradient(to bottom, #7c3aed, #6366f1); border-radius: 2px; }
+
+    p { color: #94a3b8; font-size: 0.9rem; line-height: 1.7; }
+
+    /* ── FEATURES GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid #1e1e42;
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .feature-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .feature-title { font-weight: 700; font-size: 0.875rem; color: #e2e8f0; margin-bottom: 0.25rem; }
+    .feature-desc { font-size: 0.8rem; color: #64748b; line-height: 1.5; }
+
+    /* ── RARETIES ── */
+    .rarities-list { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+    .rarity-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .rarity-name { font-weight: 700; font-size: 0.85rem; width: 90px; flex-shrink: 0; }
+    .rarity-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.06); flex: 1; overflow: hidden; }
+    .rarity-fill { height: 100%; border-radius: 999px; }
+    .rarity-chance { font-size: 0.75rem; color: #475569; width: 30px; text-align: right; }
+    .rarity-xp { font-size: 0.75rem; color: #10b981; width: 55px; text-align: right; }
+
+    /* ── TARIFS ── */
+    .pricing-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .price-card {
+      border: 1px solid #1e1e42;
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .price-card.premium {
+      border-color: rgba(124,58,237,0.5);
+      background: rgba(124,58,237,0.06);
+    }
+    .price-title { font-weight: 800; font-size: 1rem; margin-bottom: 0.5rem; }
+    .price-amount {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 1rem;
+      color: #e2e8f0;
+    }
+    .price-amount span { font-size: 0.875rem; font-weight: 400; color: #475569; }
+    .price-features { list-style: none; }
+    .price-features li {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      padding: 0.3rem 0;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .badge-free { background: rgba(16,185,129,0.15); color: #10b981; padding: 2px 8px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; }
+    .badge-pro { background: rgba(139,92,246,0.15); color: #8b5cf6; padding: 2px 8px; border-radius: 999px; font-size: 0.65rem; font-weight: 700; }
+
+    /* ── TECH ── */
+    .tech-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .tech-badge {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid #1e1e42;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.3rem 0.75rem;
+      border-radius: 8px;
+    }
+
+    /* ── CIBLES ── */
+    .targets-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 1rem; }
+    .target-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid #1e1e42;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .target-icon { font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .target-title { font-weight: 700; font-size: 0.8rem; color: #e2e8f0; margin-bottom: 0.25rem; }
+    .target-desc { font-size: 0.7rem; color: #475569; line-height: 1.4; }
+
+    /* ── CONTACT ── */
+    .contact-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .contact-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid #1e1e42;
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .contact-label { font-size: 0.7rem; color: #475569; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+    .contact-value { font-size: 0.85rem; color: #a78bfa; font-weight: 600; }
+
+    /* ── FOOTER ── */
+    .footer-bar {
+      background: linear-gradient(135deg, #1a0e3f, #0e1a40);
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-logo { font-weight: 900; font-size: 1.1rem; color: #a78bfa; }
+    .footer-copy { font-size: 0.75rem; color: #475569; }
+    .footer-qr { font-size: 0.75rem; color: #475569; text-align: right; }
+
+    /* ── PRINT BUTTON ── */
+    .no-print {
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .print-btn {
+      background: linear-gradient(135deg, #7c3aed, #6366f1);
+      color: white;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-right: 1rem;
+    }
+    .print-btn:hover { opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+<div class="no-print" style="padding:2rem; text-align:center;">
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimer / Exporter en PDF</button>
+  <a href="/promo" style="color:#a78bfa; font-size:0.875rem;">← Voir la page promotionnelle</a>
+</div>
+
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">
+        <span class="logo-icon">⏳</span>
+        <span class="logo-text">ChronoRelic</span>
+      </div>
+      <div class="header-meta">
+        <div class="tag">Fiche Produit</div>
+        <div class="version">Version Bêta — Mars 2026</div>
+      </div>
+    </div>
+
+    <h1>
+      Le premier <span class="violet-text">RPG de Collection</span><br />
+      basé sur le <span class="gold-text">Temps Réel</span>
+    </h1>
+    <p class="tagline">
+      ChronoRelic transforme chaque minute de votre journée en relique à capturer.
+      Mêlant jeu de collection, RPG, histoire et intelligence artificielle,
+      ChronoRelic offre une expérience de jeu unique et addictive — disponible sur navigateur, iOS et Android.
+    </p>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-value">1 440</div>
+        <div class="stat-label">Minutes jouables / jour</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Niveaux de rareté</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">43+</div>
+        <div class="stat-label">Événements historiques IA</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Free-to-play</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONCEPT ── -->
+  <div class="section">
+    <h2>Concept &amp; Gameplay</h2>
+    <p>
+      Dans ChronoRelic, l'heure de votre téléphone est votre terrain de jeu. Chaque fois que vous ouvrez l'application,
+      vous pouvez "capturer" la minute actuelle — obtenant une relique d'une rareté aléatoire (Commune → Mythique).
+      Certaines minutes déclenchent des événements historiques narrés par Claude IA (Anthropic) : l'alunissage d'Apollo 11
+      (14:37), Hiroshima (08:15), la chute du mur de Berlin (22:22)... Le joueur apprend en jouant.
+    </p>
+    <br />
+    <p>
+      Le jeu intègre un système RPG complet : 4 classes de personnages avec arbres de talents, progression de niveau 1 à 100,
+      système de fusion de reliques, collections secrètes et classements mondiaux. Une boucle de jeu courte (30 secondes)
+      et une profondeur de progression long terme cohabitent harmonieusement.
+    </p>
+  </div>
+
+  <!-- ── FONCTIONNALITES ── -->
+  <div class="section">
+    <h2>Fonctionnalités Clés</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⏰</div>
+        <div>
+          <div class="feature-title">Capture Temporelle</div>
+          <div class="feature-desc">1440 minutes jouables par jour. Système de rareté probabiliste. Relances et boosts.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div>
+          <div class="feature-title">Narration IA (Claude)</div>
+          <div class="feature-desc">43+ événements historiques. Narration générée en temps réel. Contextualisation unique.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧙</div>
+        <div>
+          <div class="feature-title">4 Classes RPG</div>
+          <div class="feature-desc">Chronomancien, Archiviste, Chasseur, Oracle. Chacune avec bonuses et arbre de talents.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌳</div>
+        <div>
+          <div class="feature-title">Arbre de Talents</div>
+          <div class="feature-desc">3 arbres (Temps, Savoir, Chasse). 10 talents. Progression long terme et personnalisation.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <div>
+          <div class="feature-title">Fusion &amp; Collections</div>
+          <div class="feature-desc">Fusionnez 3 reliques en artefact. Collections secrètes avec récompenses uniques.</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <div>
+          <div class="feature-title">Classements Mondiaux</div>
+          <div class="feature-desc">Leaderboard global temps réel. Streaks quotidiennes. Saisons et événements spéciaux.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RARETE ── -->
+  <div class="section">
+    <h2>Système de Rareté</h2>
+    <p>Chaque capture tire aléatoirement une rareté selon des probabilités fixes, modulées par la classe du joueur et ses talents.</p>
+    <div class="rarities-list">
+      <div class="rarity-row">
+        <div class="rarity-name" style="color:#94a3b8">⚪ Commune</div>
+        <div class="rarity-bar"><div class="rarity-fill" style="width:60%;background:#6b7280;"></div></div>
+        <div class="rarity-chance">60%</div>
+        <div class="rarity-xp">+10 XP</div>
+      </div>
+      <div class="rarity-row">
+        <div class="rarity-name" style="color:#3b82f6">🔵 Rare</div>
+        <div class="rarity-bar"><div class="rarity-fill" style="width:25%;background:#3b82f6;"></div></div>
+        <div class="rarity-chance">25%</div>
+        <div class="rarity-xp">+40 XP</div>
+      </div>
+      <div class="rarity-row">
+        <div class="rarity-name" style="color:#8b5cf6">🟣 Épique</div>
+        <div class="rarity-bar"><div class="rarity-fill" style="width:10%;background:#8b5cf6;"></div></div>
+        <div class="rarity-chance">10%</div>
+        <div class="rarity-xp">+120 XP</div>
+      </div>
+      <div class="rarity-row">
+        <div class="rarity-name" style="color:#f59e0b">🟡 Légendaire</div>
+        <div class="rarity-bar"><div class="rarity-fill" style="width:4%;background:#f59e0b;"></div></div>
+        <div class="rarity-chance">4%</div>
+        <div class="rarity-xp">+300 XP</div>
+      </div>
+      <div class="rarity-row">
+        <div class="rarity-name" style="color:#ec4899">🔮 Mythique</div>
+        <div class="rarity-bar"><div class="rarity-fill" style="width:1%;background:linear-gradient(to right,#ec4899,#8b5cf6);"></div></div>
+        <div class="rarity-chance">1%</div>
+        <div class="rarity-xp">+800 XP</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MODELE ECO ── -->
+  <div class="section">
+    <h2>Modèle Économique</h2>
+    <p>Freemium éthique : le jeu est entièrement jouable gratuitement. Le Premium amplifie l'expérience sans créer de "pay-to-win".</p>
+    <div class="pricing-row">
+      <div class="price-card">
+        <div class="price-title">Gratuit <span class="badge-free">F2P</span></div>
+        <div class="price-amount">0€ <span>/mois</span></div>
+        <ul class="price-features">
+          <li>✓ 5 captures par jour</li>
+          <li>✓ Niveaux 1 → 20</li>
+          <li>✓ 2 classes (Chronomancien, Chasseur)</li>
+          <li>✓ 50 emplacements inventaire</li>
+          <li>✓ Narration IA historique</li>
+          <li>✓ Classements globaux</li>
+        </ul>
+      </div>
+      <div class="price-card premium">
+        <div class="price-title" style="color:#a78bfa">Premium <span class="badge-pro">PRO</span></div>
+        <div class="price-amount">4,99€ <span>/mois</span></div>
+        <ul class="price-features">
+          <li>✦ Captures illimitées</li>
+          <li>✦ Niveaux 1 → 100</li>
+          <li>✦ 4 classes débloquées</li>
+          <li>✦ Inventaire illimité</li>
+          <li>✦ Boost de rareté quotidien</li>
+          <li>✦ Skins exclusifs</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:1rem; font-size:0.8rem; color:#475569;">
+      Revenus additionnels : Packs de Tessons (monnaie virtuelle) de 1,99€ à 9,99€ via Stripe.
+      Objectif LTV : 18-24 mois. Taux de conversion cible : 4-8%.
+    </p>
+  </div>
+
+  <!-- ── CIBLE ── -->
+  <div class="section">
+    <h2>Cibles &amp; Marchés</h2>
+    <div class="targets-grid">
+      <div class="target-card">
+        <div class="target-icon">🎮</div>
+        <div class="target-title">Gamers Casual</div>
+        <div class="target-desc">15-35 ans. Boucle courte, accessible, sans engagement de temps.</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">📚</div>
+        <div class="target-title">Passionnés d'Histoire</div>
+        <div class="target-desc">Toutes générations. Apprentissage via le jeu. Contenu IA enrichi.</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">🏫</div>
+        <div class="target-title">Éducation</div>
+        <div class="target-desc">Collèges, lycées. Outil pédagogique ludique pour l'histoire-géo.</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">🔮</div>
+        <div class="target-title">Collectors RPG</div>
+        <div class="target-desc">Passionnés de collection (NFT, cartes). Rareté et progression.</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">📱</div>
+        <div class="target-title">Mobile First</div>
+        <div class="target-desc">Principalement mobile (iOS/Android). Web responsive disponible.</div>
+      </div>
+      <div class="target-card">
+        <div class="target-icon">🌍</div>
+        <div class="target-title">International</div>
+        <div class="target-desc">FR prioritaire. EN, ES, DE en roadmap. Événements localisés.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TECH STACK ── -->
+  <div class="section">
+    <h2>Architecture Technique</h2>
+    <p>Stack moderne, scalable, cloud-native. Sécurité OWASP A1-A10. Architecture prête pour 100k+ utilisateurs.</p>
+    <div class="tech-list">
+      <span class="tech-badge">Next.js 16 (App Router)</span>
+      <span class="tech-badge">React 19</span>
+      <span class="tech-badge">TypeScript Strict</span>
+      <span class="tech-badge">Prisma 7 (PostgreSQL)</span>
+      <span class="tech-badge">Supabase</span>
+      <span class="tech-badge">NextAuth v5</span>
+      <span class="tech-badge">Tailwind CSS v4</span>
+      <span class="tech-badge">Upstash Redis</span>
+      <span class="tech-badge">Stripe v20</span>
+      <span class="tech-badge">Claude AI (Anthropic)</span>
+      <span class="tech-badge">Vercel Edge</span>
+      <span class="tech-badge">PWA Ready</span>
+    </div>
+  </div>
+
+  <!-- ── ROADMAP ── -->
+  <div class="section">
+    <h2>Roadmap 2026</h2>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0.75rem; margin-top:0.75rem;">
+      <div style="background:rgba(124,58,237,0.1); border:1px solid rgba(124,58,237,0.3); border-radius:12px; padding:0.75rem; text-align:center;">
+        <div style="font-size:0.7rem; color:#10b981; font-weight:700; margin-bottom:0.5rem;">✓ MARS 2026</div>
+        <div style="font-size:0.8rem; font-weight:700; color:#e2e8f0; margin-bottom:0.25rem;">Bêta Web</div>
+        <div style="font-size:0.7rem; color:#475569;">Auth, DB, captures, RPG, classements</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02); border:1px solid #1e1e42; border-radius:12px; padding:0.75rem; text-align:center;">
+        <div style="font-size:0.7rem; color:#a78bfa; font-weight:700; margin-bottom:0.5rem;">AVRIL 2026</div>
+        <div style="font-size:0.8rem; font-weight:700; color:#e2e8f0; margin-bottom:0.25rem;">v1.0 Premium</div>
+        <div style="font-size:0.7rem; color:#475569;">Stripe, talents complets, push notifications</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02); border:1px solid #1e1e42; border-radius:12px; padding:0.75rem; text-align:center;">
+        <div style="font-size:0.7rem; color:#fbbf24; font-weight:700; margin-bottom:0.5rem;">ÉTÉ 2026</div>
+        <div style="font-size:0.8rem; font-weight:700; color:#e2e8f0; margin-bottom:0.25rem;">App Mobile</div>
+        <div style="font-size:0.7rem; color:#475569;">iOS &amp; Android (Expo/React Native)</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.02); border:1px solid #1e1e42; border-radius:12px; padding:0.75rem; text-align:center;">
+        <div style="font-size:0.7rem; color:#94a3b8; font-weight:700; margin-bottom:0.5rem;">FIN 2026</div>
+        <div style="font-size:0.8rem; font-weight:700; color:#e2e8f0; margin-bottom:0.25rem;">Multijoueur</div>
+        <div style="font-size:0.7rem; color:#475569;">Guildes, événements temps réel, international</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTACT ── -->
+  <div class="section">
+    <h2>Contact &amp; Partenariats</h2>
+    <p style="margin-bottom:0.75rem;">Pour toute demande presse, partenariat, investissement ou distribution :</p>
+    <div class="contact-row">
+      <div class="contact-card">
+        <div class="contact-label">Site Officiel</div>
+        <div class="contact-value">chronorelic.fr</div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-label">Email Presse</div>
+        <div class="contact-value">presse@chronorelic.fr</div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-label">Email Business</div>
+        <div class="contact-value">business@chronorelic.fr</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <div class="footer-bar">
+    <div class="footer-logo">⏳ ChronoRelic</div>
+    <div class="footer-copy">© 2026 ChronoRelic — Tous droits réservés<br />Le temps comme vous ne l'avez jamais vécu.</div>
+    <div class="footer-qr">
+      <div style="font-size:0.7rem; color:#475569; margin-bottom:0.25rem;">Jouer gratuitement</div>
+      <div style="font-size:0.8rem; color:#a78bfa; font-weight:700;">chronorelic.fr</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

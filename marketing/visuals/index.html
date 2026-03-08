@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<title>ChronoRelic — Kit Visuel Complet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #08081a; color: #e2e8f0; font-family: 'Inter', system-ui; min-height: 100vh; }
+
+  /* HEADER */
+  .header { padding: 3rem 3rem 2rem; border-bottom: 1px solid #1e1e42; background: radial-gradient(ellipse at 30% 50%, rgba(124,58,237,0.1) 0%, transparent 60%), #08081a; }
+  .logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+  .logo-icon { font-size: 2.5rem; }
+  .logo-name { font-family: 'Orbitron', monospace; font-size: 1.75rem; font-weight: 900; background: linear-gradient(135deg,#a78bfa,#818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .logo-tag { font-size: 0.7rem; background: rgba(124,58,237,0.2); color: #a78bfa; border: 1px solid rgba(124,58,237,0.4); padding: 3px 10px; border-radius: 999px; font-weight: 700; letter-spacing: 1px; }
+  h1 { font-size: 1.75rem; font-weight: 900; margin-bottom: 0.5rem; }
+  .sub { color: #64748b; font-size: 0.95rem; }
+
+  /* GRID */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 1.5rem; padding: 2.5rem; }
+
+  /* CARD */
+  .card {
+    background: rgba(14,14,36,0.8); border: 1px solid #1e1e42; border-radius: 20px; overflow: hidden;
+    text-decoration: none; color: inherit; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { transform: translateY(-4px); border-color: rgba(124,58,237,0.4); box-shadow: 0 0 40px rgba(124,58,237,0.15); }
+
+  .card-preview {
+    height: 200px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; font-size: 4rem;
+  }
+  .card-body { padding: 1.5rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+  .card-type { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+  .card-title { font-size: 1.1rem; font-weight: 800; color: #e2e8f0; }
+  .card-desc { font-size: 0.825rem; color: #64748b; line-height: 1.5; flex: 1; }
+  .card-specs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+  .spec { font-size: 0.7rem; background: rgba(255,255,255,0.04); border: 1px solid #1e1e42; color: #94a3b8; padding: 3px 8px; border-radius: 6px; }
+  .card-open {
+    margin-top: 1rem; background: linear-gradient(135deg,#7c3aed,#6366f1); color: white;
+    font-size: 0.85rem; font-weight: 700; padding: 0.625rem 1.25rem; border-radius: 10px;
+    text-align: center; display: block; text-decoration: none;
+  }
+
+  /* Previews miniatures */
+  .prev-logo { background: radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.3), #08081a); }
+  .prev-posts { background: linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1),#08081a); }
+  .prev-stories { background: linear-gradient(160deg,rgba(99,102,241,0.2),rgba(245,158,11,0.1),#08081a); }
+  .prev-tiktok { background: linear-gradient(135deg,rgba(236,72,153,0.2),rgba(6,182,212,0.1),#08081a); }
+  .prev-fiche { background: linear-gradient(135deg,rgba(16,185,129,0.1),rgba(124,58,237,0.15),#08081a); }
+  .prev-promo { background: linear-gradient(135deg,rgba(245,158,11,0.1),rgba(124,58,237,0.2),#08081a); }
+
+  /* INSTRUCTIONS */
+  .instructions { margin: 0 2.5rem 2.5rem; background: rgba(14,14,36,0.6); border: 1px solid #1e1e42; border-radius: 20px; padding: 2rem; }
+  .inst-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 1.25rem; color: #a78bfa; }
+  .inst-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 1.25rem; }
+  .inst-card { background: rgba(255,255,255,0.03); border: 1px solid #1e1e42; border-radius: 12px; padding: 1rem; }
+  .inst-step { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #a78bfa; margin-bottom: 0.5rem; }
+  .inst-text { font-size: 0.8rem; color: #94a3b8; line-height: 1.6; }
+  .inst-text code { background: rgba(124,58,237,0.2); color: #a78bfa; padding: 1px 6px; border-radius: 4px; font-size: 0.75rem; font-family: monospace; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid #1e1e42; padding: 1.5rem 2.5rem; display: flex; justify-content: space-between; align-items: center; }
+  .footer-logo { font-family: 'Orbitron', monospace; font-size: 0.95rem; font-weight: 900; color: #a78bfa; }
+  .footer-note { font-size: 0.75rem; color: #2e2e52; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">⏳</div>
+    <div class="logo-name">ChronoRelic</div>
+    <div class="logo-tag">Kit Visuel — Marketing</div>
+  </div>
+  <h1>Tous vos visuels prêts à l'emploi</h1>
+  <p class="sub">Ouvre chaque fichier dans Chrome/Edge · Capture d'écran · Publie</p>
+</div>
+
+<div class="grid">
+
+  <a class="card" href="logo-avatar.html" target="_blank">
+    <div class="card-preview prev-logo">⏳</div>
+    <div class="card-body">
+      <div class="card-type" style="color:#a78bfa">Logo &amp; Avatar</div>
+      <div class="card-title">Logo ChronoRelic</div>
+      <div class="card-desc">3 variantes : carré, rond (profil IG/TikTok), gradient. Fond sombre avec animation.</div>
+      <div class="card-specs">
+        <span class="spec">1080×1080</span>
+        <span class="spec">Profil rond</span>
+        <span class="spec">3 variantes</span>
+      </div>
+      <div class="card-open">Ouvrir →</div>
+    </div>
+  </a>
+
+  <a class="card" href="post-instagram.html" target="_blank">
+    <div class="card-preview prev-posts">🟣</div>
+    <div class="card-body">
+      <div class="card-type" style="color:#ec4899">Posts Instagram</div>
+      <div class="card-title">3 Posts Carrousel / Statique</div>
+      <div class="card-desc">Post concept "11:11", grille des 5 raretés, et carrousel des 4 classes de personnage.</div>
+      <div class="card-specs">
+        <span class="spec">1080×1080</span>
+        <span class="spec">3 posts</span>
+        <span class="spec">Feed IG</span>
+      </div>
+      <div class="card-open">Ouvrir →</div>
+    </div>
+  </a>
+
+  <a class="card" href="stories-instagram.html" target="_blank">
+    <div class="card-preview prev-stories">📱</div>
+    <div class="card-body">
+      <div class="card-type" style="color:#fbbf24">Stories Instagram</div>
+      <div class="card-title">4 Stories Animées</div>
+      <div class="card-desc">Horloge live, capture mythique, quiz classe, et présentation générale du jeu.</div>
+      <div class="card-specs">
+        <span class="spec">1080×1920</span>
+        <span class="spec">4 stories</span>
+        <span class="spec">Horloge live</span>
+      </div>
+      <div class="card-open">Ouvrir →</div>
+    </div>
+  </a>
+
+  <a class="card" href="tiktok-thumbnails.html" target="_blank">
+    <div class="card-preview prev-tiktok">🎵</div>
+    <div class="card-body">
+      <div class="card-type" style="color:#06b6d4">TikTok</div>
+      <div class="card-title">3 Thumbnails TikTok</div>
+      <div class="card-desc">Hook fort "l'heure donne des cadeaux", challenge heure de naissance, et vidéo éducation histoire.</div>
+      <div class="card-specs">
+        <span class="spec">1080×1920</span>
+        <span class="spec">3 thumbs</span>
+        <span class="spec">Reels ready</span>
+      </div>
+      <div class="card-open">Ouvrir →</div>
+    </div>
+  </a>
+
+  <a class="card" href="../fiche-produit.html" target="_blank">
+    <div class="card-preview prev-fiche">📄</div>
+    <div class="card-body">
+      <div class="card-type" style="color:#10b981">Salon PRO</div>
+      <div class="card-title">Fiche Produit A4</div>
+      <div class="card-desc">Document professionnel imprimable. Concept, fonctionnalités, modèle éco, cibles, tech stack, roadmap, contacts.</div>
+      <div class="card-specs">
+        <span class="spec">Format A4</span>
+        <span class="spec">Imprimable</span>
+        <span class="spec">Export PDF</span>
+      </div>
+      <div class="card-open">Ouvrir →</div>
+    </div>
+  </a>
+
+  <a class="card" href="http://localhost:3000/promo" target="_blank">
+    <div class="card-preview prev-promo">🌐</div>
+    <div class="card-body">
+      <div class="card-type" style="color:#f59e0b">Site Web</div>
+      <div class="card-title">Page Promo Web</div>
+      <div class="card-desc">Page promotionnelle complète avec hero animé, features, pricing, roadmap et section presse. Partageable.</div>
+      <div class="card-specs">
+        <span class="spec">localhost:3000/promo</span>
+        <span class="spec">Responsive</span>
+        <span class="spec">Animé</span>
+      </div>
+      <div class="card-open">Voir en live →</div>
+    </div>
+  </a>
+
+</div>
+
+<!-- INSTRUCTIONS -->
+<div class="instructions">
+  <div class="inst-title">Comment exporter vos visuels</div>
+  <div class="inst-grid">
+    <div class="inst-card">
+      <div class="inst-step">Méthode 1 — Rapide</div>
+      <div class="inst-text">
+        <code>Win + Shift + S</code> → sélectionne le visuel à la souris →
+        colle dans Paint ou Canva pour recadrer et finaliser.
+      </div>
+    </div>
+    <div class="inst-card">
+      <div class="inst-step">Méthode 2 — Précis (1:1)</div>
+      <div class="inst-text">
+        Chrome → <code>F12</code> → icône téléphone →
+        entre <code>1080 × 1080</code> (posts) ou <code>1080 × 1920</code> (stories) →
+        clique droit → <code>Capture screenshot</code>
+      </div>
+    </div>
+    <div class="inst-card">
+      <div class="inst-step">Méthode 3 — PDF (fiche produit)</div>
+      <div class="inst-text">
+        Ouvre la fiche produit → clique le bouton <code>Imprimer</code> →
+        choisis <code>Enregistrer au format PDF</code> comme imprimante.
+      </div>
+    </div>
+    <div class="inst-card">
+      <div class="inst-step">Astuce TikTok / Reels</div>
+      <div class="inst-text">
+        Importe le thumbnail TikTok comme <code>fond de scène</code> dans CapCut.
+        Enregistre l'écran du jeu sur <code>Win + G</code> puis monte par-dessus.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">⏳ ChronoRelic — Kit Marketing</div>
+  <div class="footer-note">Ouvre chaque fichier dans Chrome ou Edge pour les meilleures animations</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<title>ChronoRelic — Posts Instagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a12; padding: 40px; display: flex; gap: 40px; flex-wrap: wrap; font-family: 'Inter', system-ui; }
+
+  .post-wrapper { display: flex; flex-direction: column; gap: 10px; }
+  .post-label { color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-family: 'Inter', system-ui; }
+
+  /* ── POST 1080x1080 ── */
+  .post {
+    width: 540px; height: 540px; /* Affiché 540, export à 1080 = zoom 200% */
+    position: relative; overflow: hidden; border-radius: 12px;
+    background: #08081a;
+  }
+
+  /* ═══════════════ POST 1 — CONCEPT ═══════════════ */
+  .p1 {
+    background: radial-gradient(ellipse at 30% 20%, rgba(124,58,237,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(99,102,241,0.15) 0%, transparent 50%),
+                #08081a;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 50px;
+  }
+  .p1 .ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(124,58,237,0.12);
+  }
+  .p1-question {
+    font-size: 15px; color: #94a3b8; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px;
+    position: relative; z-index: 2;
+  }
+  .p1-time {
+    font-family: 'Orbitron', 'Segoe UI', monospace;
+    font-size: 100px; font-weight: 900; color: white;
+    text-shadow: 0 0 60px rgba(124,58,237,0.9), 0 0 120px rgba(124,58,237,0.5);
+    letter-spacing: 8px; line-height: 1;
+    position: relative; z-index: 2; margin-bottom: 16px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { text-shadow: 0 0 60px rgba(124,58,237,0.9),0 0 120px rgba(124,58,237,0.5); } 50% { text-shadow: 0 0 80px rgba(167,139,250,1),0 0 160px rgba(124,58,237,0.7); } }
+  .p1-badge {
+    background: linear-gradient(135deg,rgba(236,72,153,0.2),rgba(139,92,246,0.2));
+    border: 1px solid rgba(236,72,153,0.5);
+    color: #ec4899; font-size: 13px; font-weight: 800;
+    padding: 6px 16px; border-radius: 999px;
+    letter-spacing: 2px; text-transform: uppercase;
+    position: relative; z-index: 2; margin-bottom: 36px;
+  }
+  .p1-events {
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative; z-index: 2; width: 100%;
+  }
+  .p1-event {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 10px 16px; text-align: left;
+  }
+  .p1-event-time { font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+  .p1-event-name { font-size: 12px; color: #94a3b8; font-weight: 600; }
+  .p1-footer {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 18px 30px; background: rgba(124,58,237,0.15);
+    border-top: 1px solid rgba(124,58,237,0.2);
+    display: flex; align-items: center; justify-content: space-between;
+    backdrop-filter: blur(10px);
+  }
+  .p1-logo { display: flex; align-items: center; gap: 8px; }
+  .p1-logo-icon { font-size: 22px; }
+  .p1-logo-text {
+    font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 900;
+    background: linear-gradient(135deg,#a78bfa,#818cf8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .p1-cta { font-size: 12px; color: #a78bfa; font-weight: 700; }
+
+  /* ═══════════════ POST 2 — RARETÉ ═══════════════ */
+  .p2 {
+    background: linear-gradient(160deg, #0e0030 0%, #08081a 40%, #1a0a0e 100%);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  }
+  .p2-header {
+    grid-column: 1 / -1;
+    padding: 36px 36px 24px;
+    background: rgba(124,58,237,0.08);
+    border-bottom: 1px solid rgba(124,58,237,0.15);
+  }
+  .p2-title { font-size: 24px; font-weight: 900; color: #e2e8f0; margin-bottom: 6px; }
+  .p2-sub { font-size: 13px; color: #94a3b8; }
+  .rarity-card {
+    padding: 28px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    border: 1px solid rgba(255,255,255,0.04);
+    position: relative; overflow: hidden;
+  }
+  .rarity-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0.05; border-radius: 0;
+  }
+  .r-icon { font-size: 44px; margin-bottom: 10px; filter: drop-shadow(0 0 20px var(--glow)); }
+  .r-name { font-size: 18px; font-weight: 800; color: var(--color); margin-bottom: 4px; }
+  .r-chance { font-size: 28px; font-weight: 900; color: white; margin-bottom: 4px; }
+  .r-xp { font-size: 13px; color: #10b981; font-weight: 700; }
+  .r-bar { height: 4px; border-radius: 2px; background: var(--color); margin-top: 12px; width: 60%; opacity: 0.7; }
+
+  .rc-commune  { --color: #94a3b8; --glow: #94a3b8; }
+  .rc-rare     { --color: #3b82f6; --glow: #3b82f6; }
+  .rc-epique   { --color: #8b5cf6; --glow: #8b5cf6; }
+  .rc-legendaire { --color: #f59e0b; --glow: #f59e0b; background: rgba(245,158,11,0.04); }
+  .rc-mythique { --color: #ec4899; --glow: #ec4899;
+    background: linear-gradient(135deg,rgba(236,72,153,0.08),rgba(139,92,246,0.08));
+    grid-column: 1 / -1;
+  }
+  .rc-mythique .r-name {
+    background: linear-gradient(135deg,#ec4899,#a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-size: 22px;
+  }
+
+  /* ═══════════════ POST 3 — CLASSES ═══════════════ */
+  .p3 {
+    background: #08081a;
+    display: flex; flex-direction: column; padding: 36px;
+    gap: 14px;
+  }
+  .p3-header { margin-bottom: 6px; }
+  .p3-title { font-size: 22px; font-weight: 900; color: #e2e8f0; margin-bottom: 4px; }
+  .p3-sub { font-size: 12px; color: #64748b; }
+  .class-card {
+    display: flex; align-items: center; gap: 16px;
+    border-radius: 14px; padding: 16px 20px;
+    border: 1px solid; flex: 1;
+  }
+  .cc-chrono { background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.3); }
+  .cc-archiv { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.25); }
+  .cc-chasse { background: rgba(6,182,212,0.06); border-color: rgba(6,182,212,0.25); }
+  .cc-oracle { background: rgba(236,72,153,0.06); border-color: rgba(236,72,153,0.25); }
+  .cc-icon { font-size: 38px; flex-shrink: 0; }
+  .cc-name { font-size: 16px; font-weight: 800; margin-bottom: 3px; }
+  .cc-desc { font-size: 11px; color: #64748b; line-height: 1.4; }
+  .cc-bonus {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); color: #94a3b8;
+    flex-shrink: 0; white-space: nowrap;
+  }
+  .p3-footer {
+    margin-top: auto; text-align: center;
+    background: linear-gradient(135deg,rgba(124,58,237,0.15),rgba(99,102,241,0.1));
+    border: 1px solid rgba(124,58,237,0.3); border-radius: 12px;
+    padding: 14px;
+  }
+  .p3-footer-text { font-size: 14px; font-weight: 800; color: #a78bfa; }
+  .p3-footer-sub { font-size: 11px; color: #475569; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ── POST 1 : CONCEPT ── -->
+<div class="post-wrapper">
+  <div class="post-label">Post 1 — Concept "11:11" (1080x1080)</div>
+  <div class="post p1">
+    <div class="ring" style="width:700px;height:700px;top:-100px;left:-80px;"></div>
+    <div class="ring" style="width:500px;height:500px;bottom:-80px;right:-80px;border-color:rgba(99,102,241,0.08);"></div>
+
+    <div class="p1-question">Et si cette minute valait une fortune ?</div>
+    <div class="p1-time">11:11</div>
+    <div class="p1-badge">🔮 Anomalie Temporelle — Mythique</div>
+
+    <div class="p1-events">
+      <div class="p1-event">
+        <div class="p1-event-time" style="color:#f59e0b">14:37</div>
+        <div class="p1-event-name">🌕 Alunissage Apollo 11</div>
+      </div>
+      <div class="p1-event">
+        <div class="p1-event-time" style="color:#8b5cf6">08:15</div>
+        <div class="p1-event-name">💔 Hiroshima 1945</div>
+      </div>
+      <div class="p1-event">
+        <div class="p1-event-time" style="color:#3b82f6">22:22</div>
+        <div class="p1-event-name">🧱 Chute du Mur de Berlin</div>
+      </div>
+    </div>
+
+    <div class="p1-footer">
+      <div class="p1-logo">
+        <div class="p1-logo-icon">⏳</div>
+        <div class="p1-logo-text">ChronoRelic</div>
+      </div>
+      <div class="p1-cta">RPG du Temps · Gratuit</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── POST 2 : RARETES ── -->
+<div class="post-wrapper">
+  <div class="post-label">Post 2 — Système de Rareté (1080x1080)</div>
+  <div class="post p2">
+    <div class="p2-header">
+      <div class="p2-title">⏳ 5 Niveaux de Rareté</div>
+      <div class="p2-sub">Chaque capture est une surprise. Quelle sera la tienne ?</div>
+    </div>
+
+    <div class="rarity-card rc-commune">
+      <div class="r-icon">⚪</div>
+      <div class="r-name">Commune</div>
+      <div class="r-chance">60%</div>
+      <div class="r-xp">+10 XP</div>
+      <div class="r-bar"></div>
+    </div>
+    <div class="rarity-card rc-rare">
+      <div class="r-icon">🔵</div>
+      <div class="r-name">Rare</div>
+      <div class="r-chance">25%</div>
+      <div class="r-xp">+40 XP</div>
+      <div class="r-bar"></div>
+    </div>
+    <div class="rarity-card rc-epique">
+      <div class="r-icon">🟣</div>
+      <div class="r-name">Épique</div>
+      <div class="r-chance">10%</div>
+      <div class="r-xp">+120 XP</div>
+      <div class="r-bar"></div>
+    </div>
+    <div class="rarity-card rc-legendaire">
+      <div class="r-icon">🟡</div>
+      <div class="r-name">Légendaire</div>
+      <div class="r-chance">4%</div>
+      <div class="r-xp">+300 XP</div>
+      <div class="r-bar"></div>
+    </div>
+    <div class="rarity-card rc-mythique">
+      <div class="r-icon" style="font-size:52px">🔮</div>
+      <div class="r-name">MYTHIQUE</div>
+      <div class="r-chance" style="font-size:36px;background:linear-gradient(135deg,#ec4899,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">1%</div>
+      <div class="r-xp" style="font-size:15px">+800 XP · Narration IA exclusive</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── POST 3 : CLASSES ── -->
+<div class="post-wrapper">
+  <div class="post-label">Post 3 — Classes de Personnage (1080x1080)</div>
+  <div class="post p3">
+    <div class="p3-header">
+      <div class="p3-title">Choisissez votre Classe</div>
+      <div class="p3-sub">4 façons de vivre le temps</div>
+    </div>
+
+    <div class="class-card cc-chrono">
+      <div class="cc-icon">⏰</div>
+      <div>
+        <div class="cc-name" style="color:#a78bfa">Chronomancien</div>
+        <div class="cc-desc">Maître du temps. Relance les minutes. +20% XP universel.</div>
+      </div>
+      <div class="cc-bonus" style="color:#a78bfa;background:rgba(124,58,237,0.15)">Relance</div>
+    </div>
+
+    <div class="class-card cc-archiv">
+      <div class="cc-icon">📚</div>
+      <div>
+        <div class="cc-name" style="color:#fbbf24">Archiviste</div>
+        <div class="cc-desc">Expert histoire. Débloque les événements rares. +50% XP découverte.</div>
+      </div>
+      <div class="cc-bonus" style="color:#fbbf24;background:rgba(245,158,11,0.15)">Histoire</div>
+    </div>
+
+    <div class="class-card cc-chasse">
+      <div class="cc-icon">⚡</div>
+      <div>
+        <div class="cc-name" style="color:#06b6d4">Chasseur d'Instants</div>
+        <div class="cc-desc">Vitesse et quantité. +5 captures/jour. +30% chance Épique.</div>
+      </div>
+      <div class="cc-bonus" style="color:#06b6d4;background:rgba(6,182,212,0.15)">Vitesse</div>
+    </div>
+
+    <div class="class-card cc-oracle">
+      <div class="cc-icon">🔮</div>
+      <div>
+        <div class="cc-name" style="color:#ec4899">Oracle Temporel</div>
+        <div class="cc-desc">Chance légendaire doublée. +100% XP Mythique. Anomalies fréquentes.</div>
+      </div>
+      <div class="cc-bonus" style="color:#ec4899;background:rgba(236,72,153,0.15)">Légendaire</div>
+    </div>
+
+    <div class="p3-footer">
+      <div class="p3-footer-text">⏳ ChronoRelic — 100% Gratuit</div>
+      <div class="p3-footer-sub">Lien en bio · Jouez maintenant</div>
+    </div>
+  </div>
+</div>
+
+<div style="color:#475569;font-size:13px;line-height:2;max-width:300px;margin-top:10px;font-family:system-ui;">
+  <strong style="color:#a78bfa;display:block;margin-bottom:8px;">Comment capturer en 1080x1080 :</strong>
+  1. Chrome → zoom à <strong style="color:#e2e8f0">200%</strong> (Ctrl + +)<br/>
+  2. <strong style="color:#e2e8f0">F12</strong> → icône téléphone (device toolbar)<br/>
+  3. Règle à <strong style="color:#e2e8f0">1080 × 1080</strong><br/>
+  4. Clique droit dans la preview → <strong style="color:#e2e8f0">Capture screenshot</strong><br/><br/>
+  Ou plus simple :<br/>
+  <strong style="color:#e2e8f0">Win + Shift + S</strong> → sélectionne le post<br/>
+  Colle dans Paint → recadre → enregistre
+</div>
+
+</body>
+</html>

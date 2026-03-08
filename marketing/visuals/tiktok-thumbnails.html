@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<title>ChronoRelic — TikTok Thumbnails</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a12; padding: 40px; display: flex; gap: 40px; flex-wrap: wrap; font-family: 'Inter', system-ui; }
+
+  .tt-wrapper { display: flex; flex-direction: column; gap: 10px; }
+  .tt-label { color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; }
+
+  /* 9:16 ratio → 270x480 displayed (1080x1920 export) */
+  .tiktok {
+    width: 270px; height: 480px;
+    position: relative; overflow: hidden;
+    border-radius: 16px;
+  }
+
+  /* ═══════ THUMB 1 — HOOK FORT ═══════ */
+  .t1 {
+    background: radial-gradient(ellipse at 50% 30%, rgba(124,58,237,0.4) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(236,72,153,0.2) 0%, transparent 50%),
+                #08081a;
+    display: flex; flex-direction: column;
+    align-items: center; padding: 24px 20px;
+  }
+
+  /* Cercles de fond */
+  .t-ring {
+    position: absolute; border-radius: 50%;
+    border: 1px solid rgba(124,58,237,0.12); pointer-events: none;
+  }
+
+  .t1-brand { display: flex; align-items: center; gap: 6px; margin-top: 8px; margin-bottom: auto; align-self: flex-start; }
+  .t1-brand-icon { font-size: 18px; }
+  .t1-brand-name {
+    font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 900;
+    background: linear-gradient(135deg,#a78bfa,#818cf8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .t1-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; text-align: center; }
+  .t1-time {
+    font-family: 'Orbitron', monospace; font-size: 64px; font-weight: 900;
+    color: white; text-shadow: 0 0 40px rgba(124,58,237,0.9), 0 0 80px rgba(124,58,237,0.5);
+    letter-spacing: 4px; line-height: 1; margin-bottom: 12px;
+    animation: glow 2s ease-in-out infinite;
+  }
+  @keyframes glow { 0%,100% { text-shadow: 0 0 40px rgba(124,58,237,0.9),0 0 80px rgba(124,58,237,0.5); }
+    50% { text-shadow: 0 0 60px rgba(167,139,250,1),0 0 120px rgba(124,58,237,0.8); } }
+  .t1-badge {
+    background: linear-gradient(135deg,rgba(236,72,153,0.25),rgba(139,92,246,0.25));
+    border: 1px solid rgba(236,72,153,0.6); color: #ec4899;
+    font-size: 10px; font-weight: 800; padding: 5px 14px; border-radius: 999px;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px;
+  }
+  .t1-hook {
+    font-size: 15px; font-weight: 900; color: white; line-height: 1.3; margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  }
+  .t1-hook span { color: #a78bfa; }
+  .t1-sub { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+
+  .t1-bottom {
+    z-index: 2; width: 100%;
+    background: linear-gradient(to top, rgba(8,8,26,0.95), transparent);
+    padding: 20px 0 0;
+  }
+  .t1-cta {
+    background: linear-gradient(135deg,#7c3aed,#6366f1);
+    color: white; font-size: 13px; font-weight: 800;
+    padding: 10px 20px; border-radius: 10px; text-align: center;
+    box-shadow: 0 0 20px rgba(124,58,237,0.5);
+  }
+
+  /* ═══════ THUMB 2 — CHALLENGE ═══════ */
+  .t2 {
+    background: linear-gradient(160deg, #001020 0%, #08081a 40%, #200010 100%);
+    display: flex; flex-direction: column;
+    align-items: center; padding: 24px 20px;
+  }
+  .t2-pov { font-size: 11px; font-weight: 800; color: #fbbf24; letter-spacing: 3px; text-transform: uppercase; margin-top: 8px; margin-bottom: auto; align-self: flex-start; }
+  .t2-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; text-align: center; }
+  .t2-icon { font-size: 70px; margin-bottom: 16px; filter: drop-shadow(0 0 30px rgba(236,72,153,0.8)); }
+  .t2-title { font-size: 20px; font-weight: 900; color: white; line-height: 1.2; margin-bottom: 12px; }
+  .t2-title span { color: #fbbf24; }
+  .t2-card {
+    width: 100%; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(236,72,153,0.3); border-radius: 12px; padding: 14px;
+    margin-bottom: 16px;
+  }
+  .t2-card-time { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 900; color: white; margin-bottom: 4px; }
+  .t2-card-rarity { font-size: 12px; font-weight: 800; color: #ec4899; margin-bottom: 6px; }
+  .t2-card-event { font-size: 10px; color: #94a3b8; line-height: 1.4; }
+  .t2-question { font-size: 14px; font-weight: 800; color: #fbbf24; text-align: center; }
+  .t2-sub { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+  .t2-bottom { z-index: 2; width: 100%; }
+  .t2-brand { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 10px; }
+  .t2-cta {
+    background: linear-gradient(135deg,rgba(236,72,153,0.2),rgba(139,92,246,0.2));
+    border: 1px solid rgba(236,72,153,0.4); color: #ec4899;
+    font-size: 11px; font-weight: 800; padding: 8px 16px; border-radius: 8px; text-align: center;
+  }
+
+  /* ═══════ THUMB 3 — EDUCATION ═══════ */
+  .t3 {
+    background: linear-gradient(160deg, #001a10 0%, #08081a 40%, #1a1000 100%);
+    display: flex; flex-direction: column;
+    padding: 24px 20px;
+  }
+  .t3-tag { font-size: 10px; font-weight: 800; color: #10b981; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; margin-top: 8px; }
+  .t3-title { font-size: 18px; font-weight: 900; color: white; line-height: 1.3; margin-bottom: 20px; }
+  .t3-title span { color: #10b981; }
+  .t3-events { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .t3-event {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px; padding: 12px;
+  }
+  .t3-event-time { font-family: 'Orbitron', monospace; font-size: 18px; font-weight: 900; flex-shrink: 0; }
+  .t3-event-info { }
+  .t3-event-name { font-size: 11px; font-weight: 700; color: #e2e8f0; margin-bottom: 2px; }
+  .t3-event-rarity { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .t3-bottom { margin-top: auto; }
+  .t3-ai {
+    background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 10px; padding: 12px; margin-bottom: 12px; text-align: center;
+  }
+  .t3-ai-icon { font-size: 24px; margin-bottom: 4px; }
+  .t3-ai-text { font-size: 10px; color: #10b981; font-weight: 700; }
+  .t3-brand { display: flex; align-items: center; justify-content: space-between; }
+  .t3-brand-name { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 900; color: #a78bfa; display: flex; align-items: center; gap: 4px; }
+  .t3-free { font-size: 10px; font-weight: 700; color: #10b981; background: rgba(16,185,129,0.15); padding: 3px 8px; border-radius: 999px; }
+</style>
+</head>
+<body>
+
+<!-- ══ THUMBNAIL 1 — HOOK FORT ══ -->
+<div class="tt-wrapper">
+  <div class="tt-label">TikTok 1 — Hook fort (1080×1920)</div>
+  <div class="tiktok t1">
+    <div class="t-ring" style="width:400px;height:400px;top:-80px;left:-80px;"></div>
+    <div class="t-ring" style="width:300px;height:300px;bottom:-50px;right:-80px;border-color:rgba(236,72,153,0.1);"></div>
+
+    <div class="t1-brand">
+      <div class="t1-brand-icon">⏳</div>
+      <div class="t1-brand-name">ChronoRelic</div>
+    </div>
+
+    <div class="t1-center">
+      <div class="t1-time">11:11</div>
+      <div class="t1-badge">🔮 Mythique — 1% de chance</div>
+      <div class="t1-hook">Ce jeu donne des<br/><span>cadeaux basés</span> sur l'heure de ton téléphone</div>
+      <div class="t1-sub">Chaque minute → une relique unique<br/>Histoire vraie narrée par l'IA</div>
+    </div>
+
+    <div class="t1-bottom">
+      <div class="t1-cta">Jouer Gratuitement ↗</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ THUMBNAIL 2 — CHALLENGE ══ -->
+<div class="tt-wrapper">
+  <div class="tt-label">TikTok 2 — Challenge Heure de Naissance (1080×1920)</div>
+  <div class="tiktok t2">
+    <div class="t-ring" style="width:350px;height:350px;top:-50px;right:-80px;border-color:rgba(236,72,153,0.12);"></div>
+
+    <div class="t2-pov">POV :</div>
+
+    <div class="t2-center">
+      <div class="t2-icon">🔮</div>
+      <div class="t2-title">Tu captures ton<br/><span>heure de naissance</span></div>
+
+      <div class="t2-card">
+        <div class="t2-card-time">14:22</div>
+        <div class="t2-card-rarity">🟣 Épique — +120 XP</div>
+        <div class="t2-card-event">Événement historique découvert —<br/>narration IA générée</div>
+      </div>
+
+      <div class="t2-question">T'es né à quelle heure ?</div>
+      <div class="t2-sub">Fais le test et dis-moi en commentaire</div>
+    </div>
+
+    <div class="t2-bottom">
+      <div class="t2-brand">
+        <span style="font-size:16px">⏳</span>
+        <span style="font-family:'Orbitron',monospace;font-size:12px;font-weight:900;color:#a78bfa">ChronoRelic</span>
+      </div>
+      <div class="t2-cta">#BirthTimeChallenge — Lien en bio</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ THUMBNAIL 3 — EDUCATION ══ -->
+<div class="tt-wrapper">
+  <div class="tt-label">TikTok 3 — Éducation Histoire (1080×1920)</div>
+  <div class="tiktok t3">
+    <div class="t3-tag">Ce jeu t'apprend l'histoire</div>
+    <div class="t3-title">Des minutes qui ont <span>changé le monde</span></div>
+
+    <div class="t3-events">
+      <div class="t3-event">
+        <div class="t3-event-time" style="color:#f59e0b">14:37</div>
+        <div class="t3-event-info">
+          <div class="t3-event-name">Alunissage Apollo 11</div>
+          <div class="t3-event-rarity" style="color:#f59e0b">🟡 Légendaire</div>
+        </div>
+      </div>
+      <div class="t3-event">
+        <div class="t3-event-time" style="color:#8b5cf6">08:15</div>
+        <div class="t3-event-info">
+          <div class="t3-event-name">Hiroshima — 1945</div>
+          <div class="t3-event-rarity" style="color:#8b5cf6">🟣 Épique</div>
+        </div>
+      </div>
+      <div class="t3-event">
+        <div class="t3-event-time" style="color:#3b82f6">22:22</div>
+        <div class="t3-event-info">
+          <div class="t3-event-name">Chute du Mur de Berlin</div>
+          <div class="t3-event-rarity" style="color:#3b82f6">🔵 Rare</div>
+        </div>
+      </div>
+      <div class="t3-event">
+        <div class="t3-event-time" style="color:#ec4899">11:11</div>
+        <div class="t3-event-info">
+          <div class="t3-event-name">Anomalie Temporelle</div>
+          <div class="t3-event-rarity" style="color:#ec4899">🔮 Mythique</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="t3-bottom">
+      <div class="t3-ai">
+        <div class="t3-ai-icon">🤖</div>
+        <div class="t3-ai-text">Narration générée par Claude IA<br/>pour chaque événement capturé</div>
+      </div>
+      <div class="t3-brand">
+        <div class="t3-brand-name">⏳ ChronoRelic</div>
+        <div class="t3-free">Gratuit</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Instructions -->
+<div style="color:#475569;font-size:13px;line-height:2;max-width:300px;margin-top:10px;font-family:system-ui;align-self:flex-start;">
+  <strong style="color:#a78bfa;display:block;margin-bottom:8px;">Exporter en 1080×1920 :</strong>
+  Chrome → <strong style="color:#e2e8f0">F12</strong> → icône téléphone<br/>
+  Dimensions : <strong style="color:#e2e8f0">1080 × 1920</strong><br/>
+  Clique droit sur le thumbnail → <strong style="color:#e2e8f0">Capture screenshot</strong><br/><br/>
+  Ou <strong style="color:#e2e8f0">Win+Shift+S</strong> sur chaque thumbnail<br/>
+  → Colle dans <strong style="color:#e2e8f0">Canva</strong> comme fond<br/>
+  → Ajoute le logo en overlay si besoin<br/><br/>
+  <strong style="color:#fbbf24">Astuce :</strong> Importe directement dans<br/>
+  CapCut comme "fond de scène" pour tes Reels
+</div>
+
+</body>
+</html>
