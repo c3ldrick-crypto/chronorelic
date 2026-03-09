@@ -420,6 +420,89 @@
     .contact-label { font-size: 0.7rem; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 2px; }
     .contact-value { font-weight: 600; font-size: 0.9rem; }
 
+    /* ─── Beta Inscription ──────────────────────────────────────────────────── */
+    .beta-section {
+      background: linear-gradient(180deg, transparent, rgba(232,184,75,0.03), transparent);
+    }
+    .beta-card {
+      max-width: 680px; margin: 0 auto;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(232,184,75,0.2);
+      border-radius: 28px; padding: 56px 48px;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .beta-card::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(232,184,75,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .beta-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(232,184,75,0.1); border: 1px solid rgba(232,184,75,0.3);
+      border-radius: 100px; padding: 7px 18px; margin-bottom: 28px;
+      font-size: 0.72rem; font-weight: 700; color: var(--gold); letter-spacing: 0.14em;
+      font-family: "Orbitron", sans-serif;
+    }
+    .beta-pulse {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 8px var(--gold);
+      animation: pulse 2s ease-in-out infinite; flex-shrink: 0;
+    }
+    .beta-desc {
+      font-size: 1rem; color: var(--muted); line-height: 1.75;
+      max-width: 520px; margin: 0 auto 28px;
+    }
+    .beta-perks {
+      display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 36px;
+    }
+    .beta-perk {
+      background: rgba(107,40,200,0.08); border: 1px solid rgba(107,40,200,0.2);
+      border-radius: 8px; padding: 7px 14px;
+      font-size: 0.8rem; font-weight: 600; color: var(--violet);
+    }
+    .beta-form { position: relative; z-index: 1; }
+    .beta-input-wrap {
+      display: flex; max-width: 480px; margin: 0 auto 12px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(232,184,75,0.25);
+      border-radius: 14px; overflow: hidden; transition: border-color 0.2s;
+    }
+    .beta-input-wrap:focus-within { border-color: rgba(232,184,75,0.5); }
+    .beta-input {
+      flex: 1; padding: 16px 20px; background: transparent; border: none; outline: none;
+      color: var(--text); font-size: 0.95rem; font-family: "Space Grotesk", sans-serif;
+      min-width: 0;
+    }
+    .beta-input::placeholder { color: var(--muted); }
+    .beta-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, #b45309, var(--gold));
+      color: #000; font-weight: 700; font-size: 0.88rem;
+      border: none; cursor: pointer; padding: 16px 24px;
+      font-family: "Space Grotesk", sans-serif; letter-spacing: 0.04em;
+      white-space: nowrap; transition: opacity 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+    .beta-btn:hover:not(:disabled) { opacity: 0.9; transform: scale(1.02); }
+    .beta-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .beta-note { font-size: 0.75rem; color: var(--muted); margin-top: 8px; }
+    .beta-success {
+      max-width: 480px; margin: 0 auto;
+      background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 12px; padding: 20px;
+      color: #86efac; font-size: 0.95rem; line-height: 1.6;
+      align-items: center; gap: 14px; justify-content: center;
+    }
+    .success-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .beta-counter {
+      margin-top: 28px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .counter-num {
+      font-family: "Orbitron", sans-serif; font-size: 1.5rem; font-weight: 800;
+      color: var(--gold); text-shadow: 0 0 16px rgba(232,184,75,0.4);
+    }
+    .counter-label { font-size: 0.8rem; color: var(--muted); }
+
     /* ─── Footer ─────────────────────────────────────────────────────────────── */
     footer {
       position: relative; z-index: 1;
@@ -494,6 +577,7 @@
         <a href="#jeu">Le Jeu</a>
         <a href="#galerie">Galerie</a>
         <a href="#roadmap">Roadmap</a>
+        <a href="#beta" style="color:var(--gold);font-weight:700;">🎮 Bêta</a>
         <a href="#contact" class="nav-cta">Nous contacter</a>
       </div>
     </div>
@@ -771,6 +855,62 @@
     </div>
   </section>
 
+  <!-- Bêta Fermée — Inscription Newsletter -->
+  <section id="beta" class="beta-section">
+    <div class="container">
+      <div class="beta-card fade-up">
+        <div class="beta-badge">
+          <span class="beta-pulse"></span>
+          BÊTA FERMÉE · 2026 T2
+        </div>
+        <h2 class="section-title" style="text-align:center;margin-bottom:16px">
+          Soyez Parmi les <span>Premiers Gardiens</span>
+        </h2>
+        <p class="beta-desc">
+          ChronoRelic entre en Bêta Fermée au Q2 2026. Inscrivez-vous dès maintenant pour recevoir un accès prioritaire et des récompenses exclusives avant l'ouverture publique.
+        </p>
+        <div class="beta-perks">
+          <div class="beta-perk">⚡ Accès anticipé exclusif</div>
+          <div class="beta-perk">🏆 Relique Légendaire offerte</div>
+          <div class="beta-perk">🎖️ Badge Beta Testeur permanent</div>
+        </div>
+        <!--
+          CONFIGURATION :
+          1. Créez un compte gratuit sur formspree.io
+          2. Créez un nouveau formulaire → copiez votre Form ID
+          3. Remplacez "YOUR_FORM_ID" dans l'action ci-dessous par votre ID
+          Les emails seront stockés dans votre dashboard Formspree.
+        -->
+        <form id="beta-form" action="https://formspree.io/f/myknkwov" method="POST" class="beta-form">
+          <input type="hidden" name="_subject" value="Inscription Bêta ChronoRelic" />
+          <div class="beta-input-wrap">
+            <input
+              type="email" name="email"
+              placeholder="votre@email.com"
+              required class="beta-input"
+              autocomplete="email"
+            />
+            <button type="submit" class="beta-btn">
+              Rejoindre la Bêta <span>⏳</span>
+            </button>
+          </div>
+          <p class="beta-note">Places limitées · Aucun spam · Désabonnement en un clic</p>
+        </form>
+        <div id="beta-success" class="beta-success" style="display:none">
+          <span class="success-icon">✅</span>
+          <div>
+            <strong>Inscription confirmée !</strong><br />
+            Vous serez parmi les premiers à rejoindre l'aventure ChronoRelic. Surveillez votre boîte mail.
+          </div>
+        </div>
+        <div class="beta-counter">
+          <span class="counter-num" id="beta-count">247</span>
+          <span class="counter-label">joueurs déjà inscrits</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA / Contact -->
   <section id="contact" class="cta-section" style="position:relative">
     <div class="cta-glow"></div>
@@ -832,7 +972,7 @@
         <h4>Communauté</h4>
         <a href="#">Discord</a>
         <a href="#">Twitter / X</a>
-        <a href="#">Newsletter</a>
+        <a href="#beta">Bêta Fermée</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -864,6 +1004,38 @@
         }
       })
     }, { passive: true })
+
+    // Beta form — soumission AJAX sans rechargement
+    const betaForm = document.getElementById("beta-form")
+    if (betaForm) {
+      betaForm.addEventListener("submit", async (e) => {
+        e.preventDefault()
+        const btn = betaForm.querySelector(".beta-btn")
+        btn.disabled = true
+        btn.innerHTML = "Envoi en cours…"
+        try {
+          const res = await fetch(betaForm.action, {
+            method: "POST",
+            body: new FormData(betaForm),
+            headers: { Accept: "application/json" }
+          })
+          if (res.ok) {
+            betaForm.style.display = "none"
+            const success = document.getElementById("beta-success")
+            success.style.display = "flex"
+            const countEl = document.getElementById("beta-count")
+            if (countEl) countEl.textContent = parseInt(countEl.textContent) + 1
+          } else {
+            btn.disabled = false
+            btn.innerHTML = 'Rejoindre la Bêta <span>⏳</span>'
+            alert("Une erreur s'est produite. Réessayez dans un instant.")
+          }
+        } catch {
+          btn.disabled = false
+          btn.innerHTML = 'Rejoindre la Bêta <span>⏳</span>'
+        }
+      })
+    }
 
     // Lightbox simple pour la galerie
     document.querySelectorAll(".gallery-item img").forEach(img => {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { MythicEvent } from "@/components/game/MythicEvent"
@@ -28,6 +28,7 @@ interface Resources {
 }
 
 interface PlayerData {
+  userName?:    string | null
   character: {
     name:         string
     class:        string
@@ -118,6 +119,8 @@ export default function PlayPage() {
   const [machineTarget, setMachineTarget]       = useState<{ minute: string; eraLabel: string; eraIcon: string } | null>(null)
   const [deathModal, setDeathModal]             = useState<{ options: HeritageBonusDefinition[]; charClass: string } | null>(null)
   const [choosingHeritage, setChoosingHeritage] = useState(false)
+  const [liveEvent, setLiveEvent]               = useState<{ title: string; year: number; category: string; description: string } | null>(null)
+  const prevMinuteRef = useRef<string>("")
 
   const todayAnomalies: [AnomalyDefinition, AnomalyDefinition] = getTodayAnomalies()
 
@@ -169,12 +172,32 @@ export default function PlayPage() {
     } catch { /* ignore */ }
   }, [fetchWindows, fetchChallenges])
 
-  // Horloge temps réel
+  // Horloge temps réel + détection événement historique à chaque nouvelle minute
   useEffect(() => {
+    const checkLiveEvent = (minute: string) => {
+      fetch(`/api/game/live-event?minute=${minute}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data) setLiveEvent(data.event ?? null) })
+        .catch(() => {})
+    }
+
     const id = setInterval(() => {
       const n = new Date()
-      setClock(`${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}:${String(n.getSeconds()).padStart(2,"0")}`)
+      const minute = `${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`
+      const timeStr = `${minute}:${String(n.getSeconds()).padStart(2,"0")}`
+      setClock(timeStr)
+      if (minute !== prevMinuteRef.current) {
+        prevMinuteRef.current = minute
+        checkLiveEvent(minute)
+      }
     }, 1000)
+
+    // Check immediately on mount
+    const n = new Date()
+    const initMinute = `${String(n.getHours()).padStart(2,"0")}:${String(n.getMinutes()).padStart(2,"0")}`
+    prevMinuteRef.current = initMinute
+    checkLiveEvent(initMinute)
+
     return () => clearInterval(id)
   }, [])
 
@@ -378,6 +401,62 @@ export default function PlayPage() {
 
       <div className="max-w-7xl mx-auto px-4 py-4">
 
+        {/* ═══ ALERTE ÉVÉNEMENT HISTORIQUE EN DIRECT ═══════════════════════════ */}
+        <AnimatePresence>
+          {liveEvent && (
+            <motion.div
+              key="live-event"
+              initial={{ opacity: 0, y: -12, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.97 }}
+              transition={{ duration: 0.35 }}
+              className="mb-4 rounded-xl overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, rgba(196,150,10,0.12) 0%, rgba(107,40,200,0.10) 100%)",
+                border: "1px solid rgba(196,150,10,0.45)",
+                boxShadow: "0 0 24px rgba(196,150,10,0.15)",
+              }}
+            >
+              <div className="flex items-center gap-4 px-4 py-3">
+                {/* Pulsing indicator */}
+                <div className="relative shrink-0">
+                  <motion.div
+                    className="w-3 h-3 rounded-full bg-amber-400"
+                    animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+                    transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                  <div className="absolute inset-0 rounded-full bg-amber-400/30 scale-150" />
+                </div>
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#e8b84b" }}>
+                      ⚡ Moment Historique en Direct
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-mono" style={{ background: "rgba(196,150,10,0.15)", color: "#94a3b8", border: "1px solid rgba(196,150,10,0.25)" }}>
+                      {clock.substring(0, 5)}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold truncate" style={{ color: "#f0e6c8" }}>
+                    {liveEvent.title}
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: "#64748b" }}>
+                    {liveEvent.year > 0 ? `En ${liveEvent.year}` : `${Math.abs(liveEvent.year)} av. J.-C.`} · {liveEvent.category}
+                  </p>
+                </div>
+                {/* CTA */}
+                <a href="#capture-flow" className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                  style={{ background: "rgba(196,150,10,0.2)", border: "1px solid rgba(196,150,10,0.5)", color: "#e8b84b" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,150,10,0.35)" }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,150,10,0.2)" }}
+                >
+                  Capturer →
+                </a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ═══ BANDEAU DÉFIS QUOTIDIENS ════════════════════════════════════════ */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
           <div className="flex items-center gap-2 mb-3">
@@ -465,9 +544,11 @@ export default function PlayPage() {
               <div className="flex items-center gap-3 p-4" style={{ borderBottom: "1px solid rgba(196,150,10,0.15)", background: "rgba(107,40,200,0.06)" }}>
                 <span className="text-4xl">{CLASS_ICONS[player.character.class] ?? "🧙"}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-display text-sm font-bold truncate" style={{ color: "#f0e6c8" }}>{player.character.name}</div>
+                  <div className="font-display text-sm font-bold truncate" style={{ color: "#f0e6c8" }}>
+                    {player.userName ?? player.character.name}
+                  </div>
                   <div className="text-xs" style={{ color: "#c084fc" }}>
-                    {CLASS_LABELS[player.character.class]} — Niv.{player.character.level}
+                    {CLASS_LABELS[player.character.class] ?? player.character.class} — Niv.{player.character.level}
                   </div>
                 </div>
                 {player.isPremium && (

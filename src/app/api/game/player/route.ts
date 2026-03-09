@@ -21,6 +21,7 @@ export async function GET() {
     prisma.user.findUnique({
       where:  { id: userId },
       select: {
+        name:                true,
         isPremium:           true,
         temporalShards:      true,
         eclatsTemporels:     true,
@@ -76,6 +77,7 @@ export async function GET() {
     (user.character?.talents ?? []).some((t: { talentId: string }) => t.talentId === "relance_minute")
 
   return NextResponse.json({
+    userName:     user.name ?? null,
     character:    user.character
       ? {
           ...user.character,

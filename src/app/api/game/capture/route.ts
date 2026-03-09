@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       windowId?: string
       mode?: string          // legacy SAFE/RISKY
       preselectedMinute?: string  // from Machine Temporelle
+      timingZone?: string         // from anchor mini-game
     }
 
     const captureIntent: CaptureIntent =
@@ -353,6 +354,14 @@ export async function POST(req: NextRequest) {
                               : stakeTier === "ENGAGEMENT"     ? 0   // already guaranteed
                               : stakeTier === "RITUEL"         ? 0   : 0
 
+    // Timing zone bonuses from anchor mini-game
+    const timingRareBonus =
+      body.timingZone === "RARE" || body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE" ? 10 : 0
+    const timingEpiqueBonus =
+      body.timingZone === "EPIQUE" ? 15 : body.timingZone === "LEGENDAIRE" ? 10 : 0
+    const timingLegBonus =
+      body.timingZone === "LEGENDAIRE" ? 25 : 0
+
     // Rarity draw
     const rarity = drawRarity({
       characterClass:  charClass,
@@ -362,14 +371,17 @@ export async function POST(req: NextRequest) {
       talentBonuses: {
         chanceRare:       (talents["radar_reliques"]      ?? 0) * 10
                         + (anomalyEffects.rareChanceBonus ?? 0)
-                        + stakeRareBonus,
+                        + stakeRareBonus
+                        + timingRareBonus,
         chanceEpique:     (talents["chance_epique"]       ?? 0) * 5
-                        + stakeEpiqueBonus,
+                        + stakeEpiqueBonus
+                        + timingEpiqueBonus,
         chanceLegendaire: (talents["oracle_legendaire"]   ?? 0) * 10
                         + (sanctBonuses.legendaireChancePct ?? 0)
                         + (anomalyEffects.legendaireChanceBonus ?? 0)
                         + (rerollBonusFlag ? 30 : 0)
-                        + stakeLegBonus,
+                        + stakeLegBonus
+                        + timingLegBonus,
         chanceMythique:   (talents["drop_mythique"]       ?? 0) * 0.5
                         + (talents["anomalie_pressentie"] ?? 0) * 1.0
                         + (talents["oracle_mythique"]     ?? 0) * 2.0

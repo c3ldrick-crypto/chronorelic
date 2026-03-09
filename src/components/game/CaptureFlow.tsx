@@ -9,6 +9,7 @@ import type { TimeWindow } from "@/lib/game/windows"
 
 type CaptureIntent = "RELIQUE" | "ESSENCE" | "HYBRIDE"
 type CapturePhase  = "idle" | "scan" | "ancrage" | "extraction" | "resultat"
+type TimingZone    = "COMMUNE" | "RARE" | "EPIQUE" | "LEGENDAIRE"
 
 export interface CaptureResult {
   success:       boolean
@@ -87,6 +88,90 @@ const INTENT_CONFIG: Record<CaptureIntent, { label: string; icon: string; descri
   },
 }
 
+// ── Anchor mini-game configuration ───────────────────────────────────────────
+interface AnchorZoneConfig {
+  id:           TimingZone
+  from:         number
+  to:           number
+  bgClass:      string
+  textClass:    string
+  borderClass:  string
+  bgHintClass:  string
+  label:        string
+  shortLabel:   string
+  bonus:        string
+}
+
+const ANCHOR_ZONES: AnchorZoneConfig[] = [
+  { id: "COMMUNE",    from: 0,  to: 15,  bgClass: "bg-slate-700",  textClass: "text-slate-400",  borderClass: "border-slate-700/40",  bgHintClass: "bg-slate-800/60",  label: "Ordinaire",  shortLabel: "",  bonus: "" },
+  { id: "RARE",       from: 15, to: 35,  bgClass: "bg-blue-800",   textClass: "text-blue-300",   borderClass: "border-blue-600/40",   bgHintClass: "bg-blue-950/60",   label: "RARE",       shortLabel: "R", bonus: "+10% Rare" },
+  { id: "EPIQUE",     from: 35, to: 45,  bgClass: "bg-purple-800", textClass: "text-purple-300", borderClass: "border-purple-600/40", bgHintClass: "bg-purple-950/60", label: "ÉPIQUE",     shortLabel: "É", bonus: "+15% Épique" },
+  { id: "LEGENDAIRE", from: 45, to: 55,  bgClass: "bg-amber-700",  textClass: "text-amber-300",  borderClass: "border-amber-600/40",  bgHintClass: "bg-amber-950/60",  label: "LÉGENDAIRE", shortLabel: "★", bonus: "+25% Légendaire" },
+  { id: "EPIQUE",     from: 55, to: 65,  bgClass: "bg-purple-800", textClass: "text-purple-300", borderClass: "border-purple-600/40", bgHintClass: "bg-purple-950/60", label: "ÉPIQUE",     shortLabel: "É", bonus: "+15% Épique" },
+  { id: "RARE",       from: 65, to: 85,  bgClass: "bg-blue-800",   textClass: "text-blue-300",   borderClass: "border-blue-600/40",   bgHintClass: "bg-blue-950/60",   label: "RARE",       shortLabel: "R", bonus: "+10% Rare" },
+  { id: "COMMUNE",    from: 85, to: 100, bgClass: "bg-slate-700",  textClass: "text-slate-400",  borderClass: "border-slate-700/40",  bgHintClass: "bg-slate-800/60",  label: "Ordinaire",  shortLabel: "",  bonus: "" },
+]
+
+function detectAnchorZone(pos: number): AnchorZoneConfig {
+  return ANCHOR_ZONES.find(z => pos >= z.from && pos < z.to) ?? ANCHOR_ZONES[0]
+}
+
+const RARITY_RESET_DELAY: Record<string, number> = {
+  COMMUNE:    2500,
+  RARE:       3500,
+  EPIQUE:     4500,
+  LEGENDAIRE: 6000,
+  MYTHIQUE:   8000,
+}
+
+// ── Risk meter config ─────────────────────────────────────────────────────────
+const RISK_CONFIG: Record<StakeTier, {
+  level:       number  // 0-100
+  label:       string
+  color:       string
+  barClass:    string
+  description: string
+}> = {
+  OBSERVATION:    { level:  8, label: "Minimal",  color: "text-emerald-400", barClass: "from-emerald-600 to-emerald-400", description: "Aucun risque — observation pure" },
+  INVESTISSEMENT: { level: 32, label: "Modéré",   color: "text-amber-300",   barClass: "from-yellow-600 to-amber-400",   description: "Ressources mises en jeu — aucun danger vital" },
+  ENGAGEMENT:     { level: 68, label: "Élevé",    color: "text-orange-400",  barClass: "from-orange-700 to-orange-400",  description: "Mort possible (15%) si niveau > 10" },
+  RITUEL:         { level: 95, label: "Critique",  color: "text-red-400",     barClass: "from-red-800 to-red-500",        description: "Danger extrême — mort probable (45%) si niveau > 10" },
+}
+
+function RiskMeter({ stakeTier }: { stakeTier: StakeTier }) {
+  const cfg = RISK_CONFIG[stakeTier]
+  return (
+    <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">Instabilité Temporelle</span>
+        <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
+      </div>
+      {/* Bar */}
+      <div className="h-2.5 bg-slate-700/60 rounded-full overflow-hidden border border-slate-600/40">
+        <motion.div
+          className={`h-full rounded-full bg-gradient-to-r ${cfg.barClass}`}
+          initial={{ width: "0%" }}
+          animate={{ width: `${cfg.level}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        />
+      </div>
+      {/* Stats row */}
+      <div className="flex items-center justify-between text-[10px]">
+        <span className={cfg.color}>{cfg.level}% instabilité</span>
+        {STAKE_TIERS[stakeTier].deathRiskPct > 0 ? (
+          <span className="text-red-400 font-bold flex items-center gap-1">
+            💀 {STAKE_TIERS[stakeTier].deathRiskPct}% de mort
+          </span>
+        ) : (
+          <span className="text-emerald-500">✓ Aucun risque vital</span>
+        )}
+        <span className="text-slate-400">×{STAKE_TIERS[stakeTier].multiplier} gains</span>
+      </div>
+      <p className="text-[10px] text-slate-500 leading-tight">{cfg.description}</p>
+    </div>
+  )
+}
+
 // ── Scan phase animation ──────────────────────────────────────────────────────
 function ScanAnimation({ successChance }: { successChance: number }) {
   const [displayedChance, setDisplayedChance] = useState(0)
@@ -130,60 +215,173 @@ function ScanAnimation({ successChance }: { successChance: number }) {
   )
 }
 
-// ── Ancrage phase animation ───────────────────────────────────────────────────
-function AnchorAnimation() {
-  const [progress, setProgress] = useState(0)
-  const [glitch, setGlitch]     = useState(false)
+// ── Anchor mini-game ──────────────────────────────────────────────────────────
+function AnchorMiniGame({ onLock }: { onLock: (zone: TimingZone) => void }) {
+  const [cursorPos, setCursorPos]       = useState(50)
+  const [locked, setLocked]             = useState(false)
+  const [lockedZone, setLockedZone]     = useState<AnchorZoneConfig | null>(null)
+  const startRef   = useRef(Date.now())
+  const posRef     = useRef(50)
+  const lockedRef  = useRef(false)
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setProgress(p => {
-        const next = p + Math.random() * 8
-        if (Math.random() < 0.15) {
-          setGlitch(true)
-          setTimeout(() => setGlitch(false), 200)
-          return Math.max(0, next - Math.random() * 15)
-        }
-        return Math.min(95, next)
-      })
-    }, 80)
+      if (lockedRef.current) return
+      const elapsed = (Date.now() - startRef.current) / 1000
+      // Oscillation period starts at 2.5s and gradually speeds up
+      const period  = Math.max(0.9, 2.5 - elapsed * 0.07)
+      const newPos  = 50 + 49 * Math.sin(2 * Math.PI * elapsed / period)
+      posRef.current = newPos
+      setCursorPos(newPos)
+    }, 16)
     return () => clearInterval(interval)
   }, [])
 
+  const doLock = useCallback(() => {
+    if (lockedRef.current) return
+    lockedRef.current = true
+    setLocked(true)
+    const zone = detectAnchorZone(posRef.current)
+    setLockedZone(zone)
+    setTimeout(() => onLock(zone.id), 500)
+  }, [onLock])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); doLock() }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [doLock])
+
+  const currentZone = locked ? lockedZone : detectAnchorZone(cursorPos)
+
+  // Cursor glow color when locked
+  const cursorClass = locked
+    ? lockedZone?.id === "LEGENDAIRE"
+      ? "bg-amber-300 shadow-[0_0_14px_5px_rgba(251,191,36,0.9)]"
+      : lockedZone?.id === "EPIQUE"
+        ? "bg-purple-300 shadow-[0_0_12px_4px_rgba(168,85,247,0.9)]"
+        : lockedZone?.id === "RARE"
+          ? "bg-blue-300 shadow-[0_0_10px_3px_rgba(59,130,246,0.9)]"
+          : "bg-white shadow-[0_0_6px_2px_rgba(255,255,255,0.6)]"
+    : "bg-white shadow-[0_0_10px_4px_rgba(255,255,255,0.95)]"
+
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-sm">
-      <motion.div
-        animate={glitch ? { x: [-4, 4, -2, 2, 0], skewX: [-3, 3, 0] } : {}}
-        className="text-3xl"
+    <div className="w-full max-w-sm space-y-3">
+      <div className="text-center">
+        <p className="text-slate-200 text-sm font-semibold">⧗ Ancrage Temporel</p>
+        <p className="text-slate-500 text-xs mt-0.5">
+          {locked ? "Zone verrouillée !" : "Cliquez ou appuyez sur Espace pour ancrer"}
+        </p>
+      </div>
+
+      {/* Zone bar */}
+      <div
+        className="relative h-14 w-full rounded-lg overflow-hidden border border-slate-600 cursor-pointer select-none"
+        onClick={doLock}
       >
-        ⧗
-      </motion.div>
-      <div className="w-full">
-        <div className="flex justify-between text-xs text-slate-400 mb-2">
-          <span className="font-mono">ANCRAGE TEMPOREL</span>
-          <span className="font-mono text-cyan-400">{Math.floor(progress)}%</span>
-        </div>
-        <div className="h-3 bg-slate-800 rounded-full border border-slate-700 overflow-hidden">
-          <motion.div
-            className={`h-full rounded-full ${glitch ? "bg-red-500" : "bg-gradient-to-r from-violet-500 to-cyan-400"}`}
-            style={{ width: `${progress}%` }}
-            animate={glitch ? { opacity: [1, 0, 1] } : {}}
-          />
-        </div>
-        {glitch && (
-          <p className="text-red-400 text-xs font-mono mt-1 animate-pulse">⚠ INTERFÉRENCE DÉTECTÉE</p>
-        )}
-      </div>
-      <div className="grid grid-cols-3 gap-2 text-center w-full">
-        {["FLUX", "SYNC", "LOCK"].map((label, i) => (
-          <div key={label} className="bg-slate-800/50 rounded p-2 border border-slate-700">
-            <div className={`text-xs font-mono ${progress > (i + 1) * 25 ? "text-green-400" : "text-slate-500"}`}>
-              {progress > (i + 1) * 25 ? "✓" : "…"}
+        {/* Zone segments */}
+        <div className="absolute inset-0 flex">
+          {ANCHOR_ZONES.map((zone, i) => (
+            <div
+              key={i}
+              style={{ width: `${zone.to - zone.from}%` }}
+              className={`${zone.bgClass} h-full flex items-center justify-center transition-all duration-150 ${
+                locked
+                  ? lockedZone?.from === zone.from ? "opacity-100 brightness-125" : "opacity-40"
+                  : "opacity-70"
+              }`}
+            >
+              <span className={`text-[10px] font-bold ${zone.textClass} opacity-90`}>
+                {zone.shortLabel}
+              </span>
             </div>
-            <div className="text-xs text-slate-400">{label}</div>
-          </div>
+          ))}
+        </div>
+
+        {/* Zone dividers */}
+        {[15, 35, 45, 55, 65, 85].map(pos => (
+          <div
+            key={pos}
+            className="absolute top-0 bottom-0 w-px bg-slate-950/70"
+            style={{ left: `${pos}%` }}
+          />
         ))}
+
+        {/* Cursor line */}
+        <div
+          className={`absolute top-1 bottom-1 w-1.5 rounded-full transition-colors duration-100 ${cursorClass}`}
+          style={{ left: `calc(${cursorPos}% - 3px)` }}
+        />
+
+        {/* Lock flash */}
+        <AnimatePresence>
+          {locked && lockedZone && (
+            <motion.div
+              key="flash"
+              className={`absolute inset-0 pointer-events-none ${
+                lockedZone.id === "LEGENDAIRE" ? "bg-amber-400/30"
+                : lockedZone.id === "EPIQUE"   ? "bg-purple-400/25"
+                : lockedZone.id === "RARE"     ? "bg-blue-400/20"
+                : "bg-slate-400/10"
+              }`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 1, 0] }}
+              transition={{ duration: 0.4 }}
+            />
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Zone legend */}
+      <div className="flex text-[10px] leading-none">
+        <span style={{ width: "15%" }} className="text-slate-500 text-center">Ord.</span>
+        <span style={{ width: "20%" }} className="text-blue-400 text-center">RARE</span>
+        <span style={{ width: "10%" }} className="text-purple-400 text-center">ÉP.</span>
+        <span style={{ width: "10%" }} className="text-amber-400 font-bold text-center">LÉG.</span>
+        <span style={{ width: "10%" }} className="text-purple-400 text-center">ÉP.</span>
+        <span style={{ width: "20%" }} className="text-blue-400 text-center">RARE</span>
+        <span style={{ width: "15%" }} className="text-slate-500 text-center">Ord.</span>
+      </div>
+
+      {/* Zone indicator */}
+      {!locked ? (
+        <div className={`text-center py-1.5 rounded-lg text-xs font-medium border transition-all duration-100 ${
+          currentZone?.id === "LEGENDAIRE" ? "bg-amber-950/60 text-amber-300 border-amber-600/40"
+          : currentZone?.id === "EPIQUE"   ? "bg-purple-950/60 text-purple-300 border-purple-600/40"
+          : currentZone?.id === "RARE"     ? "bg-blue-950/60 text-blue-300 border-blue-600/40"
+          : "bg-slate-800/60 text-slate-500 border-slate-700/40"
+        }`}>
+          {currentZone?.bonus || "Aucun bonus — visez le centre !"}
+        </div>
+      ) : lockedZone && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`text-center py-2 rounded-lg text-sm font-bold border ${
+            lockedZone.id === "LEGENDAIRE" ? "bg-amber-950/60 text-amber-300 border-amber-500/60"
+            : lockedZone.id === "EPIQUE"   ? "bg-purple-950/60 text-purple-300 border-purple-500/60"
+            : lockedZone.id === "RARE"     ? "bg-blue-950/60 text-blue-300 border-blue-500/60"
+            : "bg-slate-800/60 text-slate-400 border-slate-700/40"
+          }`}
+        >
+          {lockedZone.id === "COMMUNE"
+            ? "Zone Ordinaire — aucun bonus"
+            : `Zone ${lockedZone.label} ! ${lockedZone.bonus}`
+          }
+        </motion.div>
+      )}
+
+      {!locked && (
+        <button
+          onClick={doLock}
+          className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 transition-all active:scale-95 text-sm"
+        >
+          ⚡ Ancrer !{" "}
+          <span className="text-xs font-normal opacity-50 ml-1">[Espace]</span>
+        </button>
+      )}
     </div>
   )
 }
@@ -240,6 +438,145 @@ function ExtractionAnimation({ success, rarity }: { success: boolean; rarity?: s
   )
 }
 
+// ── Graduated cinematic reveal ────────────────────────────────────────────────
+function GradualRevealCard({
+  success,
+  rarity,
+  timingZone,
+}: {
+  success:    boolean
+  rarity?:    string
+  timingZone: TimingZone | null
+}) {
+  const isRare    = rarity === "RARE"
+  const isEpique  = rarity === "EPIQUE"
+  const isLegen   = rarity === "LEGENDAIRE"
+  const isMythique = rarity === "MYTHIQUE"
+
+  const needsFlash = success && (isRare || isEpique || isLegen || isMythique)
+  const flashMs    = isMythique ? 1500 : isLegen ? 1000 : isEpique ? 650 : 350
+
+  const [revealed, setRevealed] = useState(!needsFlash)
+
+  useEffect(() => {
+    if (!needsFlash) return
+    const t = setTimeout(() => setRevealed(true), flashMs)
+    return () => clearTimeout(t)
+  }, [needsFlash, flashMs])
+
+  // Failure
+  if (!success) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center p-4 rounded-xl border bg-red-950/30 border-red-800/50"
+      >
+        <span className="text-4xl">💔</span>
+        <p className="text-red-300 font-bold mt-2">Capture échouée</p>
+        <p className="text-red-400/70 text-xs mt-1">Ressources perdues</p>
+      </motion.div>
+    )
+  }
+
+  const rarityColor = RARITY_COLORS[rarity ?? "COMMUNE"] ?? RARITY_COLORS["COMMUNE"]
+  const rarityGlow  = RARITY_GLOW[rarity  ?? "COMMUNE"] ?? RARITY_GLOW["COMMUNE"]
+
+  // Flash phase — mystery reveal animation
+  if (!revealed) {
+    const flashGrad = isMythique
+      ? "from-white via-pink-200 to-white"
+      : isLegen
+        ? "from-amber-300 via-yellow-100 to-amber-300"
+        : isEpique
+          ? "from-purple-300 via-fuchsia-100 to-purple-300"
+          : "from-blue-300 via-sky-100 to-blue-300"
+
+    const flashIcon = isMythique ? "🌟" : isLegen ? "👑" : isEpique ? "💜" : "💎"
+
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <motion.div
+          className={`w-24 h-24 rounded-full bg-gradient-to-br ${flashGrad} flex items-center justify-center shadow-2xl`}
+          animate={{ scale: [0.3, 1.2, 1, 1.1, 1], opacity: [0, 1, 0.9, 1, 0.7] }}
+          transition={{ duration: flashMs / 1000, ease: "easeInOut" }}
+        >
+          <span className="text-3xl">{flashIcon}</span>
+        </motion.div>
+        <motion.p
+          className="text-slate-300 text-sm font-mono"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 0.7, repeat: Infinity }}
+        >
+          {isMythique ? "IDENTIFICATION EN COURS..." : "Analyse de la relique..."}
+        </motion.p>
+      </div>
+    )
+  }
+
+  // Reveal card
+  const particleCount = isMythique ? 14 : isLegen ? 10 : isEpique ? 6 : 0
+  const particleClass = isMythique ? "bg-pink-300" : isLegen ? "bg-amber-300" : "bg-purple-300"
+
+  return (
+    <div className="relative">
+      {/* Particles for EPIQUE+ */}
+      {particleCount > 0 && (
+        <>
+          {Array.from({ length: particleCount }).map((_, i) => {
+            const angle = (i / particleCount) * Math.PI * 2
+            const radius = 50 + (i % 4) * 12
+            return (
+              <motion.div
+                key={i}
+                className={`absolute w-1.5 h-1.5 rounded-full ${particleClass}`}
+                style={{ top: "50%", left: "50%", marginTop: -3, marginLeft: -3 }}
+                initial={{ x: 0, y: 0, opacity: 1 }}
+                animate={{ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, opacity: 0 }}
+                transition={{ duration: 0.7, delay: 0.05 }}
+              />
+            )
+          })}
+        </>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, scale: isLegen || isMythique ? 0.5 : 0.8, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 400, damping: 22 }}
+        className={`text-center p-4 rounded-xl border shadow-2xl bg-gradient-to-br ${rarityColor} ${rarityGlow}`}
+      >
+        {isMythique && (
+          <motion.div
+            animate={{ rotate: [0, 8, -8, 5, -5, 0] }}
+            transition={{ duration: 0.6 }}
+            className="text-3xl mb-1"
+          >
+            🌟
+          </motion.div>
+        )}
+        {isLegen && (
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 15 }}
+            className="text-3xl mb-1"
+          >
+            👑
+          </motion.div>
+        )}
+
+        <Zap className="h-8 w-8 text-white mx-auto mb-2" />
+        <p className="text-white font-bold text-lg">Capture réussie !</p>
+        <p className="text-white/80 text-sm font-mono">{rarity}</p>
+        {timingZone && timingZone !== "COMMUNE" && (
+          <p className="text-white/50 text-xs mt-1">Ancrage {timingZone}</p>
+        )}
+      </motion.div>
+    </div>
+  )
+}
+
 // ── Main CaptureFlow component ────────────────────────────────────────────────
 export function CaptureFlow({
   windows,
@@ -259,6 +596,7 @@ export function CaptureFlow({
   const [phase, setPhase]           = useState<CapturePhase>("idle")
   const [captureSuccess, setCaptureSuccess] = useState<boolean | null>(null)
   const [captureRarity, setCaptureRarity]   = useState<string | undefined>()
+  const [timingZone, setTimingZone]         = useState<TimingZone | null>(null)
   const [isSubmitting, setIsSubmitting]     = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -277,92 +615,94 @@ export function CaptureFlow({
 
   const successChanceDisplay = Math.round(STAKE_TIERS[stakeTier].successChanceBase * 100)
 
-  const runCapture = useCallback(async () => {
+  // Starts the flow — scan phase only, waits for anchor mini-game
+  const runCapture = useCallback(() => {
     if (isSubmitting) return
     setIsSubmitting(true)
+    setTimingZone(null)
     setStep(4)
     setPhase("scan")
 
-    // Phase: scan (1.5s)
     timerRef.current = setTimeout(() => {
       setPhase("ancrage")
-
-      // Phase: ancrage (2s)
-      timerRef.current = setTimeout(() => {
-        setPhase("extraction")
-
-        // Execute actual capture during extraction animation
-        const body: Record<string, unknown> = {
-          captureIntent: intent,
-          stakeTier,
-        }
-        if (selectedWindow) body.windowId = selectedWindow
-        if (machineTarget && usesMachine) body.preselectedMinute = machineTarget.minute
-
-        fetch("/api/game/capture", {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify(body),
-        })
-          .then(r => r.json())
-          .then(data => {
-            const ok = !data.failed
-            setCaptureSuccess(ok)
-            setCaptureRarity(data.rarity)
-
-            // Phase: extraction reveal (1.5s)
-            timerRef.current = setTimeout(() => {
-              setPhase("resultat")
-
-              const result: CaptureResult = {
-                success:        ok,
-                relicId:        data.relicId,
-                minute:         data.minute,
-                rarity:         data.rarity,
-                xpGained:       data.xpGained,
-                drops:          data.drops,
-                essenceDrops:   data.essenceDrops,
-                narration:      data.narration,
-                eventTitle:     data.eventTitle,
-                eventYear:      data.eventYear,
-                didLevelUp:     data.didLevelUp,
-                newLevel:       data.newLevel,
-                captureIntent:  intent,
-                stakeTier,
-                lostCost:       data.lostCost,
-                deathPending:   data.deathPending,
-                heritageOptions: data.heritageOptions,
-                message:        data.message,
-                consolation:    data.consolation,
-              }
-
-              onCaptureDone(result)
-
-              // Auto-reset after result display
-              timerRef.current = setTimeout(() => {
-                setStep(1)
-                setPhase("idle")
-                setCaptureSuccess(null)
-                setCaptureRarity(undefined)
-                setIsSubmitting(false)
-                setWindow(null)
-                setUsesMachine(false)
-              }, 3000)
-            }, 1500)
-          })
-          .catch(() => {
-            toast.error("Erreur réseau. Réessayez.")
-            setStep(1)
-            setPhase("idle")
-            setIsSubmitting(false)
-          })
-      }, 2000)
+      // Flow continues when player locks the anchor mini-game → handleAnchorLock
     }, 1500)
-  }, [intent, stakeTier, selectedWindow, machineTarget, usesMachine, isSubmitting, onCaptureDone])
+  }, [isSubmitting])
+
+  // Called by AnchorMiniGame when player clicks
+  const handleAnchorLock = useCallback(async (zone: TimingZone) => {
+    setTimingZone(zone)
+    setPhase("extraction")
+
+    const body: Record<string, unknown> = {
+      captureIntent: intent,
+      stakeTier,
+      timingZone: zone,
+    }
+    if (selectedWindow) body.windowId = selectedWindow
+    if (machineTarget && usesMachine) body.preselectedMinute = machineTarget.minute
+
+    try {
+      const r    = await fetch("/api/game/capture", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(body),
+      })
+      const data = await r.json()
+      const ok   = !data.failed
+      setCaptureSuccess(ok)
+      setCaptureRarity(data.rarity)
+
+      timerRef.current = setTimeout(() => {
+        setPhase("resultat")
+
+        const result: CaptureResult = {
+          success:         ok,
+          relicId:         data.relicId,
+          minute:          data.minute,
+          rarity:          data.rarity,
+          xpGained:        data.xpGained,
+          drops:           data.drops,
+          essenceDrops:    data.essenceDrops,
+          narration:       data.narration,
+          eventTitle:      data.eventTitle,
+          eventYear:       data.eventYear,
+          didLevelUp:      data.didLevelUp,
+          newLevel:        data.newLevel,
+          captureIntent:   intent,
+          stakeTier,
+          lostCost:        data.lostCost,
+          deathPending:    data.deathPending,
+          heritageOptions: data.heritageOptions,
+          message:         data.message,
+          consolation:     data.consolation,
+        }
+
+        onCaptureDone(result)
+
+        const resetDelay = RARITY_RESET_DELAY[data.rarity ?? "COMMUNE"] ?? 3000
+        timerRef.current = setTimeout(() => {
+          setStep(1)
+          setPhase("idle")
+          setCaptureSuccess(null)
+          setCaptureRarity(undefined)
+          setIsSubmitting(false)
+          setWindow(null)
+          setUsesMachine(false)
+          setTimingZone(null)
+        }, resetDelay)
+      }, 1500)
+    } catch {
+      toast.error("Erreur réseau. Réessayez.")
+      setStep(1)
+      setPhase("idle")
+      setIsSubmitting(false)
+      setTimingZone(null)
+    }
+  }, [intent, stakeTier, selectedWindow, machineTarget, usesMachine, onCaptureDone])
 
   useEffect(() => () => clearTimer(), [])
 
-  // ── Step indicators ─────────────────────────────────────────────────────────
   const STEP_LABELS = ["Cible", "Mode", "Mise", "Exécution"]
 
   return (
@@ -404,7 +744,6 @@ export function CaptureFlow({
           >
             <p className="text-slate-400 text-sm">Choisissez votre cible temporelle</p>
 
-            {/* Present */}
             <button
               onClick={() => { setWindow(null); setUsesMachine(false); setStep(2) }}
               className="w-full p-4 rounded-xl border border-slate-600/50 bg-slate-800/40 hover:border-violet-500/50 hover:bg-violet-950/20 transition-all text-left group"
@@ -418,7 +757,6 @@ export function CaptureFlow({
               </div>
             </button>
 
-            {/* Machine target */}
             {machineTarget && (
               <button
                 onClick={() => { setWindow(null); setUsesMachine(true); setStep(2) }}
@@ -434,7 +772,6 @@ export function CaptureFlow({
               </button>
             )}
 
-            {/* Time windows */}
             {windows.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -569,10 +906,13 @@ export function CaptureFlow({
               )
             })}
 
+            {/* Risk meter */}
+            <RiskMeter stakeTier={stakeTier} />
+
             <button
               onClick={runCapture}
               disabled={isSubmitting || !canAffordStake(stakeTier)}
-              className="w-full mt-2 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 disabled:opacity-40 transition-all active:scale-95 flex items-center justify-center gap-2"
+              className="w-full mt-1 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 disabled:opacity-40 transition-all active:scale-95 flex items-center justify-center gap-2"
             >
               <Sparkles className="h-4 w-4" />
               Lancer la Capture
@@ -587,7 +927,7 @@ export function CaptureFlow({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center min-h-[240px] gap-4 relative"
+            className="flex flex-col items-center justify-center min-h-[280px] gap-4 relative"
           >
             <AnimatePresence mode="wait">
               {phase === "scan" && (
@@ -596,8 +936,8 @@ export function CaptureFlow({
                 </motion.div>
               )}
               {phase === "ancrage" && (
-                <motion.div key="ancrage" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  <AnchorAnimation />
+                <motion.div key="ancrage" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                  <AnchorMiniGame onLock={handleAnchorLock} />
                 </motion.div>
               )}
               {phase === "extraction" && (
@@ -608,27 +948,15 @@ export function CaptureFlow({
               {phase === "resultat" && captureSuccess !== null && (
                 <motion.div
                   key="resultat"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className={`text-center p-4 rounded-xl border shadow-2xl ${
-                    captureSuccess
-                      ? `bg-gradient-to-br ${RARITY_COLORS[captureRarity ?? "COMMUNE"]} ${RARITY_GLOW[captureRarity ?? "COMMUNE"]}`
-                      : "bg-red-950/30 border-red-800/50"
-                  }`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="w-full max-w-xs"
                 >
-                  {captureSuccess ? (
-                    <>
-                      <Zap className="h-8 w-8 text-white mx-auto mb-2" />
-                      <p className="text-white font-bold text-lg">Capture réussie !</p>
-                      <p className="text-white/70 text-sm">{captureRarity}</p>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-4xl">💔</span>
-                      <p className="text-red-300 font-bold mt-2">Capture échouée</p>
-                      <p className="text-red-400/70 text-xs mt-1">Ressources perdues</p>
-                    </>
-                  )}
+                  <GradualRevealCard
+                    success={captureSuccess}
+                    rarity={captureRarity}
+                    timingZone={timingZone}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
