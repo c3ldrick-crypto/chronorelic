@@ -12,6 +12,7 @@ import { Flame, Zap, Swords, ShieldCheck, Hammer, ChevronRight, CheckCircle2, Ci
 import { getTodayAnomalies, AnomalyDefinition } from "@/lib/game/anomalies"
 import type { TimeWindow } from "@/lib/game/windows"
 import { CaptureFlow, type CaptureResult } from "@/components/game/CaptureFlow"
+import { EnigmaPanel } from "@/components/game/EnigmaPanel"
 import type { HeritageBonusDefinition } from "@/lib/game/heritage"
 import { levelProgress } from "@/lib/game/xp"
 import type { ChallengeDefinition } from "@/lib/game/challenges"
@@ -108,6 +109,8 @@ export default function PlayPage() {
   const [abilityActive, setAbilityActive] = useState<string | null>(null)
   const [challenges, setChallenges]       = useState<ChallengeWithProgress[]>([])
   const [claimingId, setClaimingId]       = useState<string | null>(null)
+  const [activeTab, setActiveTab]         = useState<"defis" | "enigmes">("defis")
+  const [enigmaRefresh, setEnigmaRefresh] = useState(0)
 
   const [clock, setClock] = useState(() => {
     const n = new Date()
@@ -276,7 +279,18 @@ export default function PlayPage() {
     setMachineTarget(null)
     setAbilityActive(null)
     void fetchWindows(true)
-    void fetchChallenges()  // refresh challenges après capture
+    void fetchChallenges()
+
+    // Enigma completion notifications
+    if (result.completedEnigmas && result.completedEnigmas.length > 0) {
+      setEnigmaRefresh(n => n + 1)
+      result.completedEnigmas.forEach(e => {
+        toast(`🗺️ Énigme résolue : ${e.title}`, {
+          description: e.reward.label,
+          duration: 8000,
+        })
+      })
+    }
 
     setPendingResult({
       rarity:     (result.rarity ?? "COMMUNE") as import("@/types").Rarity,
@@ -457,15 +471,41 @@ export default function PlayPage() {
           )}
         </AnimatePresence>
 
-        {/* ═══ BANDEAU DÉFIS QUOTIDIENS ════════════════════════════════════════ */}
+        {/* ═══ DÉFIS / JEUX DE PISTE ══════════════════════════════════════════ */}
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">🎯</span>
-            <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: "#c084fc" }}>Défis du Jour</h2>
-            <span className="text-[10px] ml-auto" style={{ color: "#5a5046" }}>
-              Se renouvellent à minuit UTC
-            </span>
+          {/* Tab switcher */}
+          <div className="flex items-center gap-1 mb-3">
+            <button
+              onClick={() => setActiveTab("defis")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              style={{
+                background: activeTab === "defis" ? "rgba(192,132,252,0.15)" : "transparent",
+                border:     activeTab === "defis" ? "1px solid rgba(192,132,252,0.4)" : "1px solid transparent",
+                color:      activeTab === "defis" ? "#c084fc" : "#3a3254",
+              }}
+            >
+              <span>🎯</span> Défis du Jour
+            </button>
+            <button
+              onClick={() => setActiveTab("enigmes")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+              style={{
+                background: activeTab === "enigmes" ? "rgba(196,150,10,0.12)" : "transparent",
+                border:     activeTab === "enigmes" ? "1px solid rgba(196,150,10,0.4)" : "1px solid transparent",
+                color:      activeTab === "enigmes" ? "#e8b84b" : "#3a3254",
+              }}
+            >
+              <span>🗺️</span> Jeux de Piste
+            </button>
+            {activeTab === "defis" && (
+              <span className="text-[10px] ml-auto" style={{ color: "#5a5046" }}>Se renouvellent à minuit UTC</span>
+            )}
           </div>
+
+          <AnimatePresence mode="wait">
+
+          {activeTab === "defis" && (
+          <motion.div key="defis" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {challenges.length === 0
               ? [0,1,2].map(i => (
@@ -531,6 +571,30 @@ export default function PlayPage() {
                   )
                 })}
           </div>
+          </motion.div>
+          )}
+
+          {activeTab === "enigmes" && (
+          <motion.div key="enigmes" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+            <div
+              className="rounded-2xl p-4"
+              style={{ background: "rgba(196,150,10,0.03)", border: "1px solid rgba(196,150,10,0.12)" }}
+            >
+              <div className="flex items-start gap-3 mb-4 p-3 rounded-xl" style={{ background: "rgba(107,40,200,0.06)", border: "1px solid rgba(107,40,200,0.15)" }}>
+                <span className="text-2xl shrink-0">🗺️</span>
+                <div>
+                  <p className="text-xs font-bold" style={{ color: "#c4b5fd" }}>Jeux de Piste Temporels</p>
+                  <p className="text-[11px] mt-0.5 leading-relaxed" style={{ color: "#5a5046" }}>
+                    Chaque énigme cache une minute précise liée à un moment de l&apos;Histoire. Déchiffrez les indices, trouvez la minute, capturez-la. La Machine Temporelle du Sanctuaire peut vous aider à cibler n&apos;importe quelle minute.
+                  </p>
+                </div>
+              </div>
+              <EnigmaPanel refreshTrigger={enigmaRefresh} />
+            </div>
+          </motion.div>
+          )}
+
+          </AnimatePresence>
         </motion.div>
 
         {/* ═══ GRILLE PRINCIPALE 3 COLONNES ═══════════════════════════════════ */}

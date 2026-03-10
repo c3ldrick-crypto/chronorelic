@@ -34,7 +34,8 @@ export interface CaptureResult {
   deathPending?:    boolean
   heritageOptions?: unknown[]
   message?:         string
-  consolation?:     Record<string, number>
+  consolation?:       Record<string, number>
+  completedEnigmas?:  Array<{ id: string; title: string; difficulty: string; reward: { xp: number; eclats: number; label: string } }>
 }
 
 interface CaptureFlowProps {
@@ -814,10 +815,11 @@ export function CaptureFlow({
           captureIntent:    intent,
           stakeTier,
           lostCost:         data.lostCost,
-          deathPending:     data.deathPending,
-          heritageOptions:  data.heritageOptions,
-          message:          data.message,
-          consolation:      data.consolation,
+          deathPending:      data.deathPending,
+          heritageOptions:   data.heritageOptions,
+          message:           data.message,
+          consolation:       data.consolation,
+          completedEnigmas:  data.completedEnigmas,
         }
 
         onCaptureDone(result)

@@ -658,6 +658,47 @@ export async function POST(req: NextRequest) {
       return newRelic
     })
 
+    // ── Enigma completion check ────────────────────────────────────────────────
+    let completedEnigmas: Array<{ id: string; title: string; difficulty: string; reward: { xp: number; eclats: number; chronite?: number; essences?: number; label: string } }> = []
+    try {
+      const { ENIGMAS } = await import("@/lib/game/enigmas")
+      const matchingEnigmas = ENIGMAS.filter(e => e.targetMinute === minute)
+      if (matchingEnigmas.length > 0) {
+        // Load existing claims for this user
+        const existingClaims = await prisma.questClaim.findMany({
+          where:  { userId, questId: { in: matchingEnigmas.map(e => `enigma_${e.id}`) } },
+          select: { questId: true },
+        })
+        const claimedSet = new Set(existingClaims.map(c => c.questId))
+        const toResolve  = matchingEnigmas.filter(e => !claimedSet.has(`enigma_${e.id}`))
+
+        for (const enigma of toResolve) {
+          // Claim + grant rewards
+          await prisma.$transaction(async (tx) => {
+            await tx.questClaim.create({ data: { userId, questId: `enigma_${enigma.id}` } })
+            const rewardUpdate: Record<string, { increment: number }> = {}
+            if (enigma.reward.eclats   > 0) rewardUpdate["eclatsTemporels"]     = { increment: enigma.reward.eclats }
+            if (enigma.reward.chronite && enigma.reward.chronite > 0) rewardUpdate["chronite"] = { increment: enigma.reward.chronite }
+            if (enigma.reward.essences && enigma.reward.essences > 0) rewardUpdate["essencesHistoriques"] = { increment: enigma.reward.essences }
+            if (Object.keys(rewardUpdate).length > 0) {
+              await tx.user.update({ where: { id: userId }, data: rewardUpdate })
+            }
+            await tx.character.update({
+              where: { id: user.character!.id },
+              data:  { xpTotal: { increment: enigma.reward.xp }, xp: { increment: enigma.reward.xp } },
+            })
+            await tx.auditLog.create({
+              data: { userId, action: "ENIGMA_SOLVED", resource: `enigma:${enigma.id}`, details: { enigmaId: enigma.id, minute } },
+            })
+          })
+          completedEnigmas.push({ id: enigma.id, title: enigma.title, difficulty: enigma.difficulty, reward: enigma.reward })
+        }
+      }
+    } catch (enigmaErr) {
+      console.error("[capture] Enigma check failed:", enigmaErr)
+      // Non-blocking — capture still succeeds
+    }
+
     // Fire-and-forget chain completion check
     let newlyCompletedChains: Array<{ chainId: string; label: string }> = []
     try {
@@ -701,7 +742,8 @@ export async function POST(req: NextRequest) {
       stakeTier,
       drops:       captureIntent === "ESSENCE" ? {} : drops,
       essenceDrops: captureIntent !== "RELIQUE" ? essenceDrops : {},
-      anomalies:   todayAnomalies.map((a) => ({ id: a.id, label: a.label, icon: a.icon })),
+      anomalies:         todayAnomalies.map((a) => ({ id: a.id, label: a.label, icon: a.icon })),
+      completedEnigmas,
       newlyCompletedChains,
       relic: relic ? {
         id: relic.id, minute, rarity, xpGained,
