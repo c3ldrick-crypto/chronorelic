@@ -172,12 +172,11 @@ export async function POST(req: NextRequest) {
       const wasYesterday = lastPlay && new Date(lastPlay).toDateString() === yesterday.toDateString()
       await tx.streakData.upsert({
         where:  { userId },
-        create: { userId, lastPlayedAt: new Date(), comboCount: 1, currentStreak: 1, updatedAt: new Date() },
+        create: { userId, lastPlayedAt: new Date(), comboCount: 1, currentStreak: 1 },
         update: {
           lastPlayedAt:  new Date(),
           comboCount:    { increment: 1 },
           currentStreak: isNewDay ? (wasYesterday ? { increment: 1 } : 1) : undefined,
-          updatedAt:     new Date(),
         },
       })
 
