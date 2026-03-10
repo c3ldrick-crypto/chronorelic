@@ -7,7 +7,10 @@ import { RelicCard, RelicData } from "@/components/game/RelicCard"
 import { RarityBadge } from "@/components/game/RarityBadge"
 import { Rarity, RARITY_CONFIG } from "@/types"
 import { cn, formatXP } from "@/lib/utils"
-import { Package, Sparkles, BookOpen, X, Zap, Shield, FlaskConical, ChevronDown } from "lucide-react"
+import {
+  Package, Sparkles, BookOpen, X, Zap, Shield, FlaskConical,
+  ChevronDown, Layers, ScanLine,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface RelicDetail extends RelicData {
@@ -35,12 +38,16 @@ interface TotalBonus {
 
 export default function InventoryPage() {
   const [relics, setRelics]         = useState<RelicDetail[]>([])
-  const [equipSlots, setEquipSlots] = useState<EquipSlot[]>([{ slot: 1, relic: null, bonus: null }, { slot: 2, relic: null, bonus: null }, { slot: 3, relic: null, bonus: null }])
-  const [totalBonus, setTotalBonus] = useState<TotalBonus>({ xpBonus: 0, resourceBonus: 0 })
-  const [loading, setLoading]       = useState(true)
-  const [filter, setFilter]         = useState<Rarity | "ALL">("ALL")
-  const [selected, setSelected]     = useState<RelicDetail | null>(null)
-  const [fuseMode, setFuseMode]     = useState(false)
+  const [equipSlots, setEquipSlots] = useState<EquipSlot[]>([
+    { slot: 1, relic: null, bonus: null },
+    { slot: 2, relic: null, bonus: null },
+    { slot: 3, relic: null, bonus: null },
+  ])
+  const [totalBonus, setTotalBonus]   = useState<TotalBonus>({ xpBonus: 0, resourceBonus: 0 })
+  const [loading, setLoading]         = useState(true)
+  const [filter, setFilter]           = useState<Rarity | "ALL">("ALL")
+  const [selected, setSelected]       = useState<RelicDetail | null>(null)
+  const [fuseMode, setFuseMode]       = useState(false)
   const [fuseSelection, setFuseSelection] = useState<string[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [equipSlotChoice, setEquipSlotChoice] = useState(false)
@@ -49,7 +56,7 @@ export default function InventoryPage() {
     fetch("/api/game/inventory")
       .then((r) => r.json())
       .then((data) => {
-        setRelics(data.relics)
+        setRelics(data.relics ?? [])
         setEquipSlots(data.equippedSlots)
         setTotalBonus(data.totalBonus)
         setLoading(false)
@@ -59,7 +66,11 @@ export default function InventoryPage() {
 
   useEffect(() => { load() }, [load])
 
-  const filtered = filter === "ALL" ? relics : relics.filter((r) => r.rarity === filter)
+  const filtered     = filter === "ALL" ? relics : relics.filter((r) => r.rarity === filter)
+  const readyCount   = relics.filter((r) => r.analyzeReady).length
+  const rarityTotals = (["MYTHIQUE", "LEGENDAIRE", "EPIQUE", "RARE", "COMMUNE"] as Rarity[]).map((r) => ({
+    rarity: r, count: relics.filter((rel) => rel.rarity === r).length,
+  })).filter((r) => r.count > 0)
 
   function handleSelect(relic: RelicData) {
     if (fuseMode) {
@@ -75,86 +86,78 @@ export default function InventoryPage() {
     }
   }
 
+  async function handleAnalyzeAll() {
+    if (readyCount === 0) return
+    setActionLoading("analyzeAll")
+    const res  = await fetch("/api/game/inventory", { method: "POST" })
+    const data = await res.json()
+    setActionLoading(null)
+    if (!res.ok) { toast.error(data.error); return }
+    const r = data.rewards
+    toast.success(`${data.count} relique${data.count > 1 ? "s" : ""} analysée${data.count > 1 ? "s" : ""} !`, {
+      description: `+${r.eclatsTemporels} éclats · +${r.chronite} chronite${r.essencesHistoriques ? ` · +${r.essencesHistoriques} essences` : ""}${r.fragmentsAnomalie ? ` · +${r.fragmentsAnomalie} fragments` : ""}`,
+      duration: 6000,
+    })
+    load()
+  }
+
   async function handleFuse() {
-    if (fuseSelection.length !== 3) {
-      toast.error("Sélectionnez exactement 3 reliques pour fusionner")
-      return
-    }
+    if (fuseSelection.length !== 3) { toast.error("Sélectionnez exactement 3 reliques"); return }
     setActionLoading("fuse")
     const res  = await fetch("/api/game/fuse", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ relicIds: fuseSelection }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ relicIds: fuseSelection }),
     })
     const data = await res.json()
     setActionLoading(null)
-    if (!res.ok) {
-      toast.error(data.error)
-      return
-    }
-    toast.success("Fusion réussie !", { description: `Nouvelle relique : ${data.minute} — ${data.rarity}` })
-    setFuseMode(false)
-    setFuseSelection([])
+    if (!res.ok) { toast.error(data.error); return }
+    toast.success("Fusion réussie !", { description: `${data.minute} — ${data.rarity}` })
+    setFuseMode(false); setFuseSelection([])
     load()
   }
 
   async function handleAnalyze(relic: RelicDetail) {
     setActionLoading(`analyze-${relic.id}`)
     const res  = await fetch(`/api/game/relic/${relic.id}`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ action: "analyze" }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "analyze" }),
     })
     const data = await res.json()
     setActionLoading(null)
-    if (!res.ok) {
-      toast.error(data.error)
-      return
-    }
+    if (!res.ok) { toast.error(data.error); return }
     const r = data.rewards
     toast.success("Analyse temporelle !", {
-      description: `+${r.eclatsTemporels} éclats, +${r.chronite} chronite${r.essencesHistoriques ? `, +${r.essencesHistoriques} essences` : ""}${r.fragmentsAnomalie ? `, +${r.fragmentsAnomalie} fragments` : ""}`,
+      description: `+${r.eclatsTemporels} éclats, +${r.chronite} chronite${r.essencesHistoriques ? `, +${r.essencesHistoriques} essences` : ""}`,
     })
     load()
   }
 
   async function handleEquip(relic: RelicDetail, slot: number) {
-    setActionLoading(`equip-${relic.id}`)
-    setEquipSlotChoice(false)
+    setActionLoading(`equip-${relic.id}`); setEquipSlotChoice(false)
     const res  = await fetch(`/api/game/relic/${relic.id}`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ action: "equip", slot }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "equip", slot }),
     })
     const data = await res.json()
     setActionLoading(null)
-    if (!res.ok) {
-      toast.error(data.error)
-      return
-    }
-    toast.success(`Relique équipée dans le slot ${slot} !`, {
+    if (!res.ok) { toast.error(data.error); return }
+    toast.success(`Slot ${slot} équipé !`, {
       description: `+${Math.round(data.bonus.xpBonus * 100)}% XP · +${Math.round(data.bonus.resourceBonus * 100)}% ressources`,
     })
-    setSelected(null)
-    load()
+    setSelected(null); load()
   }
 
   async function handleUnequip(relic: RelicDetail) {
     setActionLoading(`unequip-${relic.id}`)
     const res  = await fetch(`/api/game/relic/${relic.id}`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify({ action: "unequip" }),
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "unequip" }),
     })
     const data = await res.json()
     setActionLoading(null)
-    if (!res.ok) {
-      toast.error(data.error)
-      return
-    }
+    if (!res.ok) { toast.error(data.error); return }
     toast.success("Relique déséquipée.")
-    setSelected(null)
-    load()
+    setSelected(null); load()
   }
 
   if (loading) {
@@ -167,23 +170,79 @@ export default function InventoryPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-black text-gradient-violet mb-1">Inventaire</h1>
-          <p className="text-[#94a3b8]">{relics.length} relique{relics.length > 1 ? "s" : ""} collectée{relics.length > 1 ? "s" : ""}</p>
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
+          <div>
+            <h1 className="font-display text-3xl font-black text-gradient-violet mb-1">Inventaire</h1>
+            <p className="text-[#94a3b8] text-sm">{relics.length} relique{relics.length > 1 ? "s" : ""} collectée{relics.length > 1 ? "s" : ""}</p>
+          </div>
+
+          {/* Actions principales */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Tout analyser */}
+            <button
+              onClick={handleAnalyzeAll}
+              disabled={readyCount === 0 || actionLoading === "analyzeAll"}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all",
+                readyCount > 0
+                  ? "bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 hover:border-amber-500/60"
+                  : "bg-[#1e1e42] border border-[#2a2a5a] text-[#475569] cursor-not-allowed"
+              )}
+            >
+              {actionLoading === "analyzeAll" ? (
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                  <ScanLine className="h-4 w-4" />
+                </motion.div>
+              ) : (
+                <ScanLine className="h-4 w-4" />
+              )}
+              Tout analyser
+              {readyCount > 0 && (
+                <span className="bg-amber-500 text-black text-xs font-black rounded-full w-5 h-5 flex items-center justify-center">
+                  {readyCount}
+                </span>
+              )}
+            </button>
+
+            {/* Fusionner */}
+            <button
+              onClick={() => { setFuseMode(!fuseMode); setFuseSelection([]) }}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm border transition-all",
+                fuseMode
+                  ? "bg-red-500/20 border-red-500/40 text-red-300 hover:bg-red-500/30"
+                  : "bg-violet-500/10 border-violet-500/30 text-violet-300 hover:bg-violet-500/20"
+              )}
+            >
+              <Sparkles className="h-4 w-4" />
+              {fuseMode ? "Annuler" : "Fusionner"}
+            </button>
+          </div>
         </div>
-        <Button
-          variant={fuseMode ? "destructive" : "outline"}
-          onClick={() => { setFuseMode(!fuseMode); setFuseSelection([]) }}
-          className="flex items-center gap-2"
-        >
-          <Sparkles className="h-4 w-4" />
-          {fuseMode ? "Annuler la fusion" : "Fusionner des reliques"}
-        </Button>
+
+        {/* Stats par rareté */}
+        <div className="flex flex-wrap gap-2">
+          {rarityTotals.map(({ rarity, count }) => (
+            <div key={rarity} className="flex items-center gap-1.5 bg-[#0e0e24] border border-[#1e1e42] rounded-lg px-3 py-1.5 text-xs">
+              <span>{RARITY_CONFIG[rarity].emoji}</span>
+              <span className="text-[#94a3b8]">{RARITY_CONFIG[rarity].label}</span>
+              <span className="font-bold text-white">{count}</span>
+            </div>
+          ))}
+          {readyCount > 0 && (
+            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-1.5 text-xs text-amber-300">
+              <FlaskConical className="h-3.5 w-3.5" />
+              <span className="font-bold">{readyCount}</span>
+              <span>prête{readyCount > 1 ? "s" : ""} à analyser</span>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Slots d'équipement */}
+      {/* ── Slots d'équipement ──────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -236,62 +295,78 @@ export default function InventoryPage() {
         </p>
       </motion.div>
 
-      {/* Mode fusion */}
+      {/* ── Mode fusion ────────────────────────────────────────────────────── */}
       <AnimatePresence>
         {fuseMode && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="glass rounded-2xl p-4 mb-6 border border-violet-500/30 flex items-center gap-4 flex-wrap"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden mb-4"
           >
-            <Sparkles className="h-5 w-5 text-violet-400 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-[#e2e8f0]">
-                Sélectionnez 3 reliques de même rareté ({fuseSelection.length}/3)
-              </p>
-              <p className="text-xs text-[#94a3b8]">
-                3 reliques identiques → relique de rareté supérieure garantie !
-              </p>
+            <div className="glass rounded-2xl p-4 border border-violet-500/30 flex items-center gap-4 flex-wrap">
+              <Layers className="h-5 w-5 text-violet-400 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-[#e2e8f0]">
+                  Sélectionnez 3 reliques de même rareté ({fuseSelection.length}/3)
+                </p>
+                <p className="text-xs text-[#94a3b8]">3 reliques identiques → relique de rareté supérieure</p>
+              </div>
+              <Button
+                size="sm"
+                disabled={fuseSelection.length !== 3 || actionLoading === "fuse"}
+                loading={actionLoading === "fuse"}
+                onClick={handleFuse}
+                className="flex items-center gap-2"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Fusionner !
+              </Button>
             </div>
-            <Button
-              size="sm"
-              disabled={fuseSelection.length !== 3 || actionLoading === "fuse"}
-              loading={actionLoading === "fuse"}
-              onClick={handleFuse}
-              className="flex items-center gap-2"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              Fusionner !
-            </Button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Filtres */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      {/* ── Filtres ─────────────────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-2 mb-5">
         <button
           onClick={() => setFilter("ALL")}
-          className={cn("px-3 py-1.5 rounded-full text-xs font-semibold transition-all", filter === "ALL" ? "bg-violet-500/30 text-violet-300 border border-violet-500/40" : "bg-[#1e1e42] text-[#94a3b8]")}
+          className={cn(
+            "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+            filter === "ALL"
+              ? "bg-violet-500/30 text-violet-300 border border-violet-500/40"
+              : "bg-[#1e1e42] text-[#94a3b8] hover:text-[#e2e8f0]"
+          )}
         >
           Tout ({relics.length})
         </button>
         {(["MYTHIQUE", "LEGENDAIRE", "EPIQUE", "RARE", "COMMUNE"] as Rarity[]).map((r) => {
           const count = relics.filter((rel) => rel.rarity === r).length
           if (count === 0) return null
+          const ready = relics.filter((rel) => rel.rarity === r && rel.analyzeReady).length
           return (
             <button
               key={r}
               onClick={() => setFilter(r)}
-              className={cn("px-3 py-1.5 rounded-full text-xs font-semibold transition-all", filter === r ? "bg-violet-500/30 text-violet-300 border border-violet-500/40" : "bg-[#1e1e42] text-[#94a3b8]")}
+              className={cn(
+                "relative px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                filter === r
+                  ? "bg-violet-500/30 text-violet-300 border border-violet-500/40"
+                  : "bg-[#1e1e42] text-[#94a3b8] hover:text-[#e2e8f0]"
+              )}
             >
               {RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label} ({count})
+              {ready > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-black text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center">
+                  {ready}
+                </span>
+              )}
             </button>
           )
         })}
       </div>
 
-      {/* Grille de reliques */}
+      {/* ── Grille de reliques ──────────────────────────────────────────────── */}
       {filtered.length === 0 ? (
         <div className="card-cosmic p-12 text-center">
           <Package className="h-16 w-16 text-[#1e1e42] mx-auto mb-4" />
@@ -307,7 +382,6 @@ export default function InventoryPage() {
                 selected={fuseMode ? fuseSelection.includes(relic.id) : selected?.id === relic.id}
                 index={i}
               />
-              {/* Indicateurs */}
               <div className="absolute top-1 right-1 flex gap-1">
                 {relic.equippedSlot && (
                   <div className="bg-violet-500/80 rounded-full p-0.5" title={`Slot ${relic.equippedSlot}`}>
@@ -315,7 +389,7 @@ export default function InventoryPage() {
                   </div>
                 )}
                 {relic.analyzeReady && (
-                  <div className="bg-amber-500/80 rounded-full p-0.5" title="Analyse disponible">
+                  <div className="bg-amber-500/80 rounded-full p-0.5 animate-pulse" title="Analyse disponible">
                     <FlaskConical className="h-3 w-3 text-white" />
                   </div>
                 )}
@@ -325,7 +399,7 @@ export default function InventoryPage() {
         </div>
       )}
 
-      {/* Panel de détail */}
+      {/* ── Panel de détail ─────────────────────────────────────────────────── */}
       <AnimatePresence>
         {selected && !fuseMode && (
           <motion.div
@@ -336,7 +410,7 @@ export default function InventoryPage() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-[#e2e8f0]">Relique</h3>
-              <button onClick={() => setSelected(null)} className="text-[#475569] hover:text-[#e2e8f0]">
+              <button onClick={() => setSelected(null)} className="text-[#475569] hover:text-[#e2e8f0] transition-colors">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -346,22 +420,27 @@ export default function InventoryPage() {
                 {selected.minute}
               </div>
               <RarityBadge rarity={selected.rarity} size="lg" animated />
-              <div className="text-emerald-400 font-bold mt-2">+{formatXP(selected.xpGained)}</div>
+              <div className="text-emerald-400 font-bold mt-2">+{formatXP(selected.xpGained)} XP</div>
               {selected.equippedSlot && (
                 <div className="inline-flex items-center gap-1 bg-violet-500/20 rounded-full px-2 py-0.5 text-xs text-violet-300 mt-2">
                   <Shield className="h-3 w-3" /> Slot {selected.equippedSlot}
+                </div>
+              )}
+              {selected.isFused && (
+                <div className="inline-flex items-center gap-1 bg-violet-500/10 rounded-full px-2 py-0.5 text-xs text-violet-400 mt-2 ml-1">
+                  <Sparkles className="h-3 w-3" /> Fusionnée
                 </div>
               )}
             </div>
 
             {/* Événement historique */}
             {selected.historicalEvent && (
-              <div className="bg-[#0e0e24] rounded-xl p-4 mb-4">
+              <div className="bg-[#0e0e24] rounded-xl p-4 mb-4 border border-amber-500/10">
                 <div className="flex items-center gap-2 mb-2">
-                  <BookOpen className="h-4 w-4 text-amber-400" />
-                  <span className="text-sm font-bold text-amber-300">{selected.historicalEvent.title}</span>
+                  <BookOpen className="h-4 w-4 text-amber-400 shrink-0" />
+                  <span className="text-sm font-bold text-amber-300 leading-tight">{selected.historicalEvent.title}</span>
                 </div>
-                <p className="text-xs text-amber-400 mb-2">{selected.historicalEvent.year}</p>
+                <p className="text-xs text-amber-400/70 mb-2">{selected.historicalEvent.year}</p>
                 <p className="text-xs text-[#94a3b8] leading-relaxed">{selected.historicalEvent.description}</p>
                 {selected.historicalEvent.curiosity && (
                   <p className="text-xs text-[#475569] mt-2 italic">💡 {selected.historicalEvent.curiosity}</p>
@@ -369,15 +448,8 @@ export default function InventoryPage() {
               </div>
             )}
 
-            {selected.isFused && (
-              <div className="flex items-center gap-2 text-xs text-violet-400 bg-violet-500/10 rounded-lg p-2 mb-4">
-                <Sparkles className="h-3.5 w-3.5" /> Relique fusionnée
-              </div>
-            )}
-
             {/* Actions */}
             <div className="space-y-2">
-              {/* Analyser */}
               <Button
                 className="w-full flex items-center justify-center gap-2"
                 size="sm"
@@ -387,10 +459,9 @@ export default function InventoryPage() {
                 onClick={() => handleAnalyze(selected)}
               >
                 <FlaskConical className="h-4 w-4" />
-                {selected.analyzeReady ? "Analyser (ressources)" : "Analyse en cooldown"}
+                {selected.analyzeReady ? "Analyser" : "Cooldown actif"}
               </Button>
 
-              {/* Équiper / Déséquiper */}
               {selected.equippedSlot ? (
                 <Button
                   className="w-full flex items-center justify-center gap-2"
@@ -451,15 +522,25 @@ export default function InventoryPage() {
                 </div>
               )}
 
-              {/* Bonus info */}
-              <div className="bg-[#0e0e24] rounded-lg p-3 text-xs">
+              {/* Bonus passif */}
+              <div className="bg-[#0e0e24] rounded-lg p-3 text-xs border border-[#1e1e42]">
                 <div className="flex items-center gap-1 text-[#94a3b8] mb-2 font-semibold">
                   <Zap className="h-3 w-3 text-amber-400" />
-                  Bonus passif si équipée :
+                  Bonus passif si équipée
                 </div>
                 <div className="flex gap-3">
-                  <span className="text-violet-300">+{Math.round((selected.rarity === "COMMUNE" ? 0.01 : selected.rarity === "RARE" ? 0.03 : selected.rarity === "EPIQUE" ? 0.06 : selected.rarity === "LEGENDAIRE" ? 0.12 : 0.25) * 100)}% XP</span>
-                  <span className="text-amber-300">+{Math.round((selected.rarity === "COMMUNE" ? 0.01 : selected.rarity === "RARE" ? 0.02 : selected.rarity === "EPIQUE" ? 0.04 : selected.rarity === "LEGENDAIRE" ? 0.08 : 0.15) * 100)}% Ressources</span>
+                  <span className="text-violet-300">
+                    +{Math.round(
+                      (selected.rarity === "COMMUNE" ? 0.01 : selected.rarity === "RARE" ? 0.03
+                      : selected.rarity === "EPIQUE" ? 0.06 : selected.rarity === "LEGENDAIRE" ? 0.12 : 0.25) * 100
+                    )}% XP
+                  </span>
+                  <span className="text-amber-300">
+                    +{Math.round(
+                      (selected.rarity === "COMMUNE" ? 0.01 : selected.rarity === "RARE" ? 0.02
+                      : selected.rarity === "EPIQUE" ? 0.04 : selected.rarity === "LEGENDAIRE" ? 0.08 : 0.15) * 100
+                    )}% Ressources
+                  </span>
                 </div>
               </div>
             </div>

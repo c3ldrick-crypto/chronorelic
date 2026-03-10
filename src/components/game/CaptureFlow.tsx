@@ -777,6 +777,7 @@ export function CaptureFlow({
         setStep(1)
         setPhase("idle")
         setIsSubmitting(false)
+        setWindow(null)
         setTimingZone(null)
         return
       }

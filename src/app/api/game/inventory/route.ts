@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { EQUIP_BONUSES } from "@/lib/game/constants"
+import { EQUIP_BONUSES, ANALYZE_REWARDS, ANALYZE_COOLDOWN_MS } from "@/lib/game/constants"
 
 export async function GET() {
   try {
@@ -55,6 +55,61 @@ export async function GET() {
     )
 
     return NextResponse.json({ relics: relicsWithExtras, equippedSlots: slots, totalBonus })
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error("[inventory/route] ERROR:", msg)
+    return NextResponse.json(
+      { error: `Erreur serveur: ${msg}`, relics: [], equippedSlots: [{ slot: 1, relic: null, bonus: null }, { slot: 2, relic: null, bonus: null }, { slot: 3, relic: null, bonus: null }], totalBonus: { xpBonus: 0, resourceBonus: 0 } },
+      { status: 500 }
+    )
+  }
+}
+
+// POST — batch analyze all ready relics
+export async function POST(_req: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 })
+
+    const userId = session.user.id
+
+    const allRelics = await prisma.relic.findMany({
+      where:  { userId },
+      select: { id: true, rarity: true, lastAnalyzedAt: true },
+    })
+
+    const readyRelics = allRelics.filter((r) =>
+      !r.lastAnalyzedAt || Date.now() - r.lastAnalyzedAt.getTime() >= ANALYZE_COOLDOWN_MS
+    )
+
+    if (readyRelics.length === 0) {
+      return NextResponse.json({ error: "Aucune relique prête à analyser." }, { status: 400 })
+    }
+
+    const totals = { eclatsTemporels: 0, chronite: 0, essencesHistoriques: 0, fragmentsAnomalie: 0 }
+    for (const r of readyRelics) {
+      const rw = ANALYZE_REWARDS[r.rarity as keyof typeof ANALYZE_REWARDS]
+      totals.eclatsTemporels     += rw.eclatsTemporels
+      totals.chronite            += rw.chronite
+      totals.essencesHistoriques += rw.essencesHistoriques
+      totals.fragmentsAnomalie   += rw.fragmentsAnomalie
+    }
+
+    const now = new Date()
+    await prisma.$transaction([
+      ...readyRelics.map((r) => prisma.relic.update({ where: { id: r.id }, data: { lastAnalyzedAt: now } })),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          eclatsTemporels:     { increment: totals.eclatsTemporels     },
+          chronite:            { increment: totals.chronite            },
+          essencesHistoriques: { increment: totals.essencesHistoriques },
+          fragmentsAnomalie:   { increment: totals.fragmentsAnomalie   },
+        },
+      }),
+    ])
+
+    return NextResponse.json({ success: true, count: readyRelics.length, rewards: totals })
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
     console.error("[inventory/route] ERROR:", msg)

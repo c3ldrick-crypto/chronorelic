@@ -174,19 +174,20 @@ export async function POST(req: NextRequest) {
       const windowsKey = REDIS_KEYS.timeWindows(userId)
       const windowSet  = await cache.get<import("@/lib/game/windows").TimeWindowSet>(windowsKey)
       if (!windowSet) {
-        return NextResponse.json({ error: "Les fenêtres temporelles ont expiré. Rechargez la page." }, { status: 400 })
-      }
-      if (windowSet.usedWindowId !== null) {
+        // TTL expired — fall back to current minute gracefully instead of blocking
+        minute = clientMinute ?? formatMinute()
+      } else if (windowSet.usedWindowId !== null) {
         return NextResponse.json({ error: "Une fenêtre a déjà été utilisée dans cette session." }, { status: 409 })
+      } else {
+        const win = windowSet.windows.find(w => w.id === windowId)
+        if (win) {
+          minute = win.minute
+          windowSet.usedWindowId = windowId
+          const remaining = Math.max(0, Math.floor((windowSet.generatedAt + 300000 - Date.now()) / 1000))
+          await cache.set(windowsKey, windowSet, remaining || 1)
+        }
+        // Unknown window ID — fall back to current minute silently
       }
-      const win = windowSet.windows.find(w => w.id === windowId)
-      if (!win) {
-        return NextResponse.json({ error: "Fenêtre temporelle invalide." }, { status: 400 })
-      }
-      minute = win.minute
-      windowSet.usedWindowId = windowId
-      const remaining = Math.max(0, Math.floor((windowSet.generatedAt + 300000 - Date.now()) / 1000))
-      await cache.set(windowsKey, windowSet, remaining || 1)
     }
 
     // Uniqueness check
@@ -360,19 +361,54 @@ export async function POST(req: NextRequest) {
                               : stakeTier === "RITUEL"         ? 0   : 0
 
     // Timing zone bonuses from anchor mini-game
+    // ÉPIQUE/LÉGENDAIRE zones guarantee minimum RARE (no COMMUNE possible)
+    // Base bonuses intentionally low — talent investment is required to leverage anchoring fully
+    const timingGuaranteesRare = body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE"
     const timingRareBonus =
-      body.timingZone === "RARE" || body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE" ? 10 : 0
+      body.timingZone === "RARE" || body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE" ? 5 : 0
     const timingEpiqueBonus =
-      body.timingZone === "EPIQUE" ? 15 : body.timingZone === "LEGENDAIRE" ? 10 : 0
+      body.timingZone === "EPIQUE" ? 8 : body.timingZone === "LEGENDAIRE" ? 5 : 0
     const timingLegBonus =
-      body.timingZone === "LEGENDAIRE" ? 25 : 0
+      body.timingZone === "LEGENDAIRE" ? 10 : 0
+
+    // ── Anchoring talent bonuses (applied on top of base timing bonuses) ───────
+    const ancragePrevisLevel    = (talents["ancrage_precis"]       ?? 0) as number
+    const ancrageTraqueurLevel  = (talents["ancrage_traqueur"]     ?? 0) as number
+    const resonanceOracLevel    = (talents["resonance_oraculaire"] ?? 0) as number
+    const memoireAncrageLevel   = (talents["memoire_ancrage"]      ?? 0) as number
+
+    let talentAncrageLegBonus  = 0
+    let talentAncrageEpBonus   = 0
+    let talentAncrageMythBonus = 0
+
+    // CHRONOMANCER — ancrage_precis : zone ÉPIQUE → +10% LÉGENDAIRE/niv ; zone LÉGENDAIRE → double le bonus LEG
+    if (ancragePrevisLevel > 0) {
+      if (body.timingZone === "EPIQUE")     talentAncrageLegBonus += 10 * ancragePrevisLevel
+      if (body.timingZone === "LEGENDAIRE") talentAncrageLegBonus += timingLegBonus * ancragePrevisLevel
+    }
+
+    // CHASSEUR — ancrage_traqueur : zone RARE+ → +5% ÉPIQUE/niv ; zone LÉGENDAIRE → +10% ÉPIQUE supplémentaire
+    if (ancrageTraqueurLevel > 0) {
+      if (body.timingZone === "RARE" || body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE") {
+        talentAncrageEpBonus += 5 * ancrageTraqueurLevel
+      }
+      if (body.timingZone === "LEGENDAIRE") {
+        talentAncrageEpBonus += 10 * ancrageTraqueurLevel
+      }
+    }
+
+    // ORACLE — resonance_oraculaire : zone ÉPIQUE → +5% LÉGENDAIRE/niv ; zone LÉGENDAIRE → +3% MYTHIQUE/niv
+    if (resonanceOracLevel > 0) {
+      if (body.timingZone === "EPIQUE")     talentAncrageLegBonus  += 5 * resonanceOracLevel
+      if (body.timingZone === "LEGENDAIRE") talentAncrageMythBonus += 3 * resonanceOracLevel
+    }
 
     // Rarity draw
     const rarity = drawRarity({
       characterClass:  charClass,
       boostActive,
       isBlessedMinute: blessed,
-      guaranteedRare:  guaranteedRareFlag || stakeGuaranteesRare,
+      guaranteedRare:  guaranteedRareFlag || stakeGuaranteesRare || timingGuaranteesRare,
       talentBonuses: {
         chanceRare:       (talents["radar_reliques"]      ?? 0) * 10
                         + (anomalyEffects.rareChanceBonus ?? 0)
@@ -380,18 +416,21 @@ export async function POST(req: NextRequest) {
                         + timingRareBonus,
         chanceEpique:     (talents["chance_epique"]       ?? 0) * 5
                         + stakeEpiqueBonus
-                        + timingEpiqueBonus,
+                        + timingEpiqueBonus
+                        + talentAncrageEpBonus,
         chanceLegendaire: (talents["oracle_legendaire"]   ?? 0) * 10
                         + (sanctBonuses.legendaireChancePct ?? 0)
                         + (anomalyEffects.legendaireChanceBonus ?? 0)
                         + (rerollBonusFlag ? 30 : 0)
                         + stakeLegBonus
-                        + timingLegBonus,
+                        + timingLegBonus
+                        + talentAncrageLegBonus,
         chanceMythique:   (talents["drop_mythique"]       ?? 0) * 0.5
                         + (talents["anomalie_pressentie"] ?? 0) * 1.0
                         + (talents["oracle_mythique"]     ?? 0) * 2.0
                         + (sanctBonuses.mythiqueChancePct ?? 0)
-                        + (anomalyEffects.mythiqueChanceBonus ?? 0),
+                        + (anomalyEffects.mythiqueChanceBonus ?? 0)
+                        + talentAncrageMythBonus,
       },
     })
 
@@ -418,6 +457,11 @@ export async function POST(req: NextRequest) {
 
     if (["EPIQUE", "LEGENDAIRE", "MYTHIQUE"].includes(rarity) && (talents["distorsion_supreme"] ?? 0) > 0) {
       xpGained = Math.floor(xpGained * (1 + (talents["distorsion_supreme"] as number) * 0.3))
+    }
+
+    // ARCHIVISTE — memoire_ancrage : +25%/niv XP si ancrage ÉPIQUE ou LÉGENDAIRE
+    if (memoireAncrageLevel > 0 && (body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE")) {
+      xpGained = Math.floor(xpGained * (1 + memoireAncrageLevel * 0.25))
     }
 
     const sanctXpMult  = 1 + (sanctBonuses.xpBonusPct ?? 0) / 100

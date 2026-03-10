@@ -129,7 +129,7 @@ export const STAKE_TIERS: Record<StakeTier, StakeConfig> = {
     successChanceBase: 0.52,
     deathRiskPct: 15,
     cost: { eclatsTemporels: 200, chronite: 50, chronoEssence: 5 },
-    minLevel: 5,
+    minLevel: 1,
   },
   RITUEL: {
     id: "RITUEL",
@@ -141,7 +141,7 @@ export const STAKE_TIERS: Record<StakeTier, StakeConfig> = {
     successChanceBase: 0.28,
     deathRiskPct: 45,
     cost: { eclatsTemporels: 600, chronite: 150, chronoEssence: 20 },
-    minLevel: 8,
+    minLevel: 1,
   },
 }
 

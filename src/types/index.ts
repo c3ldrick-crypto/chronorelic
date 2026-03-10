@@ -25,7 +25,7 @@ export const RARITY_CONFIG: Record<Rarity, RarityConfig> = {
   COMMUNE: {
     label: "Commune",
     chance: 48,
-    xp: 18,
+    xp: 4,
     color: "text-slate-400",
     glow: "#6b7280",
     emoji: "⚪",
@@ -33,7 +33,7 @@ export const RARITY_CONFIG: Record<Rarity, RarityConfig> = {
   RARE: {
     label: "Rare",
     chance: 32,
-    xp: 55,
+    xp: 11,
     color: "text-blue-400",
     glow: "#3b82f6",
     emoji: "🔵",
@@ -41,7 +41,7 @@ export const RARITY_CONFIG: Record<Rarity, RarityConfig> = {
   EPIQUE: {
     label: "Épique",
     chance: 14,
-    xp: 165,
+    xp: 33,
     color: "text-violet-400",
     glow: "#8b5cf6",
     emoji: "🟣",
@@ -49,7 +49,7 @@ export const RARITY_CONFIG: Record<Rarity, RarityConfig> = {
   LEGENDAIRE: {
     label: "Légendaire",
     chance: 5,
-    xp: 420,
+    xp: 84,
     color: "text-amber-400",
     glow: "#f59e0b",
     emoji: "🟡",
@@ -57,7 +57,7 @@ export const RARITY_CONFIG: Record<Rarity, RarityConfig> = {
   MYTHIQUE: {
     label: "Mythique",
     chance: 1,
-    xp: 1100,
+    xp: 220,
     color: "text-pink-400",
     glow: "#ec4899",
     emoji: "🔮",
@@ -376,6 +376,32 @@ export const TALENTS: TalentConfig[] = [
     label: "Œil de l'Éternité",
     description: "Aperçois la rareté approximative avant de confirmer la capture.",
     maxLevel: 1, cost: 3, icon: "🌌",
+  },
+
+  // ── TALENTS D'ANCRAGE — spécifiques par classe ───────────────────────────
+  {
+    id: "ancrage_precis", tree: "CHRONO", classes: ["CHRONOMANCER"],
+    label: "Ancrage Précis",
+    description: "Zone ÉPIQUE atteinte : +10% LÉGENDAIRE par niveau. Zone LÉGENDAIRE : double le bonus de rareté de l'ancrage.",
+    maxLevel: 2, cost: 3, icon: "🎯",
+  },
+  {
+    id: "memoire_ancrage", tree: "ARCHIVISTE", classes: ["ARCHIVISTE"],
+    label: "Mémoire de l'Ancrage",
+    description: "+25% XP par niveau sur les captures réalisées en zone d'ancrage ÉPIQUE ou LÉGENDAIRE.",
+    maxLevel: 2, cost: 2, icon: "📍",
+  },
+  {
+    id: "ancrage_traqueur", tree: "CHASSEUR", classes: ["CHASSEUR"],
+    label: "Ancrage Traqueur",
+    description: "Zone RARE ou supérieur : +5% ÉPIQUE par niveau. Zone LÉGENDAIRE : +10% ÉPIQUE supplémentaire.",
+    maxLevel: 2, cost: 2, icon: "🔱",
+  },
+  {
+    id: "resonance_oraculaire", tree: "ORACLE", classes: ["ORACLE"],
+    label: "Résonance Oraculaire",
+    description: "Zone ÉPIQUE atteinte : +5% LÉGENDAIRE par niveau. Zone LÉGENDAIRE : +3% MYTHIQUE par niveau.",
+    maxLevel: 2, cost: 3, icon: "🌊",
   },
 
   // ── CHRONOMANCIEN — AVANCÉS ──────────────────────────────────────────────

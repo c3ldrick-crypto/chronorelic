@@ -28,6 +28,7 @@ export async function GET() {
         chronite:            true,
         essencesHistoriques: true,
         fragmentsAnomalie:   true,
+        chronoEssence:       true,
         character: {
           select: {
             name:         true,
@@ -94,6 +95,7 @@ export async function GET() {
       chronite:            user.chronite,
       essencesHistoriques: user.essencesHistoriques,
       fragmentsAnomalie:   user.fragmentsAnomalie,
+      chronoEssence:       user.chronoEssence,
     },
   })
   } catch (err: unknown) {
