@@ -227,7 +227,7 @@ export default function RegisterPage() {
                             </div>
                             <p className="text-xs text-[#94a3b8] leading-relaxed">{config.description}</p>
                             <div className="flex flex-wrap gap-1 mt-2">
-                              {config.bonuses.slice(0, 2).map((b) => (
+                              {[].map((b: string) => (
                                 <span key={b} className="text-[10px] bg-[#1e1e42] text-[#475569] px-2 py-0.5 rounded-full">
                                   {b}
                                 </span>

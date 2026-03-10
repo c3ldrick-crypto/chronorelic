@@ -1,5 +1,3 @@
-import type { Resources } from "@/types"
-
 export type ExpeditionRoomType = "SAFE_CAPTURE" | "RISKY_CAPTURE" | "TREASURE" | "ANOMALY" | "BOSS"
 export type ExpeditionStatus = "active" | "completed" | "failed" | "abandoned"
 
@@ -8,7 +6,6 @@ export interface ExpeditionRoom {
   type: ExpeditionRoomType
   cleared: boolean
   relicObtained?: { relicId: string; rarity: string; minute: string; xpGained: number }
-  treasureAwarded?: Partial<Resources>
   anomalyId?: string
 }
 
@@ -19,7 +16,6 @@ export interface ActiveExpedition {
   currentRoomIndex: number
   rooms: ExpeditionRoom[]
   startedAt: number
-  resourcesSpent: Partial<Resources>
   rarityBonus: number
 }
 

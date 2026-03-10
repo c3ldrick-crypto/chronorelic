@@ -7,9 +7,8 @@ import { AnimatePresence, motion } from "framer-motion"
 import { signOut } from "next-auth/react"
 import { cn, formatShards } from "@/lib/utils"
 import {
-  Clock, Grid3X3, Package, Star, Castle, User, LayoutDashboard,
-  LogOut, Menu, X, Coins, Zap, Trophy, Hammer, ScrollText,
-  Link2, Cog, FlaskConical, BookOpen,
+  Clock, Grid3X3, Package, Hammer,
+  LogOut, Menu, X, Coins, Zap, LayoutDashboard,
 } from "lucide-react"
 
 interface NavbarProps {
@@ -23,22 +22,12 @@ interface NavbarProps {
   }
 }
 
-// Liens de navigation avec descriptions (title au survol)
+// Liens de navigation principaux
 const NAV_LINKS = [
-  { href: "/play",        label: "Capturer",    icon: Clock,        desc: "Capturez des reliques temporelles" },
-  { href: "/collection",  label: "Collection",  icon: Grid3X3,      desc: "Votre calendrier de reliques (365 jours)" },
-  { href: "/inventory",   label: "Inventaire",  icon: Package,      desc: "Gérez et analysez vos reliques" },
-  { href: "/sanctuaire",  label: "Sanctuaire",  icon: Castle,       desc: "Production passive de ressources" },
-  { href: "/atelier",     label: "Atelier",     icon: Hammer,       desc: "Crafting et voyage temporel" },
-  { href: "/machine",     label: "Machine",     icon: Cog,          desc: "Machine Temporelle — ères passées" },
-  { href: "/research",    label: "Recherche",   icon: FlaskConical, desc: "Arbres de recherche passifs" },
-
-  { href: "/chronolithes", label: "Chronolithes", icon: BookOpen,     desc: "Pierres-mémoires — histoires fragmentées du passé" },
-  { href: "/chaines",     label: "Chaînes",      icon: Link2,        desc: "Collections thématiques" },
-  { href: "/talents",     label: "Talents",     icon: Star,         desc: "Améliorez vos capacités de classe" },
-  { href: "/quetes",      label: "Quêtes",      icon: ScrollText,   desc: "Objectifs et récompenses quotidiens" },
-  { href: "/leaderboard", label: "Classement",  icon: Trophy,       desc: "Meilleurs Gardiens du Temps" },
-  { href: "/profile",     label: "Profil",      icon: User,         desc: "Vos statistiques et titre" },
+  { href: "/play",        label: "Capturer",     icon: Clock,    desc: "Capturez des reliques temporelles" },
+  { href: "/collection",  label: "Collection",   icon: Grid3X3,  desc: "Votre calendrier de reliques (365 jours) et Chronolithes" },
+  { href: "/inventory",   label: "Inventaire",   icon: Package,  desc: "Gérez et consultez vos reliques" },
+  { href: "/craft",       label: "Craft",        icon: Hammer,   desc: "Crafting temporel — bientôt disponible" },
 ]
 
 export function Navbar({ user }: NavbarProps) {

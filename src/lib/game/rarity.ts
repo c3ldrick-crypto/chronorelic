@@ -1,117 +1,84 @@
 import { Rarity, CharacterClass, CLASS_CONFIG, RARITY_CONFIG } from "@/types"
 
 // ─────────────────────────────────────────────
+// RARETÉ MAXIMUM PAR NIVEAU
+// Tous les 10 niveaux, une nouvelle rareté se débloque
+// ─────────────────────────────────────────────
+
+export function getMaxRarityForLevel(level: number): Rarity {
+  if (level >= 40) return "MYTHIQUE"
+  if (level >= 30) return "LEGENDAIRE"
+  if (level >= 20) return "EPIQUE"
+  if (level >= 10) return "RARE"
+  return "COMMUNE"
+}
+
+const RARITY_ORDER: Rarity[] = ["COMMUNE", "RARE", "EPIQUE", "LEGENDAIRE", "MYTHIQUE"]
+
+export function rarityIndex(rarity: Rarity): number {
+  return RARITY_ORDER.indexOf(rarity)
+}
+
+// ─────────────────────────────────────────────
 // MOTEUR DE RARETÉ
-// Système de tirage pondéré avec bonus de classe
+// Tirage pondéré avec gating par niveau
 // ─────────────────────────────────────────────
 
 interface RarityDrawOptions {
   characterClass?: CharacterClass
-  boostActive?: boolean     // Boost de rareté acheté
-  isBlessedMinute?: boolean // Minute personnelle
-  guaranteedRare?: boolean  // Chasseur Instinct de Chasse — guaranteed RARE+
-  comboMultiplier?: number  // Multiplicateur de combo
-  talentBonuses?: {
-    chanceRare?:       number  // % additionnel RARE (Chasseur: radar_reliques)
-    chanceEpique?:     number  // % additionnel ÉPIQUE
-    chanceLegendaire?: number  // % additionnel LÉGENDAIRE (Oracle)
-    chanceMythique?:   number  // % additionnel MYTHIQUE
-  }
+  boostActive?:    boolean
+  playerLevel?:    number
 }
 
 export function drawRarity(opts: RarityDrawOptions = {}): Rarity {
-  const {
-    characterClass,
-    boostActive = false,
-    isBlessedMinute = false,
-    guaranteedRare = false,
-    talentBonuses = {},
-  } = opts
+  const { characterClass, boostActive = false, playerLevel = 1 } = opts
 
-  // CHASSEUR Instinct de Chasse: guaranteed RARE+ — COMMUNE impossible
-  if (guaranteedRare) {
-    const chances: Record<Rarity, number> = {
-      COMMUNE:     0,
-      RARE:       52,
-      EPIQUE:     characterClass === "CHASSEUR" ? 32 : 28,
-      LEGENDAIRE: characterClass === "CHASSEUR" ? 13 : 15,
-      MYTHIQUE:    5,
-    }
-    if (talentBonuses.chanceEpique)     chances.EPIQUE     += talentBonuses.chanceEpique
-    if (talentBonuses.chanceLegendaire) chances.LEGENDAIRE += talentBonuses.chanceLegendaire
-    if (talentBonuses.chanceMythique)   chances.MYTHIQUE   += talentBonuses.chanceMythique
-    const total = Object.values(chances).reduce((a, b) => a + b, 0)
-    const roll  = Math.random() * total
-    let cumulative = 0
-    // Skip COMMUNE (chance=0), iterate RARE→MYTHIQUE
-    for (const [rarity, chance] of Object.entries(chances) as [Rarity, number][]) {
-      if (rarity === "COMMUNE") continue
-      cumulative += chance
-      if (roll < cumulative) return rarity
-    }
-    return "RARE" // safety fallback — never COMMUNE
-  }
+  const maxRarity  = getMaxRarityForLevel(playerLevel)
+  const maxIndex   = rarityIndex(maxRarity)
+  const available  = RARITY_ORDER.slice(0, maxIndex + 1)
 
-  // Probabilités de base — équilibrées pour rendre le jeu plus satisfaisant
-  let chances: Record<Rarity, number> = {
-    COMMUNE:    48,
-    RARE:       32,
-    EPIQUE:     14,
-    LEGENDAIRE:  5,
-    MYTHIQUE:    1,
+  // Probabilités de base
+  const base: Record<Rarity, number> = {
+    COMMUNE:    60,
+    RARE:       28,
+    EPIQUE:     9,
+    LEGENDAIRE: 2.5,
+    MYTHIQUE:   0.5,
   }
 
   // Bonus de classe
   if (characterClass) {
     if (characterClass === "ORACLE") {
-      chances.LEGENDAIRE *= 2
-      chances.MYTHIQUE   *= 2
+      base.LEGENDAIRE *= 2
+      base.MYTHIQUE   *= 2
     }
     if (characterClass === "CHASSEUR") {
-      chances.EPIQUE     *= 1.3
-      chances.LEGENDAIRE *= 1.3
+      base.EPIQUE     *= 1.3
+      base.LEGENDAIRE *= 1.3
     }
   }
 
-  // Boost actif (+50% rareté → réduction Commune)
+  // Boost actif (+50% rareté)
   if (boostActive) {
-    chances.COMMUNE    *= 0.6
-    chances.RARE       *= 1.2
-    chances.EPIQUE     *= 1.4
-    chances.LEGENDAIRE *= 1.5
-    chances.MYTHIQUE   *= 1.6
+    base.COMMUNE    *= 0.6
+    base.RARE       *= 1.2
+    base.EPIQUE     *= 1.4
+    base.LEGENDAIRE *= 1.5
+    base.MYTHIQUE   *= 1.6
   }
 
-  // Minute bénie (+200% — forte réduction du Commune)
-  if (isBlessedMinute) {
-    chances.COMMUNE    *= 0.3
-    chances.RARE       *= 1.5
-    chances.EPIQUE     *= 2.0
-    chances.LEGENDAIRE *= 2.0
-    chances.MYTHIQUE   *= 2.0
-  }
+  // Ne conserver que les raretés disponibles pour ce niveau
+  const filtered = available.map(r => ({ rarity: r, weight: base[r] }))
+  const total    = filtered.reduce((acc, f) => acc + f.weight, 0)
+  const roll     = Math.random() * total
 
-  // Bonus talents additifs
-  if (talentBonuses.chanceRare)       chances.RARE       += talentBonuses.chanceRare
-  if (talentBonuses.chanceEpique)     chances.EPIQUE     += talentBonuses.chanceEpique
-  if (talentBonuses.chanceLegendaire) chances.LEGENDAIRE += talentBonuses.chanceLegendaire
-  if (talentBonuses.chanceMythique)   chances.MYTHIQUE   += talentBonuses.chanceMythique
-
-  // Normaliser pour que le total = 100
-  const total = Object.values(chances).reduce((a, b) => a + b, 0)
-  const normalized = (Object.entries(chances) as [Rarity, number][]).map(
-    ([r, c]) => [r, (c / total) * 100] as [Rarity, number]
-  )
-
-  // Tirage aléatoire pondéré
-  const roll = Math.random() * 100
   let cumulative = 0
-  for (const [rarity, chance] of normalized) {
-    cumulative += chance
+  for (const { rarity, weight } of filtered) {
+    cumulative += weight
     if (roll <= cumulative) return rarity
   }
 
-  return "COMMUNE"
+  return available[0] // fallback to lowest available
 }
 
 // ─────────────────────────────────────────────
@@ -119,33 +86,14 @@ export function drawRarity(opts: RarityDrawOptions = {}): Rarity {
 // ─────────────────────────────────────────────
 
 interface XPOptions {
-  rarity: Rarity
-  characterClass?: CharacterClass
+  rarity:              Rarity
+  characterClass?:     CharacterClass
   hasHistoricalEvent?: boolean
-  comboCount?: number
-  isBlessedMinute?: boolean
-  talentDistorsion?:    number  // +10% XP/niveau (CHRONOMANCER)
-  talentErudit?:        number  // +50% XP events/niveau (ARCHIVISTE)
-  talentMemoireVive?:   number  // +20% XP RARE+/niveau (ARCHIVISTE)
-  talentEruditSupreme?: number  // ×2 XP ÉPIQUE+ (ARCHIVISTE)
-  talentFluxDivin?:     number  // +50% XP LÉGENDAIRE+/niveau (ORACLE)
-  jackpotRoll?: boolean         // Talent jackpot_xp (CHASSEUR)
+  comboCount?:         number
 }
 
 export function calculateXP(opts: XPOptions): number {
-  const {
-    rarity,
-    characterClass,
-    hasHistoricalEvent = false,
-    comboCount = 0,
-    isBlessedMinute = false,
-    talentDistorsion    = 0,
-    talentErudit        = 0,
-    talentMemoireVive   = 0,
-    talentEruditSupreme = 0,
-    talentFluxDivin     = 0,
-    jackpotRoll = false,
-  } = opts
+  const { rarity, characterClass, hasHistoricalEvent = false, comboCount = 0 } = opts
 
   let xp = RARITY_CONFIG[rarity].xp
 
@@ -155,15 +103,9 @@ export function calculateXP(opts: XPOptions): number {
     if (bonus) xp = Math.floor(xp * bonus)
   }
 
-  // Événement historique (+50% + talent Érudit)
+  // Événement historique (+50%)
   if (hasHistoricalEvent) {
-    const eventMultiplier = 1.5 + (talentErudit * 0.2)
-    xp = Math.floor(xp * eventMultiplier)
-  }
-
-  // Minute bénie (+200%)
-  if (isBlessedMinute) {
-    xp = Math.floor(xp * 3)
+    xp = Math.floor(xp * 1.5)
   }
 
   // Combo bonus (max +50%)
@@ -172,47 +114,11 @@ export function calculateXP(opts: XPOptions): number {
     xp = Math.floor(xp * (1 + comboBonus))
   }
 
-  // Talent Distorsion (+10%/niveau — CHRONOMANCIEN)
-  if (talentDistorsion > 0) {
-    xp = Math.floor(xp * (1 + talentDistorsion * 0.1))
-  }
-
-  // Talent Mémoire Vive (+20% RARE+ par niveau — ARCHIVISTE)
-  const isRarePlus = rarity !== "COMMUNE"
-  if (talentMemoireVive > 0 && isRarePlus) {
-    xp = Math.floor(xp * (1 + talentMemoireVive * 0.2))
-  }
-
-  // Talent Érudit Suprême (×2 ÉPIQUE+ — ARCHIVISTE)
-  const isEpicPlus = ["EPIQUE", "LEGENDAIRE", "MYTHIQUE"].includes(rarity)
-  if (talentEruditSupreme > 0 && isEpicPlus) {
-    xp = Math.floor(xp * 2)
-  }
-
-  // Talent Flux Divin (+50% LÉGENDAIRE+/niveau — ORACLE)
-  const isLegPlus = rarity === "LEGENDAIRE" || rarity === "MYTHIQUE"
-  if (talentFluxDivin > 0 && isLegPlus) {
-    xp = Math.floor(xp * (1 + talentFluxDivin * 0.5))
-  }
-
-  // Jackpot (×3 — CHASSEUR)
-  if (jackpotRoll) {
-    xp = Math.floor(xp * 3)
-  }
-
   return Math.max(xp, 1)
 }
 
 // ─────────────────────────────────────────────
-// DÉTECTION MINUTE BÉNIE
-// ─────────────────────────────────────────────
-
-export function isBlessedMinute(minute: string, blessedMinutes: string[]): boolean {
-  return blessedMinutes.includes(minute)
-}
-
-// ─────────────────────────────────────────────
-// DÉTECTION COLLECTION SECRÈTE
+// DÉTECTION MINUTE SECRÈTE
 // ─────────────────────────────────────────────
 
 export function isSecretMinute(minute: string): boolean {
@@ -221,10 +127,9 @@ export function isSecretMinute(minute: string): boolean {
 }
 
 // ─────────────────────────────────────────────
-// TIRAGE JACKPOT
+// DÉTECTION MINUTE BÉNIE (personnelle)
 // ─────────────────────────────────────────────
 
-export function rollJackpot(talentLevel: number): boolean {
-  const chance = talentLevel > 0 ? 0.05 * talentLevel : 0
-  return Math.random() < chance
+export function isBlessedMinute(_minute: string, _blessedMinutes: string[]): boolean {
+  return false // Simplified — no blessed minutes in v2
 }

@@ -1,4 +1,3 @@
-import type { Resources } from "@/types"
 
 export interface ChainDefinition {
   id: string
@@ -13,7 +12,7 @@ export interface ChainDefinition {
     eraMaxYear?: number
     count: number
   }
-  reward: Resources & { xp: number }
+  reward: { xp: number }
 }
 
 export const CHAIN_DEFINITIONS: ChainDefinition[] = [
@@ -24,7 +23,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🔬",
     loreText: "Chaque avancée de la science humaine a laissé une empreinte temporelle ineffaçable.",
     requirement: { type: "category", categories: ["Science"], count: 5 },
-    reward: { eclatsTemporels: 80, chronite: 20, essencesHistoriques: 15, fragmentsAnomalie: 5, xp: 200 },
+    reward: { xp: 200 },
   },
   {
     id: "chain_politique",
@@ -33,7 +32,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "⚖️",
     loreText: "Les décisions des puissants ont façonné le cours du temps pour toujours.",
     requirement: { type: "category", categories: ["Politique"], count: 8 },
-    reward: { eclatsTemporels: 120, chronite: 30, essencesHistoriques: 25, fragmentsAnomalie: 8, xp: 300 },
+    reward: { xp: 300 },
   },
   {
     id: "chain_culture",
@@ -42,7 +41,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🎭",
     loreText: "La culture est l'âme d'une civilisation, gravée à jamais dans le flux temporel.",
     requirement: { type: "category", categories: ["Culture"], count: 5 },
-    reward: { eclatsTemporels: 70, chronite: 15, essencesHistoriques: 30, fragmentsAnomalie: 5, xp: 180 },
+    reward: { xp: 180 },
   },
   {
     id: "chain_tragedies",
@@ -51,7 +50,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "💀",
     loreText: "Dans chaque catastrophe se cache une leçon que le temps tente de préserver.",
     requirement: { type: "category", categories: ["Tragédie"], count: 4 },
-    reward: { eclatsTemporels: 100, chronite: 40, essencesHistoriques: 20, fragmentsAnomalie: 15, xp: 250 },
+    reward: { xp: 250 },
   },
   {
     id: "chain_exploration",
@@ -60,7 +59,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🧭",
     loreText: "Chaque pas vers l'inconnu a ouvert une nouvelle brèche dans le tissu du temps.",
     requirement: { type: "category", categories: ["Exploration"], count: 5 },
-    reward: { eclatsTemporels: 90, chronite: 25, essencesHistoriques: 20, fragmentsAnomalie: 8, xp: 220 },
+    reward: { xp: 220 },
   },
   {
     id: "chain_technologie",
@@ -69,7 +68,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "⚙️",
     loreText: "L'ingéniosité humaine a transformé le monde à une vitesse que le temps peine à suivre.",
     requirement: { type: "category", categories: ["Technologie"], count: 6 },
-    reward: { eclatsTemporels: 110, chronite: 50, essencesHistoriques: 15, fragmentsAnomalie: 10, xp: 280 },
+    reward: { xp: 280 },
   },
   {
     id: "chain_art",
@@ -78,7 +77,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🎨",
     loreText: "L'art transcende le temps, et ceux qui le créent laissent une trace éternelle.",
     requirement: { type: "category", categories: ["Art"], count: 3 },
-    reward: { eclatsTemporels: 60, chronite: 10, essencesHistoriques: 40, fragmentsAnomalie: 5, xp: 150 },
+    reward: { xp: 150 },
   },
   {
     id: "chain_sport",
@@ -87,7 +86,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🏆",
     loreText: "Les records brisés et les victoires épiques résonnent à travers les époques.",
     requirement: { type: "category", categories: ["Sport"], count: 2 },
-    reward: { eclatsTemporels: 50, chronite: 15, essencesHistoriques: 10, fragmentsAnomalie: 5, xp: 120 },
+    reward: { xp: 120 },
   },
   {
     id: "chain_antiquite",
@@ -96,7 +95,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🏛️",
     loreText: "Les civilisations les plus anciennes murmurent encore dans le flux temporel.",
     requirement: { type: "era_range", eraMinYear: -3000, eraMaxYear: 500, count: 3 },
-    reward: { eclatsTemporels: 80, chronite: 20, essencesHistoriques: 35, fragmentsAnomalie: 8, xp: 200 },
+    reward: { xp: 200 },
   },
   {
     id: "chain_moderne",
@@ -105,7 +104,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "💡",
     loreText: "Les Lumières ont changé la façon dont l'humanité perçoit l'espace et le temps.",
     requirement: { type: "era_range", eraMinYear: 1701, eraMaxYear: 1850, count: 4 },
-    reward: { eclatsTemporels: 90, chronite: 25, essencesHistoriques: 25, fragmentsAnomalie: 6, xp: 230 },
+    reward: { xp: 230 },
   },
   {
     id: "chain_xxeme",
@@ -114,7 +113,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "🌍",
     loreText: "Le XXème siècle a vu l'humanité atteindre ses sommets et ses abysses les plus profonds.",
     requirement: { type: "era_range", eraMinYear: 1900, eraMaxYear: 1999, count: 10 },
-    reward: { eclatsTemporels: 200, chronite: 60, essencesHistoriques: 40, fragmentsAnomalie: 20, xp: 500 },
+    reward: { xp: 500 },
   },
   {
     id: "chain_multicat",
@@ -123,7 +122,7 @@ export const CHAIN_DEFINITIONS: ChainDefinition[] = [
     icon: "📚",
     loreText: "Le savoir et le pouvoir sont les deux faces d'une même pièce temporelle.",
     requirement: { type: "category", categories: ["Science", "Politique"], count: 6 },
-    reward: { eclatsTemporels: 150, chronite: 45, essencesHistoriques: 35, fragmentsAnomalie: 12, xp: 380 },
+    reward: { xp: 380 },
   },
 ]
 

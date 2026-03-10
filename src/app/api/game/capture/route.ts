@@ -2,23 +2,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma, type PrismaTx } from "@/lib/prisma"
 import { captureRateLimit, REDIS_KEYS, cache } from "@/lib/redis"
-import { drawRarity, calculateXP, isBlessedMinute, isSecretMinute, rollJackpot } from "@/lib/game/rarity"
-import { levelFromXP, talentPointsForLevel } from "@/lib/game/xp"
+import { drawRarity, calculateXP, isSecretMinute } from "@/lib/game/rarity"
+import { levelFromXP } from "@/lib/game/xp"
 import { getEventForMinute } from "@/lib/game/events"
 import { generateNarration } from "@/lib/ai/narrate"
-import { FREE_LIMITS, CharacterClass, RESOURCE_DROPS, RESOURCE_EVENT_BONUS, RISKY_CAPTURE } from "@/types"
+import { FREE_LIMITS, CharacterClass } from "@/types"
 import { formatMinute, formatCaptureDate } from "@/lib/utils"
-import { getTodayAnomalies, mergeAnomalyEffects } from "@/lib/game/anomalies"
-import { computeBonuses } from "@/lib/game/sanctuaire"
-import {
-  STAKE_TIERS,
-  type StakeTier,
-  computeSuccessChance,
-  rollDeath,
-  ESSENCE_BY_CATEGORY,
-  ESSENCE_BY_RARITY,
-} from "@/lib/game/essences"
-import { generateHeritageOptions } from "@/lib/game/heritage"
 import {
   CHRONOLITHE_STORIES,
   CHRONOLITHE_DROP_CHANCE,
@@ -26,8 +15,6 @@ import {
   getStoryById,
   type ChronolitheDropResult,
 } from "@/lib/game/chronolithe"
-
-type CaptureIntent = "RELIQUE" | "ESSENCE" | "HYBRIDE"
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,64 +33,23 @@ export async function POST(req: NextRequest) {
 
     // Parse body
     const body = await req.json().catch(() => ({})) as {
-      captureIntent?: string
-      stakeTier?: string
-      windowId?: string
-      mode?: string          // legacy SAFE/RISKY
-      preselectedMinute?: string  // from Machine Temporelle
-      timingZone?: string         // from anchor mini-game
-      minute?: string             // client-provided current minute (HH:mm)
+      minute?: string
     }
-
-    const captureIntent: CaptureIntent =
-      body.captureIntent === "ESSENCE" ? "ESSENCE"
-      : body.captureIntent === "HYBRIDE" ? "HYBRIDE"
-      : "RELIQUE"
-
-    // Map legacy RISKY mode to INVESTISSEMENT, otherwise use stakeTier
-    let stakeTier: StakeTier = "OBSERVATION"
-    if (body.mode === "RISKY") {
-      stakeTier = "INVESTISSEMENT"
-    } else if (body.stakeTier && body.stakeTier in STAKE_TIERS) {
-      stakeTier = body.stakeTier as StakeTier
-    }
-
-    const windowId           = typeof body.windowId === "string" ? body.windowId : undefined
-    const preselectedMinute  = typeof body.preselectedMinute === "string" ? body.preselectedMinute : undefined
 
     // Load user
     const user = await prisma.user.findUnique({
       where:  { id: userId },
       select: {
-        isPremium:           true,
-        eclatsTemporels:     true,
-        chronite:            true,
-        essencesHistoriques: true,
-        fragmentsAnomalie:   true,
-        chronoEssence:       true,
-        connaissanceTemp:    true,
+        isPremium:  true,
         character: {
           select: {
-            id:                 true,
-            class:              true,
-            level:              true,
-            xpTotal:            true,
-            blessedMinutes:     true,
-            deathCount:         true,
-            guaranteedRareNext: true,
-            rerollBonusNext:    true,
-            talents: { select: { talentId: true, level: true } },
+            id:      true,
+            class:   true,
+            level:   true,
+            xpTotal: true,
           },
         },
-        streakData:  { select: { comboCount: true, lastPlayedAt: true } },
-        sanctuaire:  {
-          select: {
-            extracteur: true, generateur: true, archives: true,
-            observatoire: true, forge: true, resonance: true,
-            laboratoire: true, nexus: true,
-          },
-        },
-        researchProgress: { select: { nodeId: true, level: true } },
+        streakData: { select: { comboCount: true, lastPlayedAt: true } },
       },
     })
 
@@ -111,52 +57,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Personnage introuvable." }, { status: 404 })
     }
 
-    const charLevel  = user.character.level
-    const charClass  = user.character.class as CharacterClass
-    const stake      = STAKE_TIERS[stakeTier]
-
-    // Check stake min level
-    if (charLevel < stake.minLevel) {
-      return NextResponse.json(
-        { error: `La mise "${stake.label}" se débloque au niveau ${stake.minLevel}.` },
-        { status: 403 }
-      )
-    }
-
-    // ── Daily anomalies ────────────────────────────────────────────────────────
-    const todayAnomalies = getTodayAnomalies()
-    const anomalyEffects = mergeAnomalyEffects(todayAnomalies)
-
-    // ── Sanctuaire bonuses ─────────────────────────────────────────────────────
-    const sanctModules = user.sanctuaire ? {
-      extracteur:   user.sanctuaire.extracteur,
-      generateur:   user.sanctuaire.generateur,
-      archives:     user.sanctuaire.archives,
-      observatoire: user.sanctuaire.observatoire,
-      forge:        user.sanctuaire.forge,
-      resonance:    user.sanctuaire.resonance,
-      laboratoire:  user.sanctuaire.laboratoire,
-      nexus:        user.sanctuaire.nexus,
-    } : {}
-    const sanctBonuses = computeBonuses(sanctModules)
-
-    // ── Research bonuses ───────────────────────────────────────────────────────
-    const researchMap = Object.fromEntries(
-      user.researchProgress.map((r: { nodeId: string; level: number }) => [r.nodeId, r.level])
-    )
-    const researchSuccessBonus = (researchMap["endurance_temporelle"] ?? 0) * 0.02 // +2%/level → max +14%
+    const charLevel = user.character.level
+    const charClass = user.character.class as CharacterClass
 
     // ── Daily capture limit (freemium) ─────────────────────────────────────────
     if (!user.isPremium) {
       const capturesKey  = REDIS_KEYS.captureCount(userId)
       const capturesUsed = (await cache.get<number>(capturesKey)) ?? 0
-      const talents      = Object.fromEntries(
-        user.character.talents.map((t: { talentId: string; level: number }) => [t.talentId, t.level])
-      )
       const classBonus   = charClass === "CHASSEUR" ? 5 : charClass === "CHRONOMANCER" ? 3 : 0
-      const sprintLevel  = (talents["sprint_temporel"] as number) ?? 0
-      const anomalyExtra = anomalyEffects.extraCaptures ?? 0
-      const maxCaptures  = FREE_LIMITS.capturesPerDay + classBonus + (sprintLevel * 2) + Math.max(0, anomalyExtra)
+      const maxCaptures  = FREE_LIMITS.capturesPerDay + classBonus
       if (capturesUsed >= maxCaptures) {
         return NextResponse.json(
           { error: "Limite de captures atteinte pour aujourd'hui. Revenez demain ou passez Premium !" },
@@ -169,33 +78,11 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Resolve target minute ──────────────────────────────────────────────────
-    // Prefer client-provided minute (avoids server locale/timezone mismatch)
     const clientMinute = typeof body.minute === "string" && /^\d{2}:\d{2}$/.test(body.minute)
       ? body.minute
       : undefined
-    let minute        = preselectedMinute ?? clientMinute ?? formatMinute()
+    const minute      = clientMinute ?? formatMinute()
     const captureDate = formatCaptureDate()
-
-    // Window validation
-    if (windowId && !preselectedMinute) {
-      const windowsKey = REDIS_KEYS.timeWindows(userId)
-      const windowSet  = await cache.get<import("@/lib/game/windows").TimeWindowSet>(windowsKey)
-      if (!windowSet) {
-        // TTL expired — fall back to current minute gracefully instead of blocking
-        minute = clientMinute ?? formatMinute()
-      } else if (windowSet.usedWindowId !== null) {
-        return NextResponse.json({ error: "Une fenêtre a déjà été utilisée dans cette session." }, { status: 409 })
-      } else {
-        const win = windowSet.windows.find(w => w.id === windowId)
-        if (win) {
-          minute = win.minute
-          windowSet.usedWindowId = windowId
-          const remaining = Math.max(0, Math.floor((windowSet.generatedAt + 300000 - Date.now()) / 1000))
-          await cache.set(windowsKey, windowSet, remaining || 1)
-        }
-        // Unknown window ID — fall back to current minute silently
-      }
-    }
 
     // Uniqueness check
     const existing = await prisma.relic.findUnique({
@@ -209,477 +96,75 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // ── Stake cost deduction (upfront — lost on failure) ──────────────────────
-    const stakeCost = stake.cost
-    if (stakeCost.eclatsTemporels > 0 || stakeCost.chronite || stakeCost.chronoEssence) {
-      const hasEclats     = user.eclatsTemporels >= (stakeCost.eclatsTemporels ?? 0)
-      const hasChronite   = user.chronite        >= (stakeCost.chronite ?? 0)
-      const hasChronoEss  = user.chronoEssence   >= (stakeCost.chronoEssence ?? 0)
-      if (!hasEclats || !hasChronite || !hasChronoEss) {
-        return NextResponse.json(
-          { error: `Ressources insuffisantes pour la mise "${stake.label}".` },
-          { status: 400 }
-        )
-      }
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          eclatsTemporels: { decrement: stakeCost.eclatsTemporels ?? 0 },
-          chronite:        { decrement: stakeCost.chronite ?? 0 },
-          chronoEssence:   { decrement: stakeCost.chronoEssence ?? 0 },
-        },
-      })
-    }
-
-    // ── Talents map ────────────────────────────────────────────────────────────
-    const talents = Object.fromEntries(
-      user.character.talents.map((t: { talentId: string; level: number }) => [t.talentId, t.level])
-    )
-
-    // ── Window energy bonus ────────────────────────────────────────────────────
-    // windowId presence implies medium energy; we use +5% for any window
-    const windowBonus = windowId ? 0.05 : 0
-
-    // ── Research death risk reduction ──────────────────────────────────────────
-    const deathReduction = (researchMap["instinct_survie"] ?? 0) * 10 // -10%/level, max -30%
-    const adjustedDeathPct = Math.max(0, stake.deathRiskPct - deathReduction)
-
-    // ── Success chance ─────────────────────────────────────────────────────────
-    const maitriseRisqueLevel = (talents["maitrise_risque"] as number) ?? 0
-    const talentSuccessBonus  = maitriseRisqueLevel * 0.05
-    const anomalyMod          = 1 - (anomalyEffects.failChanceAdd ?? 0)
-    const successChance       = computeSuccessChance(stake.successChanceBase, {
-      talentBonus:    talentSuccessBonus,
-      windowBonus,
-      researchBonus:  researchSuccessBonus,
-      anomalyMod,
-    })
-
-    const success = Math.random() < successChance
-
-    // ── FAILURE PATH ───────────────────────────────────────────────────────────
-    if (!success) {
-      // Consolation: Larme Temporelle
-      const failConsolationChance = 0.05 + (researchMap["resilience_echec"] ?? 0) * 0.08
-      const getsLarme = Math.random() < failConsolationChance
-
-      if (getsLarme) {
-        await prisma.user.update({
-          where: { id: userId },
-          data: { larmeTemporelle: { increment: 1 } },
-        })
-      }
-
-      // Death roll
-      const isDead = adjustedDeathPct > 0 && rollDeath(adjustedDeathPct, charLevel)
-
-      if (isDead) {
-        // Fetch existing heritage to avoid duplicate bonus offers
-        const existing_heritage = await prisma.heritageTalent.findUnique({
-          where: { userId },
-          select: { bonuses: true, totalDeaths: true },
-        })
-        const existingBonusIds = (existing_heritage?.bonuses as Array<{ id: string }> ?? []).map(b => b.id)
-        const options = generateHeritageOptions(charClass, charLevel, existingBonusIds)
-
-        const pendingDeathPayload = {
-          charClass,
-          charLevel,
-          generation: user.character.deathCount + 1,
-          options,
-          diedAt:     Date.now(),
-        }
-
-        // Store death state in DB (Redis-independent)
-        await prisma.character.update({
-          where: { id: user.character.id },
-          data: {
-            deathCount:      { increment: 1 },
-            pendingDeathData: pendingDeathPayload as object,
-          },
-        })
-
-        return NextResponse.json({
-          failed:         true,
-          stakeTier,
-          lostCost:       stakeCost,
-          consolation:    getsLarme ? { larmeTemporelle: 1 } : null,
-          deathPending:   true,
-          heritageOptions: options,
-          message:        "Le rituel vous a consumé. Votre personnage est mort, mais son héritage demeure.",
-        })
-      }
-
-      // Reset consecutive wins streak
-      await cache.del(REDIS_KEYS.consecutiveWins(userId))
-
-      return NextResponse.json({
-        failed:      true,
-        stakeTier,
-        lostCost:    stakeCost,
-        consolation: getsLarme ? { larmeTemporelle: 1 } : null,
-        message:     `Échec de capture en mode "${stake.label}". Les ressources investies ont été perdues.`,
-      })
-    }
-
-    // ── SUCCESS PATH ───────────────────────────────────────────────────────────
-
-    // Track consecutive wins (for furie_temporelle research)
-    const prevWins    = (await cache.get<number>(REDIS_KEYS.consecutiveWins(userId))) ?? 0
-    const newWins     = Math.min(prevWins + 1, 5)
-    const furieBonus  = (researchMap["furie_temporelle"] ?? 0) > 0
-      ? 1 + newWins * ((researchMap["furie_temporelle"] === 1 ? 5 : 12) / 100)
-      : 1
-    await cache.set(REDIS_KEYS.consecutiveWins(userId), newWins, 3600)
-
-    // Blessed + secret
-    const boostActive        = !!(await cache.get(REDIS_KEYS.boostActive(userId)))
-    const isOracle           = charClass === "ORACLE"
-    let blessed              = isBlessedMinute(minute, user.character.blessedMinutes)
-    const isSecret           = isSecretMinute(minute)
-    const isNewDay           = !user.streakData?.lastPlayedAt ||
+    const isNewDay = !user.streakData?.lastPlayedAt ||
       new Date(user.streakData.lastPlayedAt).toDateString() !== new Date().toDateString()
 
-    // Read ability flags from DB (Redis-independent)
-    const guaranteedRareFlag = !!user.character.guaranteedRareNext
-    const rerollBonusFlag    = !!user.character.rerollBonusNext
-
-    // Clear consumed flags immediately
-    if (guaranteedRareFlag || rerollBonusFlag) {
-      await prisma.character.update({
-        where: { id: user.character.id },
-        data: {
-          ...(guaranteedRareFlag ? { guaranteedRareNext: false } : {}),
-          ...(rerollBonusFlag    ? { rerollBonusNext:    false } : {}),
-        },
-      })
-    }
-
-    // Stake-based rarity guarantees — investing more = guaranteed better loot
-    // ENGAGEMENT/RITUEL guarantee RARE+; higher tiers boost EPIQUE+/LEGENDAIRE+
-    const stakeGuaranteesRare = stakeTier === "ENGAGEMENT" || stakeTier === "RITUEL"
-    const stakeEpiqueBonus    = stakeTier === "INVESTISSEMENT" ? 8
-                              : stakeTier === "ENGAGEMENT"     ? 20
-                              : stakeTier === "RITUEL"         ? 40 : 0
-    const stakeLegBonus       = stakeTier === "ENGAGEMENT"     ? 8
-                              : stakeTier === "RITUEL"         ? 20 : 0
-    const stakeRareBonus      = stakeTier === "INVESTISSEMENT" ? 15
-                              : stakeTier === "ENGAGEMENT"     ? 0   // already guaranteed
-                              : stakeTier === "RITUEL"         ? 0   : 0
-
-    // Timing zone bonuses from anchor mini-game
-    // ÉPIQUE/LÉGENDAIRE zones guarantee minimum RARE (no COMMUNE possible)
-    // Base bonuses intentionally low — talent investment is required to leverage anchoring fully
-    const timingGuaranteesRare = body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE"
-    const timingRareBonus =
-      body.timingZone === "RARE" || body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE" ? 5 : 0
-    const timingEpiqueBonus =
-      body.timingZone === "EPIQUE" ? 8 : body.timingZone === "LEGENDAIRE" ? 5 : 0
-    const timingLegBonus =
-      body.timingZone === "LEGENDAIRE" ? 10 : 0
-
-    // ── Anchoring talent bonuses (applied on top of base timing bonuses) ───────
-    const ancragePrevisLevel    = (talents["ancrage_precis"]       ?? 0) as number
-    const ancrageTraqueurLevel  = (talents["ancrage_traqueur"]     ?? 0) as number
-    const resonanceOracLevel    = (talents["resonance_oraculaire"] ?? 0) as number
-    const memoireAncrageLevel   = (talents["memoire_ancrage"]      ?? 0) as number
-
-    let talentAncrageLegBonus  = 0
-    let talentAncrageEpBonus   = 0
-    let talentAncrageMythBonus = 0
-
-    // CHRONOMANCER — ancrage_precis : zone ÉPIQUE → +10% LÉGENDAIRE/niv ; zone LÉGENDAIRE → double le bonus LEG
-    if (ancragePrevisLevel > 0) {
-      if (body.timingZone === "EPIQUE")     talentAncrageLegBonus += 10 * ancragePrevisLevel
-      if (body.timingZone === "LEGENDAIRE") talentAncrageLegBonus += timingLegBonus * ancragePrevisLevel
-    }
-
-    // CHASSEUR — ancrage_traqueur : zone RARE+ → +5% ÉPIQUE/niv ; zone LÉGENDAIRE → +10% ÉPIQUE supplémentaire
-    if (ancrageTraqueurLevel > 0) {
-      if (body.timingZone === "RARE" || body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE") {
-        talentAncrageEpBonus += 5 * ancrageTraqueurLevel
-      }
-      if (body.timingZone === "LEGENDAIRE") {
-        talentAncrageEpBonus += 10 * ancrageTraqueurLevel
-      }
-    }
-
-    // ORACLE — resonance_oraculaire : zone ÉPIQUE → +5% LÉGENDAIRE/niv ; zone LÉGENDAIRE → +3% MYTHIQUE/niv
-    if (resonanceOracLevel > 0) {
-      if (body.timingZone === "EPIQUE")     talentAncrageLegBonus  += 5 * resonanceOracLevel
-      if (body.timingZone === "LEGENDAIRE") talentAncrageMythBonus += 3 * resonanceOracLevel
-    }
-
-    // Rarity draw
+    // ── Rarity draw (level-gated) ─────────────────────────────────────────────
+    const boostActive = !!(await cache.get(REDIS_KEYS.boostActive(userId)))
     const rarity = drawRarity({
-      characterClass:  charClass,
+      characterClass: charClass,
       boostActive,
-      isBlessedMinute: blessed,
-      guaranteedRare:  guaranteedRareFlag || stakeGuaranteesRare || timingGuaranteesRare,
-      talentBonuses: {
-        chanceRare:       (talents["radar_reliques"]      ?? 0) * 10
-                        + (anomalyEffects.rareChanceBonus ?? 0)
-                        + stakeRareBonus
-                        + timingRareBonus,
-        chanceEpique:     (talents["chance_epique"]       ?? 0) * 5
-                        + stakeEpiqueBonus
-                        + timingEpiqueBonus
-                        + talentAncrageEpBonus,
-        chanceLegendaire: (talents["oracle_legendaire"]   ?? 0) * 10
-                        + (sanctBonuses.legendaireChancePct ?? 0)
-                        + (anomalyEffects.legendaireChanceBonus ?? 0)
-                        + (rerollBonusFlag ? 30 : 0)
-                        + stakeLegBonus
-                        + timingLegBonus
-                        + talentAncrageLegBonus,
-        chanceMythique:   (talents["drop_mythique"]       ?? 0) * 0.5
-                        + (talents["anomalie_pressentie"] ?? 0) * 1.0
-                        + (talents["oracle_mythique"]     ?? 0) * 2.0
-                        + (sanctBonuses.mythiqueChancePct ?? 0)
-                        + (anomalyEffects.mythiqueChanceBonus ?? 0)
-                        + talentAncrageMythBonus,
-      },
+      playerLevel:    charLevel,
     })
 
-    if (isOracle && (rarity === "LEGENDAIRE" || rarity === "MYTHIQUE")) blessed = true
-    if (rarity !== "COMMUNE" && (talents["benediction_temporelle"] ?? 0) > 0) blessed = true
-
-    const event   = getEventForMinute(minute)
-    const jackpot = rollJackpot(talents["jackpot_xp"] ?? 0)
+    const isSecret = isSecretMinute(minute)
+    const event    = getEventForMinute(minute)
 
     // ── XP ──────────────────────────────────────────────────────────────────
-    let xpGained = calculateXP({
+    const xpGained = calculateXP({
       rarity,
-      characterClass:      charClass,
-      hasHistoricalEvent:  !!event,
-      comboCount:          user.streakData?.comboCount ?? 0,
-      isBlessedMinute:     blessed,
-      talentDistorsion:    talents["distorsion"]         ?? 0,
-      talentErudit:        talents["bonus_xp_events"]    ?? 0,
-      talentMemoireVive:   talents["memoire_vive"]       ?? 0,
-      talentEruditSupreme: talents["erudit_supreme"]     ?? 0,
-      talentFluxDivin:     talents["flux_divin"]         ?? 0,
-      jackpotRoll:         jackpot,
+      characterClass:     charClass,
+      hasHistoricalEvent: !!event,
+      comboCount:         user.streakData?.comboCount ?? 0,
     })
 
-    if (["EPIQUE", "LEGENDAIRE", "MYTHIQUE"].includes(rarity) && (talents["distorsion_supreme"] ?? 0) > 0) {
-      xpGained = Math.floor(xpGained * (1 + (talents["distorsion_supreme"] as number) * 0.3))
-    }
-
-    // ARCHIVISTE — memoire_ancrage : +25%/niv XP si ancrage ÉPIQUE ou LÉGENDAIRE
-    if (memoireAncrageLevel > 0 && (body.timingZone === "EPIQUE" || body.timingZone === "LEGENDAIRE")) {
-      xpGained = Math.floor(xpGained * (1 + memoireAncrageLevel * 0.25))
-    }
-
-    const sanctXpMult  = 1 + (sanctBonuses.xpBonusPct ?? 0) / 100
-    const isRarePlus   = rarity !== "COMMUNE"
-    const anomalyId0   = todayAnomalies[0].id
-    const anomalyId1   = todayAnomalies[1].id
-    const isMemVive    = anomalyId0 === "memoire_vive" || anomalyId1 === "memoire_vive"
-    const anomalyXpMult = isMemVive
-      ? (isRarePlus ? (anomalyEffects.xpMultiplier ?? 1) : 1)
-      : (anomalyEffects.xpMultiplier ?? 1)
-
-    xpGained = Math.floor(xpGained * sanctXpMult * anomalyXpMult * furieBonus)
-
-    // ── Stake XP multiplier ──────────────────────────────────────────────────
-    xpGained = Math.floor(xpGained * stake.multiplier)
-
-    // ── Standard resource drops (RELIQUE + HYBRIDE) ───────────────────────────
-    const drops = { ...RESOURCE_DROPS[rarity] }
-    if (event) {
-      const evtMult = anomalyEffects.eventResourceMultiplier ?? 1
-      drops.eclatsTemporels     += Math.floor(RESOURCE_EVENT_BONUS.eclatsTemporels     * evtMult)
-      drops.chronite            += Math.floor(RESOURCE_EVENT_BONUS.chronite            * evtMult)
-      drops.essencesHistoriques += Math.floor(RESOURCE_EVENT_BONUS.essencesHistoriques * evtMult)
-    }
-
-    const anomalyResMult  = anomalyEffects.resourceMultiplier  ?? 1
-    const anomalyChroMult = anomalyEffects.chroniteMultiplier  ?? 1
-    drops.eclatsTemporels     = Math.floor(drops.eclatsTemporels     * anomalyResMult)
-    drops.chronite            = Math.floor(drops.chronite            * anomalyResMult * anomalyChroMult)
-    drops.essencesHistoriques = Math.floor(drops.essencesHistoriques * anomalyResMult)
-    drops.fragmentsAnomalie   = Math.floor(drops.fragmentsAnomalie   * anomalyResMult)
-      + (anomalyEffects.fragmentsPerCapture ?? 0)
-
-    const predateurElite = (talents["predateur_elite"] as number) ?? 0
-    if (predateurElite > 0) {
-      const predBonus = 1 + predateurElite * 0.1
-      drops.eclatsTemporels     = Math.floor(drops.eclatsTemporels     * predBonus)
-      drops.chronite            = Math.floor(drops.chronite            * predBonus)
-      drops.essencesHistoriques = Math.floor(drops.essencesHistoriques * predBonus)
-      drops.fragmentsAnomalie   = Math.floor(drops.fragmentsAnomalie   * predBonus)
-    }
-
-    const nexusProphetique = (talents["nexus_prophetique"] as number) ?? 0
-    if (rarity === "MYTHIQUE" && nexusProphetique > 0) {
-      drops.essencesHistoriques = Math.floor(drops.essencesHistoriques * (1 + nexusProphetique))
-      drops.fragmentsAnomalie   = Math.floor(drops.fragmentsAnomalie   * (1 + nexusProphetique))
-    }
-
-    // Apply stake multiplier to resource drops
-    drops.eclatsTemporels     = Math.floor(drops.eclatsTemporels     * stake.multiplier)
-    drops.chronite            = Math.floor(drops.chronite            * stake.multiplier)
-    drops.essencesHistoriques = Math.floor(drops.essencesHistoriques * stake.multiplier)
-    drops.fragmentsAnomalie   = Math.floor(drops.fragmentsAnomalie   * stake.multiplier)
-
-    // Legacy RISKY extra multiplier compatibility
-    if (body.mode === "RISKY") {
-      xpGained                  = Math.floor(xpGained * RISKY_CAPTURE.successBonus)
-      drops.eclatsTemporels     = Math.floor(drops.eclatsTemporels * RISKY_CAPTURE.successBonus)
-      drops.chronite            = Math.floor(drops.chronite * RISKY_CAPTURE.successBonus)
-      drops.essencesHistoriques = Math.floor(drops.essencesHistoriques * RISKY_CAPTURE.successBonus)
-      drops.fragmentsAnomalie   = Math.floor(drops.fragmentsAnomalie * RISKY_CAPTURE.successBonus)
-    }
-
-    // HYBRIDE mode: reduce standard drops by 30%
-    if (captureIntent === "HYBRIDE") {
-      drops.eclatsTemporels     = Math.floor(drops.eclatsTemporels     * 0.7)
-      drops.chronite            = Math.floor(drops.chronite            * 0.7)
-      drops.essencesHistoriques = Math.floor(drops.essencesHistoriques * 0.7)
-      drops.fragmentsAnomalie   = Math.floor(drops.fragmentsAnomalie   * 0.7)
-      xpGained                  = Math.floor(xpGained * 0.7)
-    }
-
-    // ── Essence drops (ESSENCE + HYBRIDE) ────────────────────────────────────
-    let essenceDrops: Record<string, number> = {}
-    if (captureIntent === "ESSENCE" || captureIntent === "HYBRIDE") {
-      const essYield     = ESSENCE_BY_RARITY[rarity] ?? ESSENCE_BY_RARITY["COMMUNE"]
-      const category     = event?.category?.toLowerCase() ?? "default"
-      const categoryDef  = ESSENCE_BY_CATEGORY[category] ?? ESSENCE_BY_CATEGORY["default"]
-
-      // Research essence yield bonus
-      const researchYieldBonus = 1 + ((researchMap["extraction_profonde"] ?? 0) * 0.1)
-      // Hybride reduces essence by 30%
-      const hybrideMult = captureIntent === "HYBRIDE" ? 0.7 : 1
-
-      const primaryQty   = Math.floor(essYield.primaryQty   * stake.multiplier * researchYieldBonus * hybrideMult)
-      const chronoQty    = Math.floor(essYield.chronoBase    * stake.multiplier * researchYieldBonus * hybrideMult)
-      const connaisQty   = Math.floor(essYield.connaissanceBase * stake.multiplier * researchYieldBonus * hybrideMult)
-
-      essenceDrops[categoryDef.primary] = primaryQty
-      essenceDrops["chronoEssence"]     = (essenceDrops["chronoEssence"] ?? 0) + chronoQty
-      essenceDrops["connaissanceTemp"]  = (essenceDrops["connaissanceTemp"] ?? 0) + connaisQty
-
-      // Bonus secondary essence drop
-      if (categoryDef.secondary) {
-        const distilBonus = (talents["distil_bonus"] as number > 0) ? 0.15 : 0
-        if (Math.random() < categoryDef.secondaryChance + distilBonus) {
-          essenceDrops[categoryDef.secondary] = 1
-        }
-      }
-
-      // Ancient era bonus (year < 1000 CE)
-      const eventYear = event?.year
-      if (eventYear && eventYear < 1000 && eventYear > 0) {
-        essenceDrops["residuAncestral"] = (essenceDrops["residuAncestral"] ?? 0) + 2
-      }
-
-      // fluxAnomique during anomaly
-      if (todayAnomalies.length > 0) {
-        if (Math.random() < 0.10) {
-          essenceDrops["fluxAnomique"] = (essenceDrops["fluxAnomique"] ?? 0) + 1
-        }
-      }
-    }
-
     // ── Level up ──────────────────────────────────────────────────────────────
-    const xpBefore    = user.character.xpTotal
-    const xpAfter     = xpBefore + xpGained
+    const xpBefore   = user.character.xpTotal
+    const xpAfter    = xpBefore + xpGained
     const levelBefore = levelFromXP(xpBefore)
     const levelAfter  = levelFromXP(xpAfter)
     const didLevelUp  = levelAfter > levelBefore
 
-    // ── AI narration (ESSENCE/HYBRIDE skip narration for speed) ───────────────
+    // ── AI narration (EPIQUE+ only) ────────────────────────────────────────────
     let narration: string | undefined
-    if (captureIntent === "RELIQUE" &&
-        (rarity === "EPIQUE" || rarity === "LEGENDAIRE" || rarity === "MYTHIQUE" || (event && rarity !== "COMMUNE"))) {
+    if (rarity === "EPIQUE" || rarity === "LEGENDAIRE" || rarity === "MYTHIQUE" || (event && rarity !== "COMMUNE")) {
       narration = await generateNarration({
         minute, rarity,
         characterClass:  charClass,
         event,
-        isBlessedMinute: blessed,
+        isBlessedMinute: false,
         isSecretMinute:  isSecret,
-        hasLoreEnrichi:  (talents["lore_enrichi"] ?? 0) > 0,
+        hasLoreEnrichi:  false,
       }).catch(() => undefined)
     }
 
     // ── DB Transaction ────────────────────────────────────────────────────────
-    const dbMode = captureIntent === "RELIQUE" ? (body.mode === "RISKY" ? "RISKY" : "SAFE")
-                  : captureIntent === "ESSENCE" ? "ESSENCE"
-                  : "HYBRIDE"
-
     const relic = await prisma.$transaction(async (tx: PrismaTx) => {
-      // Create relic only for RELIQUE / HYBRIDE
-      let newRelic: { id: string; capturedAt: Date; historicalEvent: { title: string; year: number | null; description: string; curiosity: string | null; category: string | null } | null } | null = null
       const historicalEventSelect = { title: true, year: true, description: true, curiosity: true, category: true }
-      if (captureIntent === "RELIQUE" || captureIntent === "HYBRIDE") {
-        newRelic = await tx.relic.create({
-          data: {
-            userId,
-            minute,
-            captureDate,
-            rarity,
-            xpGained,
-            eclatsGained:   drops.eclatsTemporels,
-            chroniteGained: drops.chronite,
-            captureMode:    dbMode as "SAFE" | "RISKY" | "ESSENCE" | "HYBRIDE",
-            historicalEventId: event
-              ? (await tx.historicalEvent.findFirst({ where: { minute }, select: { id: true } }))?.id
-              : undefined,
-          },
-          include: { historicalEvent: { select: historicalEventSelect } },
-        })
-      } else {
-        // ESSENCE mode: create a "ghost" relic to track the minute as captured
-        newRelic = await tx.relic.create({
-          data: {
-            userId,
-            minute,
-            captureDate,
-            rarity,
-            xpGained,
-            eclatsGained:   0,
-            chroniteGained: 0,
-            captureMode:    "ESSENCE",
-            historicalEventId: event
-              ? (await tx.historicalEvent.findFirst({ where: { minute }, select: { id: true } }))?.id
-              : undefined,
-          },
-          include: { historicalEvent: { select: historicalEventSelect } },
-        })
-      }
 
-      // Update character XP
+      const newRelic = await tx.relic.create({
+        data: {
+          userId,
+          minute,
+          captureDate,
+          rarity,
+          xpGained,
+          historicalEventId: event
+            ? (await tx.historicalEvent.findFirst({ where: { minute }, select: { id: true } }))?.id
+            : undefined,
+        },
+        include: { historicalEvent: { select: historicalEventSelect } },
+      })
+
+      // Update character XP + level
       await tx.character.update({
         where: { id: user.character!.id },
         data: {
-          xpTotal:      xpAfter,
-          xp:           xpAfter,
-          level:        levelAfter,
-          talentPoints: didLevelUp ? { increment: talentPointsForLevel(levelAfter) - talentPointsForLevel(levelBefore) } : undefined,
+          xpTotal: xpAfter,
+          xp:      xpAfter,
+          level:   levelAfter,
         },
       })
-
-      // Resource update (standard drops)
-      const resourceUpdate: Record<string, { increment: number }> = {}
-      if (captureIntent !== "ESSENCE") {
-        if (drops.eclatsTemporels     > 0) resourceUpdate["eclatsTemporels"]     = { increment: drops.eclatsTemporels }
-        if (drops.chronite            > 0) resourceUpdate["chronite"]            = { increment: drops.chronite }
-        if (drops.essencesHistoriques > 0) resourceUpdate["essencesHistoriques"] = { increment: drops.essencesHistoriques }
-        if (drops.fragmentsAnomalie   > 0) resourceUpdate["fragmentsAnomalie"]   = { increment: drops.fragmentsAnomalie }
-      }
-
-      // Essence drops
-      for (const [essType, qty] of Object.entries(essenceDrops)) {
-        if (qty > 0) {
-          resourceUpdate[essType] = { increment: qty }
-        }
-      }
-
-      if (Object.keys(resourceUpdate).length > 0) {
-        await tx.user.update({ where: { id: userId }, data: resourceUpdate })
-      }
 
       // Streak
       const lastPlay   = user.streakData?.lastPlayedAt
@@ -701,8 +186,8 @@ export async function POST(req: NextRequest) {
         data: {
           userId,
           action:   "CAPTURE",
-          resource: `relic:${newRelic?.id}`,
-          details:  { minute, rarity, xpGained, captureIntent, stakeTier, drops, essenceDrops },
+          resource: `relic:${newRelic.id}`,
+          details:  { minute, rarity, xpGained },
         },
       })
 
@@ -711,7 +196,7 @@ export async function POST(req: NextRequest) {
 
     // ── CHRONOLITHE drop check ────────────────────────────────────────────────
     let chronolitheSegment: ChronolitheDropResult | undefined
-    if (captureIntent === "RELIQUE" && Math.random() < CHRONOLITHE_DROP_CHANCE) {
+    if (Math.random() < CHRONOLITHE_DROP_CHANCE) {
       try {
         const [activeStories, allSeen] = await Promise.all([
           prisma.chronolitheProgress.findMany({
@@ -729,18 +214,15 @@ export async function POST(req: NextRequest) {
         let isNewStory = false
 
         if (activeStories.length < MAX_ACTIVE_STORIES) {
-          // Try to start a new story
           const unseenStories = CHRONOLITHE_STORIES.filter((s) => !seenIds.has(s.id))
           if (unseenStories.length > 0) {
             const pick = unseenStories[Math.floor(Math.random() * unseenStories.length)]
             targetStoryId = pick.id
             isNewStory    = true
           } else if (activeStories.length > 0) {
-            // All stories seen, advance a random active one
             const pick = activeStories[Math.floor(Math.random() * activeStories.length)]
             targetStoryId = pick.storyId
           } else {
-            // All 20 stories completed — restart the one completed longest ago
             const completed = allSeen.filter((s) => s.status === "COMPLETED")
             if (completed.length > 0) {
               const pick = completed[0]
@@ -753,19 +235,17 @@ export async function POST(req: NextRequest) {
             }
           }
         } else {
-          // 3 active stories — advance one with the fewest unlocked segments
           const sorted = [...activeStories].sort((a, b) => a.unlockedSegments - b.unlockedSegments)
           targetStoryId = sorted[0].storyId
         }
 
         if (targetStoryId) {
-          const story = getStoryById(targetStoryId)!
-          let progress = allSeen.find((s) => s.storyId === targetStoryId)
+          const story    = getStoryById(targetStoryId)!
+          const progress = allSeen.find((s) => s.storyId === targetStoryId)
 
           let newSegmentIndex: number
 
           if (!progress || isNewStory) {
-            // Create new progress at segment 1
             await prisma.chronolitheProgress.upsert({
               where:  { userId_storyId: { userId, storyId: targetStoryId } },
               create: { userId, storyId: targetStoryId, unlockedSegments: 1, status: "IN_PROGRESS" },
@@ -785,7 +265,7 @@ export async function POST(req: NextRequest) {
             })
           }
 
-          const segment   = story.segments[newSegmentIndex - 1]
+          const segment     = story.segments[newSegmentIndex - 1]
           const isCompleted = newSegmentIndex >= story.segments.length
           chronolitheSegment = {
             storyId:      story.id,
@@ -806,13 +286,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── Enigma completion check ────────────────────────────────────────────────
-    let completedEnigmas: Array<{ id: string; title: string; difficulty: string; reward: { xp: number; eclats: number; chronite?: number; essences?: number; label: string } }> = []
+    // ── Enigma completion check (XP only — no resource rewards) ───────────────
+    let completedEnigmas: Array<{ id: string; title: string; difficulty: string; reward: { xp: number; label: string } }> = []
     try {
       const { ENIGMAS } = await import("@/lib/game/enigmas")
       const matchingEnigmas = ENIGMAS.filter(e => e.targetMinute === minute)
       if (matchingEnigmas.length > 0) {
-        // Load existing claims for this user
         const existingClaims = await prisma.questClaim.findMany({
           where:  { userId, questId: { in: matchingEnigmas.map(e => `enigma_${e.id}`) } },
           select: { questId: true },
@@ -821,33 +300,24 @@ export async function POST(req: NextRequest) {
         const toResolve  = matchingEnigmas.filter(e => !claimedSet.has(`enigma_${e.id}`))
 
         for (const enigma of toResolve) {
-          // Claim + grant rewards
           await prisma.$transaction(async (tx) => {
             await tx.questClaim.create({ data: { userId, questId: `enigma_${enigma.id}` } })
-            const rewardUpdate: Record<string, { increment: number }> = {}
-            if (enigma.reward.eclats   > 0) rewardUpdate["eclatsTemporels"]     = { increment: enigma.reward.eclats }
-            if (enigma.reward.chronite && enigma.reward.chronite > 0) rewardUpdate["chronite"] = { increment: enigma.reward.chronite }
-            if (enigma.reward.essences && enigma.reward.essences > 0) rewardUpdate["essencesHistoriques"] = { increment: enigma.reward.essences }
-            if (Object.keys(rewardUpdate).length > 0) {
-              await tx.user.update({ where: { id: userId }, data: rewardUpdate })
+            if (enigma.reward.xp > 0) {
+              await tx.character.update({
+                where: { id: user.character!.id },
+                data:  { xpTotal: { increment: enigma.reward.xp }, xp: { increment: enigma.reward.xp } },
+              })
             }
-            await tx.character.update({
-              where: { id: user.character!.id },
-              data:  { xpTotal: { increment: enigma.reward.xp }, xp: { increment: enigma.reward.xp } },
-            })
             await tx.auditLog.create({
               data: { userId, action: "ENIGMA_SOLVED", resource: `enigma:${enigma.id}`, details: { enigmaId: enigma.id, minute } },
             })
           })
-          completedEnigmas.push({ id: enigma.id, title: enigma.title, difficulty: enigma.difficulty, reward: enigma.reward })
+          completedEnigmas.push({ id: enigma.id, title: enigma.title, difficulty: enigma.difficulty, reward: { xp: enigma.reward.xp, label: enigma.reward.label } })
         }
       }
-    } catch (enigmaErr) {
-      console.error("[capture] Enigma check failed:", enigmaErr)
-      // Non-blocking — capture still succeeds
-    }
+    } catch { /* non-blocking */ }
 
-    // Fire-and-forget chain completion check
+    // ── Chain completion check ─────────────────────────────────────────────────
     let newlyCompletedChains: Array<{ chainId: string; label: string }> = []
     try {
       const { computeChainProgress, CHAIN_DEFINITIONS } = await import("@/lib/game/chains")
@@ -872,33 +342,27 @@ export async function POST(req: NextRequest) {
     } catch { /* ignore */ }
 
     return NextResponse.json({
-      relicId:          relic?.id,
+      relicId:          relic.id,
       minute,
       rarity,
       xpGained,
       narration,
-      eventTitle:       relic?.historicalEvent?.title,
-      eventYear:        relic?.historicalEvent?.year,
-      eventDescription: relic?.historicalEvent?.description,
-      eventCuriosity:   relic?.historicalEvent?.curiosity,
-      eventCategory:    relic?.historicalEvent?.category,
-      isMythique:  rarity === "MYTHIQUE",
+      eventTitle:       relic.historicalEvent?.title,
+      eventYear:        relic.historicalEvent?.year,
+      eventDescription: relic.historicalEvent?.description,
+      eventCuriosity:   relic.historicalEvent?.curiosity,
+      eventCategory:    relic.historicalEvent?.category,
+      isMythique:       rarity === "MYTHIQUE",
       didLevelUp,
-      newLevel:    didLevelUp ? levelAfter : undefined,
-      jackpot,
-      captureIntent,
-      stakeTier,
-      drops:       captureIntent === "ESSENCE" ? {} : drops,
-      essenceDrops: captureIntent !== "RELIQUE" ? essenceDrops : {},
-      anomalies:         todayAnomalies.map((a) => ({ id: a.id, label: a.label, icon: a.icon })),
+      newLevel:         didLevelUp ? levelAfter : undefined,
       completedEnigmas,
       newlyCompletedChains,
       chronolitheSegment,
-      relic: relic ? {
+      relic: {
         id: relic.id, minute, rarity, xpGained,
         capturedAt: relic.capturedAt, isFused: false,
         historicalEvent: relic.historicalEvent,
-      } : null,
+      },
     })
   } catch (err) {
     console.error("[capture] Unhandled error:", err)

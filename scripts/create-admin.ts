@@ -3,7 +3,7 @@
  * Usage : node --import tsx/esm scripts/create-admin.ts
  */
 
-import { PrismaClient, Prisma } from "../src/generated/prisma/client"
+import { PrismaClient } from "../src/generated/prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import bcrypt from "bcryptjs"
 import * as dotenv from "dotenv"
@@ -13,7 +13,8 @@ import { resolve } from "path"
 dotenv.config({ path: resolve(process.cwd(), ".env.local") })
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
-const prisma  = new PrismaClient({ adapter } as Parameters<typeof PrismaClient>[0])
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const prisma  = new PrismaClient({ adapter } as any)
 
 async function main() {
   const email    = "admin@chronorelic.com"

@@ -3,7 +3,6 @@ import { auth } from "@/auth"
 import { prisma, type PrismaTx } from "@/lib/prisma"
 import { CHAIN_DEFINITIONS, computeChainProgress } from "@/lib/game/chains"
 import { levelFromXP } from "@/lib/game/xp"
-import type { Resources } from "@/types"
 
 export async function GET() {
   try {
@@ -99,21 +98,9 @@ export async function POST(req: NextRequest) {
       await tx.character.update({
         where: { id: character.id },
         data: {
-          xpTotal:      newXp,
-          xp:           newXp,
-          level:        newLevel,
-          talentPoints: didLevelUp ? { increment: newLevel - character.level } : undefined,
-        },
-      })
-
-      const r = chain.reward as Partial<Resources>
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          eclatsTemporels:     r.eclatsTemporels     ? { increment: r.eclatsTemporels }     : undefined,
-          chronite:            r.chronite            ? { increment: r.chronite }            : undefined,
-          essencesHistoriques: r.essencesHistoriques ? { increment: r.essencesHistoriques } : undefined,
-          fragmentsAnomalie:   r.fragmentsAnomalie   ? { increment: r.fragmentsAnomalie }   : undefined,
+          xpTotal: newXp,
+          xp:      newXp,
+          level:   newLevel,
         },
       })
 

@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { RARITY_CONFIG, type Resources } from "@/types"
+import { RARITY_CONFIG } from "@/types"
+
+type Resources = Record<string, number>
 import { CheckCircle, Circle, ChevronDown, ChevronUp, Gift } from "lucide-react"
 
 interface QuestProgress {

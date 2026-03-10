@@ -1,15 +1,12 @@
 import { MAX_LEVEL, LEVEL_MILESTONES } from "@/types"
 
-// XP requis pour atteindre un niveau (cumulatif)
-// Courbe progressive : plus raide aux niveaux élevés, paliers tous les 10 niveaux
+// XP total cumulatif pour atteindre un niveau
+// Courbe: xpForLevel(n) = floor(30 * (n-1)^1.5)
+// Level 10 ≈ 810 XP, Level 20 ≈ 2484, Level 30 ≈ 4680, Level 50 ≈ 10290
 export function xpForLevel(level: number): number {
   if (level <= 1) return 0
   const n = level - 1
-  // Courbe exponentielle avec accélération : lv1→10 rapide, lv10→30 moyen, lv30+ difficile
-  if (n <= 9)  return Math.floor(80 * Math.pow(n, 1.4))             // ~80 → ~500 XP
-  if (n <= 29) return Math.floor(120 * Math.pow(n, 1.6))            // ~700 → ~12k XP
-  if (n <= 59) return Math.floor(160 * Math.pow(n, 1.85))           // ~15k → ~200k XP
-  return Math.floor(200 * Math.pow(n, 2.1))                         // lv60+ : très difficile
+  return Math.floor(30 * Math.pow(n, 1.5))
 }
 
 // XP nécessaire pour passer du niveau `level` au `level+1`
@@ -40,11 +37,6 @@ export function levelProgress(xpTotal: number): { level: number; progress: numbe
   return { level, progress, current, needed }
 }
 
-// Points de talent gagnés : 1 par niveau + 1 bonus tous les 5 niveaux
-export function talentPointsForLevel(level: number): number {
-  return (level - 1) + Math.floor((level - 1) / 5)
-}
-
 // Titre selon le niveau (aligné avec LEVEL_MILESTONES)
 export function titleForLevel(level: number): string {
   const milestones = [...LEVEL_MILESTONES].reverse()
@@ -62,4 +54,9 @@ export function nextMilestone(level: number): { level: number; title: string; un
 // Vérifie si un niveau est un palier clé
 export function isMilestoneLevel(level: number): boolean {
   return LEVEL_MILESTONES.some(m => m.level === level)
+}
+
+// Toujours 1 point "de progression" par niveau (simplifié — no talent system)
+export function talentPointsForLevel(_level: number): number {
+  return 0
 }

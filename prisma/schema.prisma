@@ -1,4 +1,4 @@
-// Prisma Schema — ChronoRelic
+// Prisma Schema — ChronoRelic v2 (simplified)
 // Prisma v7 — provider: prisma-client
 
 generator client {
@@ -48,13 +48,6 @@ enum PurchaseType {
   SHARDS_LEGENDAIRE
 }
 
-enum CaptureMode {
-  SAFE    // Capture normale
-  RISKY   // Double mise — succès = ×2, échec = perte de ressources
-  ESSENCE // Extraction d'essences pures
-  HYBRIDE // Relique + Essences (efficacité réduite)
-}
-
 // ─────────────────────────────────────────────
 // USER
 // ─────────────────────────────────────────────
@@ -68,54 +61,25 @@ model User {
   role           Role      @default(FREE)
   isPremium      Boolean   @default(false)
   premiumAt      DateTime?
-  temporalShards      Int @default(0)
-
-  // Ressources de craft
-  eclatsTemporels     Int @default(0)
-  chronite            Int @default(0)
-  essencesHistoriques Int @default(0)
-  fragmentsAnomalie   Int @default(0)
-
-  // ── Essences Primaires ──
-  chronoEssence          Int @default(0)
-  connaissanceTemp       Int @default(0)
-  energieResiduelle      Int @default(0)
-  residuAncestral        Int @default(0)
-  fluxHistorique         Int @default(0)
-  // ── Essences Secondaires ──
-  eclatMemoire           Int @default(0)
-  cristalParadoxal       Int @default(0)
-  larmeTemporelle        Int @default(0)
-  fluxAnomique           Int @default(0)
-  // ── Essences Hybrides ──
-  quintessence           Int @default(0)
-  memoireVive            Int @default(0)
-  fluxStabilise          Int @default(0)
-  essenceHeritage        Int @default(0)
-  quintessenceAbsolue    Int @default(0)
+  temporalShards Int       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  character       Character?
-  relics          Relic[]
-  purchases       Purchase[]
-  streakData      StreakData?
-  sessions        UserSession[]
-  auditLogs       AuditLog[]
-  inventory       PlayerInventory[]
-  questClaims     QuestClaim[]
-  equippedRelics  EquippedRelic[]
-  sanctuaire      Sanctuaire?
-  heritageTalent       HeritageTalent?
-  researchProgress     ResearchProgress[]
+  character            Character?
+  relics               Relic[]
+  purchases            Purchase[]
+  streakData           StreakData?
+  sessions             UserSession[]
+  auditLogs            AuditLog[]
+  questClaims          QuestClaim[]
   chronolitheProgress  ChronolitheProgress[]
 
   @@index([email])
 }
 
 // ─────────────────────────────────────────────
-// SESSION (stateless JWT, stockage optionnel)
+// SESSION
 // ─────────────────────────────────────────────
 
 model UserSession {
@@ -137,43 +101,18 @@ model UserSession {
 // ─────────────────────────────────────────────
 
 model Character {
-  id             String         @id @default(cuid())
-  userId         String         @unique
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name           String
-  class          CharacterClass
-  level          Int            @default(1)
-  xp             Int            @default(0)
-  xpTotal        Int            @default(0)
-  talentPoints   Int            @default(0)
-  blessedMinutes String[]       @default([]) // ["14:37", "09:00"]
-  frozenMinutes  String[]       @default([]) // Chronomancien : gelées pour capture différée
-  deathCount          Int     @default(0)
-  generation          Int     @default(1)
-  guaranteedRareNext  Boolean @default(false)  // CHASSEUR: Instinct de Chasse flag
-  rerollBonusNext     Boolean @default(false)  // CHRONOMANCER: Relance Temporelle flag
-  abilityUsedDate       String  @default("")     // "YYYY-MM-DD" of last ability use day
-  abilityUsesLeft       Int     @default(-1)     // -1 = not initialized for today
-  activeExpeditionData  Json?                    // Active expedition state (replaces Redis)
-  expeditionCooldowns   Json    @default("{}")   // { [eraId]: expiryTimestamp (ms) }
-  pendingDeathData      Json?                    // Death pending — options for heritage choice
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  talents CharacterTalent[]
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  class     CharacterClass
+  level     Int            @default(1)
+  xp        Int            @default(0)
+  xpTotal   Int            @default(0)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 
   @@index([userId])
-}
-
-model CharacterTalent {
-  id          String    @id @default(cuid())
-  characterId String
-  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
-  talentId    String
-  level       Int       @default(1)
-  unlockedAt  DateTime  @default(now())
-
-  @@unique([characterId, talentId])
 }
 
 // ─────────────────────────────────────────────
@@ -181,63 +120,21 @@ model CharacterTalent {
 // ─────────────────────────────────────────────
 
 model Relic {
-  id                String           @id @default(cuid())
-  userId            String
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  minute            String           // "14:37"
-  captureDate       String           @default("") // "YYYY-MM-DD"
-  rarity            Rarity
-  xpGained          Int
-  eclatsGained      Int              @default(0)
-  chroniteGained    Int              @default(0)
-  captureMode       CaptureMode      @default(SAFE)
-  isFused           Boolean          @default(false)
-  fusedFromIds      String[]         @default([])
-  isTimeTraveled    Boolean          @default(false)
-  lastAnalyzedAt    DateTime?
+  id              String           @id @default(cuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  minute          String
+  captureDate     String           @default("")
+  rarity          Rarity
+  xpGained        Int
   historicalEventId String?
   historicalEvent   HistoricalEvent? @relation(fields: [historicalEventId], references: [id])
-  capturedAt        DateTime         @default(now())
-  equippedBy        EquippedRelic?
+  capturedAt      DateTime         @default(now())
 
-  // Une minute ne peut être capturée qu'une seule fois par joueur par jour
   @@unique([userId, captureDate, minute])
   @@index([userId])
   @@index([captureDate])
   @@index([rarity])
-}
-
-// ─────────────────────────────────────────────
-// RELIQUES ÉQUIPÉES (3 slots passifs)
-// ─────────────────────────────────────────────
-
-model EquippedRelic {
-  id      String @id @default(cuid())
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  relicId String @unique
-  relic   Relic  @relation(fields: [relicId], references: [id], onDelete: Cascade)
-  slot    Int    // 1, 2, 3
-
-  @@unique([userId, slot])
-  @@index([userId])
-}
-
-// ─────────────────────────────────────────────
-// INVENTAIRE JOUEUR (objets craftés)
-// ─────────────────────────────────────────────
-
-model PlayerInventory {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  itemId    String   // "pierre_resonance", "cle_ages", "artefact_chrono", "eclat_passe"
-  quantity  Int      @default(1)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, itemId])
-  @@index([userId])
 }
 
 // ─────────────────────────────────────────────
@@ -246,7 +143,7 @@ model PlayerInventory {
 
 model HistoricalEvent {
   id          String   @id @default(cuid())
-  minute      String   // "HH:mm" — minute du jour
+  minute      String
   year        Int?
   title       String
   description String
@@ -296,14 +193,14 @@ model Purchase {
 }
 
 // ─────────────────────────────────────────────
-// AUDIT LOG (Sécurité OWASP A09)
+// AUDIT LOG
 // ─────────────────────────────────────────────
 
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
-  action    String   // "CAPTURE", "LOGIN", "PURCHASE", "ADMIN_*"
+  action    String
   resource  String?
   details   Json?
   ip        String?
@@ -316,32 +213,7 @@ model AuditLog {
 }
 
 // ─────────────────────────────────────────────
-// SANCTUAIRE (base building OGame-inspired)
-// ─────────────────────────────────────────────
-
-model Sanctuaire {
-  id               String   @id @default(cuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lastHarvestedAt  DateTime @default(now())
-
-  // Module levels (0 = not built)
-  extracteur        Int @default(0)
-  generateur        Int @default(0)
-  archives          Int @default(0)
-  observatoire      Int @default(0)
-  forge             Int @default(0)
-  resonance         Int @default(0)
-  laboratoire       Int @default(0)
-  nexus             Int @default(0)
-  machineTemporelle Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ─────────────────────────────────────────────
-// QUÊTES PRINCIPALES
+// QUÊTES / CHAÎNES
 // ─────────────────────────────────────────────
 
 model QuestClaim {
@@ -356,35 +228,6 @@ model QuestClaim {
 }
 
 // ─────────────────────────────────────────────
-// HERITAGE (bonus transmis après mort du personnage)
-// ─────────────────────────────────────────────
-
-model HeritageTalent {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bonuses     Json     @default("[]") // [{ id, label, icon, effect }]
-  totalDeaths Int      @default(0)
-  updatedAt   DateTime @updatedAt
-}
-
-// ─────────────────────────────────────────────
-// RECHERCHE (arbre de recherche via Connaissance)
-// ─────────────────────────────────────────────
-
-model ResearchProgress {
-  id         String   @id @default(cuid())
-  userId     String
-  nodeId     String
-  level      Int      @default(0)
-  unlockedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, nodeId])
-  @@index([userId])
-}
-
-// ─────────────────────────────────────────────
 // CHRONOLITHES (histoires fragmentées du passé)
 // ─────────────────────────────────────────────
 
@@ -392,7 +235,7 @@ model ChronolitheProgress {
   id               String            @id @default(cuid())
   userId           String
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  storyId          String            // référence un ChronolitheStory.id dans chronolithe.ts
+  storyId          String
   unlockedSegments Int               @default(1)
   status           ChronolitheStatus @default(IN_PROGRESS)
   startedAt        DateTime          @default(now())
@@ -412,8 +255,8 @@ model BetaSubscriber {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  source    String   @default("landing") // "landing", "manual", "admin"
-  note      String?                      // note interne admin
+  source    String   @default("landing")
+  note      String?
   createdAt DateTime @default(now())
 
   @@index([createdAt])

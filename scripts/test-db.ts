@@ -5,23 +5,23 @@ import { resolve } from "path"
 
 dotenv.config({ path: resolve(process.cwd(), ".env.local") })
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
-const prisma  = new PrismaClient({ adapter } as Parameters<typeof PrismaClient>[0])
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const prisma  = new PrismaClient({ adapter } as any)
 
 async function test() {
   try {
     const user = await prisma.user.findFirst({
       select: {
-        id:                  true,
-        eclatsTemporels:     true,
-        chronite:            true,
-        essencesHistoriques: true,
-        fragmentsAnomalie:   true,
+        id:             true,
+        temporalShards: true,
+        isPremium:      true,
       },
     })
-    console.log("OK - colonnes ressources présentes:", JSON.stringify(user))
-  } catch (e: any) {
-    console.error("ERREUR:", e.message)
+    console.log("OK - user:", JSON.stringify(user))
+  } catch (e: unknown) {
+    console.error("ERREUR:", e instanceof Error ? e.message : String(e))
   }
   await prisma.$disconnect()
 }

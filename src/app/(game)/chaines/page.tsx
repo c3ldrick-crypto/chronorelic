@@ -171,15 +171,6 @@ export default function ChainesPage() {
                 <div className="text-xs text-[#475569] mb-2">Récompenses :</div>
                 <div className="flex flex-wrap gap-2">
                   <span className="text-xs font-bold text-amber-300">+{chain.reward.xp} XP</span>
-                  {(["eclatsTemporels", "chronite", "essencesHistoriques", "fragmentsAnomalie"] as const).map(key => {
-                    const val = chain.reward[key]
-                    if (!val) return null
-                    return (
-                      <span key={key} className="text-xs font-bold text-[#94a3b8]">
-                        {RESOURCE_ICONS[key]} +{val}
-                      </span>
-                    )
-                  })}
                 </div>
               </div>
 

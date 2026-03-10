@@ -1,41 +1,111 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { prisma, type PrismaTx } from "@/lib/prisma"
-import { MAIN_QUESTS, type QuestDefinition, type Rarity, type Resources } from "@/types"
+import { prisma } from "@/lib/prisma"
+import { type Rarity } from "@/types"
 import { levelFromXP } from "@/lib/game/xp"
 
 // Ordre des raretés pour comparaison
 const RARITY_ORDER: Rarity[] = ["COMMUNE", "RARE", "EPIQUE", "LEGENDAIRE", "MYTHIQUE"]
-function rarityGte(a: Rarity, min: Rarity): boolean {
-  return RARITY_ORDER.indexOf(a) >= RARITY_ORDER.indexOf(min)
+
+interface QuestDefinition {
+  id:        string
+  order:     number
+  title:     string
+  subtitle:  string
+  lore:      string
+  objective: { type: "capture" | "capture_rarity" | "reach_level"; count: number; rarityMin?: Rarity }
+  rewards:   { xp: number }
 }
 
-// Calcule la progression actuelle d'un objectif de quête
+const MAIN_QUESTS: QuestDefinition[] = [
+  {
+    id: "q1_first_capture", order: 1,
+    title: "Premier Écho", subtitle: "L'Éveil du Gardien",
+    lore: "Vous venez d'entendre l'appel du temps. Votre première relique vous attend.",
+    objective: { type: "capture", count: 1 },
+    rewards: { xp: 50 },
+  },
+  {
+    id: "q2_five_captures", order: 2,
+    title: "Collectionneur Naissant", subtitle: "Les Fondations",
+    lore: "Cinq instants capturés. Votre collection prend forme.",
+    objective: { type: "capture", count: 5 },
+    rewards: { xp: 100 },
+  },
+  {
+    id: "q3_first_rare", order: 3,
+    title: "Qualité Temporelle", subtitle: "Au-delà du Commun",
+    lore: "Une relique RARE brille d'un éclat différent dans votre collection.",
+    objective: { type: "capture_rarity", count: 1, rarityMin: "RARE" },
+    rewards: { xp: 200 },
+  },
+  {
+    id: "q4_level_10", order: 4,
+    title: "Gardien Confirmé", subtitle: "L'Éveil de la Rareté",
+    lore: "Niveau 10 atteint. Les reliques RARES vous sont désormais accessibles.",
+    objective: { type: "reach_level", count: 10 },
+    rewards: { xp: 300 },
+  },
+  {
+    id: "q5_twenty_captures", order: 5,
+    title: "Archiviste du Temps", subtitle: "La Grande Collection",
+    lore: "Vingt reliques. Votre bibliothèque temporelle impressionne.",
+    objective: { type: "capture", count: 20 },
+    rewards: { xp: 250 },
+  },
+  {
+    id: "q6_first_epic", order: 6,
+    title: "Gardien Épique", subtitle: "Le Seuil du Rare",
+    lore: "Une relique ÉPIQUE vibre entre vos mains. L'histoire vous choisit.",
+    objective: { type: "capture_rarity", count: 1, rarityMin: "EPIQUE" },
+    rewards: { xp: 500 },
+  },
+  {
+    id: "q7_level_20", order: 7,
+    title: "Maître Temporel", subtitle: "L'Éveil Épique",
+    lore: "Niveau 20. Les ÉPIQUES n'ont plus de secret pour vous.",
+    objective: { type: "reach_level", count: 20 },
+    rewards: { xp: 600 },
+  },
+  {
+    id: "q8_fifty_captures", order: 8,
+    title: "Historien Légendaire", subtitle: "L'Odyssée Temporelle",
+    lore: "Cinquante reliques. Vous êtes devenu un véritable gardien du temps.",
+    objective: { type: "capture", count: 50 },
+    rewards: { xp: 750 },
+  },
+  {
+    id: "q9_first_legendary", order: 9,
+    title: "Vision du Légendaire", subtitle: "L'Éclat des Âges",
+    lore: "Une relique LÉGENDAIRE. Peu de gardiens peuvent en dire autant.",
+    objective: { type: "capture_rarity", count: 1, rarityMin: "LEGENDAIRE" },
+    rewards: { xp: 1500 },
+  },
+  {
+    id: "q10_level_30", order: 10,
+    title: "Architecte des Âges", subtitle: "Le Palier Légendaire",
+    lore: "Niveau 30. Le temps lui-même vous respecte.",
+    objective: { type: "reach_level", count: 30 },
+    rewards: { xp: 1000 },
+  },
+]
+
 function computeProgress(
   quest: QuestDefinition,
-  stats: {
-    totalCaptures: number
-    riskyCaptures: number
-    characterLevel: number
-    rarityCountsGte: Record<Rarity, number>
-  }
+  stats: { totalCaptures: number; characterLevel: number; rarityCountsGte: Record<string, number> }
 ): { current: number; target: number; done: boolean } {
-  const { type, count, rarityMin } = quest.objective
-  const target = count
-
+  const target = quest.objective.count
   let current = 0
-  switch (type) {
+
+  switch (quest.objective.type) {
     case "capture":
       current = Math.min(stats.totalCaptures, target)
       break
     case "capture_rarity":
-      current = Math.min(stats.rarityCountsGte[rarityMin!] ?? 0, target)
+      current = Math.min(stats.rarityCountsGte[quest.objective.rarityMin ?? "COMMUNE"] ?? 0, target)
       break
     case "reach_level":
       current = Math.min(stats.characterLevel, target)
-      break
-    case "use_risky":
-      current = Math.min(stats.riskyCaptures, target)
       break
   }
 
@@ -48,13 +118,9 @@ export async function GET() {
 
   const userId = session.user.id
 
-  const [character, totalCaptures, riskyCaptures, claims, rareCounts] = await Promise.all([
-    prisma.character.findUnique({
-      where:  { userId },
-      select: { level: true, xpTotal: true },
-    }),
+  const [character, totalCaptures, claims, rareCounts] = await Promise.all([
+    prisma.character.findUnique({ where: { userId }, select: { level: true, xpTotal: true } }),
     prisma.relic.count({ where: { userId } }),
-    prisma.relic.count({ where: { userId, captureMode: "RISKY" } }),
     prisma.questClaim.findMany({ where: { userId }, select: { questId: true } }),
     Promise.all(
       (["RARE", "EPIQUE", "LEGENDAIRE", "MYTHIQUE"] as Rarity[]).map(async (r) => {
@@ -67,28 +133,15 @@ export async function GET() {
 
   if (!character) return NextResponse.json({ error: "Personnage introuvable" }, { status: 404 })
 
-  const characterLevel   = levelFromXP(character.xpTotal)
-  const claimedQuestIds  = new Set(claims.map((c: { questId: string }) => c.questId))
-  const rarityCountsGte  = Object.fromEntries(rareCounts) as Record<Rarity, number>
+  const characterLevel  = levelFromXP(character.xpTotal)
+  const claimedQuestIds = new Set(claims.map((c: { questId: string }) => c.questId))
+  const rarityCountsGte = Object.fromEntries(rareCounts) as Record<string, number>
+  const stats = { totalCaptures, characterLevel, rarityCountsGte }
 
-  const stats = { totalCaptures, riskyCaptures, characterLevel, rarityCountsGte }
-
-  // Construire la liste des quêtes avec progression
-  const quests = MAIN_QUESTS.map((quest, idx) => {
+  const quests = MAIN_QUESTS.map((quest) => {
     const claimed  = claimedQuestIds.has(quest.id)
     const progress = computeProgress(quest, stats)
-
-    // Toutes les quêtes sont accessibles simultanément (non bloquantes)
-    const available = !claimed
-
-    return {
-      ...quest,
-      progress: progress.current,
-      target:   progress.target,
-      done:     progress.done,
-      claimed,
-      available,
-    }
+    return { ...quest, progress: progress.current, target: progress.target, done: progress.done, claimed, available: !claimed }
   })
 
   return NextResponse.json({ quests, characterLevel })
@@ -104,17 +157,14 @@ export async function POST(req: NextRequest) {
   const quest = MAIN_QUESTS.find((q) => q.id === questId)
   if (!quest) return NextResponse.json({ error: "Quête introuvable" }, { status: 404 })
 
-  // Vérifier que la quête n'est pas déjà réclamée
   const alreadyClaimed = await prisma.questClaim.findUnique({
     where: { userId_questId: { userId, questId } },
   })
   if (alreadyClaimed) return NextResponse.json({ error: "Récompense déjà réclamée." }, { status: 409 })
 
-  // Récupérer les stats pour vérifier completion
-  const [character, totalCaptures, riskyCaptures, rareCounts] = await Promise.all([
-    prisma.character.findUnique({ where: { userId }, select: { id: true, xpTotal: true, level: true, talentPoints: true } }),
+  const [character, totalCaptures, rareCounts] = await Promise.all([
+    prisma.character.findUnique({ where: { userId }, select: { id: true, xpTotal: true, level: true } }),
     prisma.relic.count({ where: { userId } }),
-    prisma.relic.count({ where: { userId, captureMode: "RISKY" } }),
     Promise.all(
       (["RARE", "EPIQUE", "LEGENDAIRE", "MYTHIQUE"] as Rarity[]).map(async (r) => {
         const rarities = RARITY_ORDER.slice(RARITY_ORDER.indexOf(r)) as Rarity[]
@@ -123,12 +173,12 @@ export async function POST(req: NextRequest) {
       })
     ),
   ])
+
   if (!character) return NextResponse.json({ error: "Personnage introuvable" }, { status: 404 })
 
   const characterLevel  = levelFromXP(character.xpTotal)
-  const rarityCountsGte = Object.fromEntries(rareCounts) as Record<Rarity, number>
-  const stats = { totalCaptures, riskyCaptures, characterLevel, rarityCountsGte }
-  const progress = computeProgress(quest, stats)
+  const rarityCountsGte = Object.fromEntries(rareCounts) as Record<string, number>
+  const progress = computeProgress(quest, { totalCaptures, characterLevel, rarityCountsGte })
 
   if (!progress.done) {
     return NextResponse.json(
@@ -137,58 +187,16 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  // Distribuer les récompenses dans une transaction
-  await prisma.$transaction(async (tx: PrismaTx) => {
-    // Marquer comme réclamée
+  await prisma.$transaction(async (tx) => {
     await tx.questClaim.create({ data: { userId, questId } })
-
-    // XP
     if (quest.rewards.xp) {
+      const { levelFromXP: lfx } = await import("@/lib/game/xp")
       const newXp    = character.xpTotal + quest.rewards.xp
-      const newLevel = levelFromXP(newXp)
-      const didLevelUp = newLevel > character.level
+      const newLevel = lfx(newXp)
       await tx.character.update({
         where: { id: character.id },
-        data: {
-          xpTotal:      newXp,
-          xp:           newXp,
-          level:        newLevel,
-          talentPoints: didLevelUp ? { increment: newLevel - character.level } : undefined,
-        },
+        data:  { xpTotal: newXp, xp: newXp, level: newLevel },
       })
-    }
-
-    // Talent points supplémentaires
-    if (quest.rewards.talentPoints) {
-      await tx.character.update({
-        where: { id: character.id },
-        data:  { talentPoints: { increment: quest.rewards.talentPoints } },
-      })
-    }
-
-    // Ressources
-    if (quest.rewards.resources) {
-      const r = quest.rewards.resources as Partial<Resources>
-      await tx.user.update({
-        where: { id: userId },
-        data: {
-          eclatsTemporels:     r.eclatsTemporels     ? { increment: r.eclatsTemporels }     : undefined,
-          chronite:            r.chronite            ? { increment: r.chronite }            : undefined,
-          essencesHistoriques: r.essencesHistoriques ? { increment: r.essencesHistoriques } : undefined,
-          fragmentsAnomalie:   r.fragmentsAnomalie   ? { increment: r.fragmentsAnomalie }   : undefined,
-        },
-      })
-    }
-
-    // Items
-    if (quest.rewards.items) {
-      for (const item of quest.rewards.items) {
-        await tx.playerInventory.upsert({
-          where:  { userId_itemId: { userId, itemId: item.itemId } },
-          update: { quantity: { increment: item.quantity } },
-          create: { userId, itemId: item.itemId, quantity: item.quantity },
-        })
-      }
     }
   })
 

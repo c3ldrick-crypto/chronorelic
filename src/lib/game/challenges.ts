@@ -4,11 +4,7 @@
 // ─────────────────────────────────────────────
 
 export interface ChallengeReward {
-  eclatsTemporels?:     number
-  chronite?:            number
-  essencesHistoriques?: number
-  fragmentsAnomalie?:   number
-  talentPoints?:        number
+  xp?: number
 }
 
 export interface ChallengeDefinition {
@@ -31,36 +27,36 @@ const POOL: ChallengeDefinition[] = [
     id: "cap2", label: "Chasseur de Reliques",
     description: "Capturez 2 reliques aujourd'hui",
     icon: "⏳", difficulty: "easy", target: 2, type: "captures",
-    reward: { eclatsTemporels: 200 }, rewardLabel: "200 ✨ Éclats",
+    reward: { xp: 50 }, rewardLabel: "+50 XP",
     hint: "Page Capturer",
   },
   {
     id: "cap3", label: "Assidu du Temps",
     description: "Capturez 3 reliques aujourd'hui",
     icon: "📦", difficulty: "easy", target: 3, type: "captures",
-    reward: { eclatsTemporels: 300, chronite: 20 }, rewardLabel: "300 ✨ + 20 🔩",
+    reward: { xp: 80 }, rewardLabel: "+80 XP",
     hint: "Page Capturer",
   },
   {
     id: "morning", label: "Gardien Matinal",
     description: "Capturez une relique avant 10h00",
     icon: "🌅", difficulty: "easy", target: 1, type: "morning",
-    reward: { chronite: 80 }, rewardLabel: "80 🔩 Chronite",
+    reward: { xp: 60 }, rewardLabel: "+60 XP",
     hint: "Page Capturer — avant 10h",
   },
   {
-    id: "harvest", label: "Récolte du Sanctuaire",
-    description: "Récoltez les ressources de votre Sanctuaire",
-    icon: "🏛️", difficulty: "easy", target: 1, type: "harvest",
-    reward: { eclatsTemporels: 150, chronite: 40 }, rewardLabel: "150 ✨ + 40 🔩",
-    hint: "Page Sanctuaire → Récolter",
+    id: "harvest", label: "Veilleur du Passé",
+    description: "Capturez 1 relique aujourd'hui",
+    icon: "🏛️", difficulty: "easy", target: 1, type: "captures",
+    reward: { xp: 40 }, rewardLabel: "+40 XP",
+    hint: "Page Capturer",
   },
   {
     id: "analyze", label: "Archéologue",
-    description: "Analysez une relique dans l'Inventaire",
-    icon: "🔬", difficulty: "easy", target: 1, type: "analyze",
-    reward: { essencesHistoriques: 10 }, rewardLabel: "10 📜 Essences",
-    hint: "Page Inventaire → Analyser",
+    description: "Capturez une relique avec un événement historique",
+    icon: "🔬", difficulty: "easy", target: 1, type: "event",
+    reward: { xp: 50 }, rewardLabel: "+50 XP",
+    hint: "Page Capturer — certaines minutes ont des événements",
   },
 
   // ─── MOYEN ─────────────────────────────────────────────────────────────────
@@ -68,7 +64,7 @@ const POOL: ChallengeDefinition[] = [
     id: "rare1", label: "Qualité avant Quantité",
     description: "Obtenez 1 relique RARE ou supérieure",
     icon: "💎", difficulty: "medium", target: 1, type: "rarity",
-    reward: { talentPoints: 1 }, rewardLabel: "1 point de talent",
+    reward: { xp: 150 }, rewardLabel: "+150 XP",
     rarityTarget: "RARE",
     hint: "Page Capturer — la chance aide !",
   },
@@ -76,77 +72,56 @@ const POOL: ChallengeDefinition[] = [
     id: "epique1", label: "Chasseur d'Épiques",
     description: "Obtenez 1 relique ÉPIQUE ou supérieure",
     icon: "🟣", difficulty: "medium", target: 1, type: "rarity",
-    reward: { talentPoints: 1, eclatsTemporels: 200 }, rewardLabel: "1 talent + 200 ✨",
+    reward: { xp: 300 }, rewardLabel: "+300 XP",
     rarityTarget: "EPIQUE",
-    hint: "Page Capturer — modes risqués conseillés",
+    hint: "Page Capturer — niveaux élevés conseillés",
   },
   {
     id: "event2", label: "Témoin de l'Histoire",
     description: "Capturez 2 minutes liées à des événements historiques",
     icon: "📜", difficulty: "medium", target: 2, type: "event",
-    reward: { essencesHistoriques: 12 }, rewardLabel: "12 📜 Essences",
-    hint: "Regardez les Fenêtres Temporelles sur Capturer",
-  },
-  {
-    id: "risky1", label: "Prise de Risque",
-    description: "Réalisez 1 capture en Mode Risqué (niveau 10+)",
-    icon: "⚔️", difficulty: "medium", target: 1, type: "risky",
-    reward: { eclatsTemporels: 450 }, rewardLabel: "450 ✨ Éclats",
-    hint: "Page Capturer → activer Mode Risqué",
+    reward: { xp: 120 }, rewardLabel: "+120 XP",
+    hint: "Certaines minutes cachent des événements historiques",
   },
   {
     id: "cap5", label: "Marathon Temporel",
     description: "Capturez 5 reliques aujourd'hui",
     icon: "🔥", difficulty: "medium", target: 5, type: "captures",
-    reward: { eclatsTemporels: 300, essencesHistoriques: 5 }, rewardLabel: "300 ✨ + 5 📜",
+    reward: { xp: 200 }, rewardLabel: "+200 XP",
     hint: "Page Capturer — utilisez toutes vos charges",
   },
   {
     id: "rare3", label: "Collectionneur",
     description: "Obtenez 3 reliques RARE ou supérieures",
     icon: "👑", difficulty: "medium", target: 3, type: "rarity",
-    reward: { talentPoints: 1, eclatsTemporels: 350 }, rewardLabel: "1 talent + 350 ✨",
+    reward: { xp: 250 }, rewardLabel: "+250 XP",
     rarityTarget: "RARE",
-    hint: "Page Capturer — mode sécurisé conseillé",
+    hint: "Page Capturer",
   },
 
   // ─── DIFFICILE ──────────────────────────────────────────────────────────────
   {
-    id: "ability", label: "Maître de Classe",
-    description: "Utilisez votre capacité de classe",
-    icon: "⚡", difficulty: "hard", target: 1, type: "ability",
-    reward: { talentPoints: 1, eclatsTemporels: 400 }, rewardLabel: "1 talent + 400 ✨",
-    hint: "Page Capturer → bouton capacité de classe",
-  },
-  {
     id: "legen1", label: "Vision du Légendaire",
     description: "Obtenez 1 relique LÉGENDAIRE",
     icon: "🟡", difficulty: "hard", target: 1, type: "rarity",
-    reward: { talentPoints: 3, essencesHistoriques: 20 }, rewardLabel: "3 talents + 20 📜",
+    reward: { xp: 750 }, rewardLabel: "+750 XP",
     rarityTarget: "LEGENDAIRE",
-    hint: "Observatoire du Sanctuaire + Mode Risqué",
-  },
-  {
-    id: "risky2", label: "Téméraire",
-    description: "Réussissez 2 captures en Mode Risqué",
-    icon: "🎲", difficulty: "hard", target: 2, type: "risky",
-    reward: { eclatsTemporels: 700, chronite: 100 }, rewardLabel: "700 ✨ + 100 🔩",
-    hint: "Page Capturer → Mode Risqué × 2",
+    hint: "Niveau 30+ requis pour les Légendaires",
   },
   {
     id: "event5", label: "Historien du Temps",
     description: "Capturez 5 minutes avec des événements historiques",
     icon: "🏛️", difficulty: "hard", target: 5, type: "event",
-    reward: { essencesHistoriques: 25, fragmentsAnomalie: 2 }, rewardLabel: "25 📜 + 2 🔮",
-    hint: "Utilisez Vision Prophétique (Oracle) ou les Fenêtres",
+    reward: { xp: 500 }, rewardLabel: "+500 XP",
+    hint: "Certaines minutes cachent des événements historiques",
   },
   {
     id: "epique3", label: "Épique Chasseur",
     description: "Obtenez 3 reliques ÉPIQUE ou supérieures",
     icon: "💜", difficulty: "hard", target: 3, type: "rarity",
-    reward: { talentPoints: 2, eclatsTemporels: 500 }, rewardLabel: "2 talents + 500 ✨",
+    reward: { xp: 600 }, rewardLabel: "+600 XP",
     rarityTarget: "EPIQUE",
-    hint: "Instinct de Chasse (Chasseur) × 3 ou Mode Risqué",
+    hint: "Niveau 20+ requis pour les Épiques",
   },
 ]
 
