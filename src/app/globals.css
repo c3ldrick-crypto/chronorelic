@@ -77,10 +77,13 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Le fond sombre est fourni par NeonBackground (.neon-base).
+     html reçoit la couleur de secours pour les vieux navigateurs. */
+  background-color: #030210;
 }
 
 body {
-  background-color: var(--color-stone-bg);
+  background-color: transparent; /* NeonBackground gère le fond */
   color: var(--color-cosmic-text);
   font-family: var(--font-body);
   min-height: 100vh;
@@ -449,9 +452,8 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  z-index: -1;   /* Derrière TOUT le contenu de la page */
   overflow: hidden;
-  isolation: isolate;
 }
 
 /* ── Base sombre ────────────────────────────── */

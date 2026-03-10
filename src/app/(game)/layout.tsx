@@ -49,7 +49,7 @@ export default async function GameLayout({ children }: { children: React.ReactNo
           level,
         }}
       />
-      <main className="relative z-10 pt-16 min-h-[calc(100vh-64px)]">
+      <main className="relative pt-16 min-h-[calc(100vh-64px)]">
         {children}
       </main>
     </div>
