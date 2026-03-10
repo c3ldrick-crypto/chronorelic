@@ -265,6 +265,7 @@ export default function PlayPage() {
       chronite:            dropsObj.chronite            ?? 0,
       essencesHistoriques: dropsObj.essencesHistoriques ?? 0,
       fragmentsAnomalie:   dropsObj.fragmentsAnomalie   ?? 0,
+      chronoEssence:       dropsObj.chronoEssence       ?? 0,
     })
     setMachineTarget(null)
     setAbilityActive(null)
@@ -308,6 +309,7 @@ export default function PlayPage() {
           chronite:            prev.resources.chronite            + ((result.drops as Record<string, number>).chronite ?? 0),
           essencesHistoriques: prev.resources.essencesHistoriques + ((result.drops as Record<string, number>).essencesHistoriques ?? 0),
           fragmentsAnomalie:   prev.resources.fragmentsAnomalie   + ((result.drops as Record<string, number>).fragmentsAnomalie ?? 0),
+          chronoEssence:       prev.resources.chronoEssence,
         } : prev.resources,
       }
     })

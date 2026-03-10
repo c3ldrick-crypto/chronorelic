@@ -7,6 +7,8 @@ import { Eye, Coins, Swords, Skull, Zap, Clock, RefreshCw, ChevronLeft, Sparkles
 import { STAKE_TIERS, type StakeTier } from "@/lib/game/essences"
 import type { TimeWindow } from "@/lib/game/windows"
 import { getRandomQuote, type TimeQuote } from "@/lib/game/quotes"
+import { ChronolitheReveal } from "@/components/game/ChronolitheReveal"
+import type { ChronolitheDropResult } from "@/lib/game/chronolithe"
 
 type CaptureIntent = "RELIQUE" | "ESSENCE" | "HYBRIDE"
 type CapturePhase  = "idle" | "scan" | "ancrage" | "extraction" | "resultat"
@@ -36,6 +38,7 @@ export interface CaptureResult {
   message?:         string
   consolation?:       Record<string, number>
   completedEnigmas?:  Array<{ id: string; title: string; difficulty: string; reward: { xp: number; eclats: number; label: string } }>
+  chronolitheSegment?: ChronolitheDropResult
 }
 
 interface CaptureFlowProps {
@@ -713,6 +716,8 @@ export function CaptureFlow({
   const [captureEventDesc, setCaptureEventDesc]       = useState<string | undefined>()
   const [captureEventCurio, setCaptureEventCurio]     = useState<string | undefined>()
   const [captureQuote, setCaptureQuote]               = useState<TimeQuote | undefined>()
+  const [chronolitheSegment, setChronolitheSegment]   = useState<ChronolitheDropResult | undefined>()
+  const [showChronolithe, setShowChronolithe]         = useState(false)
   const [isSubmitting, setIsSubmitting]               = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -820,7 +825,14 @@ export function CaptureFlow({
           heritageOptions:   data.heritageOptions,
           message:           data.message,
           consolation:       data.consolation,
-          completedEnigmas:  data.completedEnigmas,
+          completedEnigmas:   data.completedEnigmas,
+          chronolitheSegment: data.chronolitheSegment,
+        }
+
+        // Show CHRONOLITHE reveal before normal result if present
+        if (data.chronolitheSegment) {
+          setChronolitheSegment(data.chronolitheSegment)
+          setShowChronolithe(true)
         }
 
         onCaptureDone(result)
@@ -837,6 +849,8 @@ export function CaptureFlow({
           setCaptureEventDesc(undefined)
           setCaptureEventCurio(undefined)
           setCaptureQuote(undefined)
+          setChronolitheSegment(undefined)
+          setShowChronolithe(false)
           setIsSubmitting(false)
           setWindow(null)
           setUsesMachine(false)
@@ -1121,6 +1135,17 @@ export function CaptureFlow({
         )}
 
       </AnimatePresence>
+
+      {/* ── CHRONOLITHE reveal overlay ────────────────────────────────────── */}
+      <AnimatePresence>
+        {showChronolithe && chronolitheSegment && (
+          <ChronolitheReveal
+            drop={chronolitheSegment}
+            onDone={() => setShowChronolithe(false)}
+          />
+        )}
+      </AnimatePresence>
+
     </div>
   )
 }

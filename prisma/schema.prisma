@@ -36,6 +36,11 @@ enum Rarity {
   MYTHIQUE
 }
 
+enum ChronolitheStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
 enum PurchaseType {
   PREMIUM_UNLOCK
   SHARDS_STARTER
@@ -102,8 +107,9 @@ model User {
   questClaims     QuestClaim[]
   equippedRelics  EquippedRelic[]
   sanctuaire      Sanctuaire?
-  heritageTalent   HeritageTalent?
-  researchProgress ResearchProgress[]
+  heritageTalent       HeritageTalent?
+  researchProgress     ResearchProgress[]
+  chronolitheProgress  ChronolitheProgress[]
 
   @@index([email])
 }
@@ -376,6 +382,26 @@ model ResearchProgress {
 
   @@unique([userId, nodeId])
   @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// CHRONOLITHES (histoires fragmentées du passé)
+// ─────────────────────────────────────────────
+
+model ChronolitheProgress {
+  id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId          String            // référence un ChronolitheStory.id dans chronolithe.ts
+  unlockedSegments Int               @default(1)
+  status           ChronolitheStatus @default(IN_PROGRESS)
+  startedAt        DateTime          @default(now())
+  completedAt      DateTime?
+  updatedAt        DateTime          @updatedAt
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([userId, status])
 }
 
 // ─────────────────────────────────────────────

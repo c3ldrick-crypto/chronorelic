@@ -19,6 +19,13 @@ import {
   ESSENCE_BY_RARITY,
 } from "@/lib/game/essences"
 import { generateHeritageOptions } from "@/lib/game/heritage"
+import {
+  CHRONOLITHE_STORIES,
+  CHRONOLITHE_DROP_CHANCE,
+  MAX_ACTIVE_STORIES,
+  getStoryById,
+  type ChronolitheDropResult,
+} from "@/lib/game/chronolithe"
 
 type CaptureIntent = "RELIQUE" | "ESSENCE" | "HYBRIDE"
 
@@ -702,6 +709,103 @@ export async function POST(req: NextRequest) {
       return newRelic
     })
 
+    // ── CHRONOLITHE drop check ────────────────────────────────────────────────
+    let chronolitheSegment: ChronolitheDropResult | undefined
+    if (captureIntent === "RELIQUE" && Math.random() < CHRONOLITHE_DROP_CHANCE) {
+      try {
+        const [activeStories, allSeen] = await Promise.all([
+          prisma.chronolitheProgress.findMany({
+            where:   { userId, status: "IN_PROGRESS" },
+            orderBy: { startedAt: "asc" },
+          }),
+          prisma.chronolitheProgress.findMany({
+            where:  { userId },
+            select: { storyId: true, unlockedSegments: true, status: true, id: true },
+          }),
+        ])
+
+        const seenIds = new Set(allSeen.map((s) => s.storyId))
+        let targetStoryId: string | null = null
+        let isNewStory = false
+
+        if (activeStories.length < MAX_ACTIVE_STORIES) {
+          // Try to start a new story
+          const unseenStories = CHRONOLITHE_STORIES.filter((s) => !seenIds.has(s.id))
+          if (unseenStories.length > 0) {
+            const pick = unseenStories[Math.floor(Math.random() * unseenStories.length)]
+            targetStoryId = pick.id
+            isNewStory    = true
+          } else if (activeStories.length > 0) {
+            // All stories seen, advance a random active one
+            const pick = activeStories[Math.floor(Math.random() * activeStories.length)]
+            targetStoryId = pick.storyId
+          } else {
+            // All 20 stories completed — restart the one completed longest ago
+            const completed = allSeen.filter((s) => s.status === "COMPLETED")
+            if (completed.length > 0) {
+              const pick = completed[0]
+              targetStoryId = pick.storyId
+              await prisma.chronolitheProgress.update({
+                where: { id: pick.id },
+                data:  { status: "IN_PROGRESS", unlockedSegments: 0, completedAt: null },
+              })
+              isNewStory = true
+            }
+          }
+        } else {
+          // 3 active stories — advance one with the fewest unlocked segments
+          const sorted = [...activeStories].sort((a, b) => a.unlockedSegments - b.unlockedSegments)
+          targetStoryId = sorted[0].storyId
+        }
+
+        if (targetStoryId) {
+          const story = getStoryById(targetStoryId)!
+          let progress = allSeen.find((s) => s.storyId === targetStoryId)
+
+          let newSegmentIndex: number
+
+          if (!progress || isNewStory) {
+            // Create new progress at segment 1
+            await prisma.chronolitheProgress.upsert({
+              where:  { userId_storyId: { userId, storyId: targetStoryId } },
+              create: { userId, storyId: targetStoryId, unlockedSegments: 1, status: "IN_PROGRESS" },
+              update: { unlockedSegments: 1, status: "IN_PROGRESS", completedAt: null },
+            })
+            newSegmentIndex = 1
+          } else {
+            newSegmentIndex = Math.min(progress.unlockedSegments + 1, story.segments.length)
+            const isCompleted = newSegmentIndex >= story.segments.length
+            await prisma.chronolitheProgress.update({
+              where: { id: progress.id },
+              data:  {
+                unlockedSegments: newSegmentIndex,
+                status:           isCompleted ? "COMPLETED" : "IN_PROGRESS",
+                completedAt:      isCompleted ? new Date() : null,
+              },
+            })
+          }
+
+          const segment   = story.segments[newSegmentIndex - 1]
+          const isCompleted = newSegmentIndex >= story.segments.length
+          chronolitheSegment = {
+            storyId:      story.id,
+            storyTitle:   story.title,
+            storyIcon:    story.icon,
+            theme:        story.theme,
+            segmentIndex: newSegmentIndex,
+            segmentTitle: segment.title,
+            segmentText:  segment.text,
+            segmentHook:  segment.hook,
+            isNewStory,
+            isCompleted,
+            totalSegments: story.segments.length,
+          }
+        }
+      } catch (chronoErr) {
+        console.error("[capture] Chronolithe drop failed (non-blocking):", chronoErr)
+      }
+    }
+
     // ── Enigma completion check ────────────────────────────────────────────────
     let completedEnigmas: Array<{ id: string; title: string; difficulty: string; reward: { xp: number; eclats: number; chronite?: number; essences?: number; label: string } }> = []
     try {
@@ -789,6 +893,7 @@ export async function POST(req: NextRequest) {
       anomalies:         todayAnomalies.map((a) => ({ id: a.id, label: a.label, icon: a.icon })),
       completedEnigmas,
       newlyCompletedChains,
+      chronolitheSegment,
       relic: relic ? {
         id: relic.id, minute, rarity, xpGained,
         capturedAt: relic.capturedAt, isFused: false,

@@ -9,7 +9,7 @@ import { cn, formatShards } from "@/lib/utils"
 import {
   Clock, Grid3X3, Package, Star, Castle, User, LayoutDashboard,
   LogOut, Menu, X, Coins, Zap, Trophy, Hammer, ScrollText,
-  Link2, Cog, FlaskConical,
+  Link2, Cog, FlaskConical, BookOpen,
 } from "lucide-react"
 
 interface NavbarProps {
@@ -33,7 +33,8 @@ const NAV_LINKS = [
   { href: "/machine",     label: "Machine",     icon: Cog,          desc: "Machine Temporelle — ères passées" },
   { href: "/research",    label: "Recherche",   icon: FlaskConical, desc: "Arbres de recherche passifs" },
 
-  { href: "/chaines",     label: "Chaînes",     icon: Link2,        desc: "Collections thématiques" },
+  { href: "/chronolithes", label: "Chronolithes", icon: BookOpen,     desc: "Pierres-mémoires — histoires fragmentées du passé" },
+  { href: "/chaines",     label: "Chaînes",      icon: Link2,        desc: "Collections thématiques" },
   { href: "/talents",     label: "Talents",     icon: Star,         desc: "Améliorez vos capacités de classe" },
   { href: "/quetes",      label: "Quêtes",      icon: ScrollText,   desc: "Objectifs et récompenses quotidiens" },
   { href: "/leaderboard", label: "Classement",  icon: Trophy,       desc: "Meilleurs Gardiens du Temps" },
