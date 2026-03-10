@@ -7,11 +7,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatMinute(date: Date = new Date()): string {
-  return date.toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  })
+  // Use direct math — avoids locale-dependent separators (e.g. "14 h 37" on some Node.js builds)
+  const h = String(date.getHours()).padStart(2, "0")
+  const m = String(date.getMinutes()).padStart(2, "0")
+  return `${h}:${m}`
 }
 
 export function formatCaptureDate(date: Date = new Date()): string {

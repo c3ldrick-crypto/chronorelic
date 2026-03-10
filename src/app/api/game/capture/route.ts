@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       mode?: string          // legacy SAFE/RISKY
       preselectedMinute?: string  // from Machine Temporelle
       timingZone?: string         // from anchor mini-game
+      minute?: string             // client-provided current minute (HH:mm)
     }
 
     const captureIntent: CaptureIntent =
@@ -161,7 +162,11 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Resolve target minute ──────────────────────────────────────────────────
-    let minute        = preselectedMinute ?? formatMinute()
+    // Prefer client-provided minute (avoids server locale/timezone mismatch)
+    const clientMinute = typeof body.minute === "string" && /^\d{2}:\d{2}$/.test(body.minute)
+      ? body.minute
+      : undefined
+    let minute        = preselectedMinute ?? clientMinute ?? formatMinute()
     const captureDate = formatCaptureDate()
 
     // Window validation

@@ -634,10 +634,15 @@ export function CaptureFlow({
     setTimingZone(zone)
     setPhase("extraction")
 
+    // Send client-side minute to avoid server locale/timezone issues
+    const now          = new Date()
+    const clientMinute = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`
+
     const body: Record<string, unknown> = {
       captureIntent: intent,
       stakeTier,
       timingZone: zone,
+      minute: clientMinute,
     }
     if (selectedWindow) body.windowId = selectedWindow
     if (machineTarget && usesMachine) body.preselectedMinute = machineTarget.minute
@@ -649,6 +654,17 @@ export function CaptureFlow({
         body:    JSON.stringify(body),
       })
       const data = await r.json()
+
+      // Hard HTTP error (auth, rate limit, server crash) — not a game failure
+      if (!r.ok && !data.failed) {
+        toast.error(data.error ?? "Erreur de capture. Réessayez.")
+        setStep(1)
+        setPhase("idle")
+        setIsSubmitting(false)
+        setTimingZone(null)
+        return
+      }
+
       const ok   = !data.failed
       setCaptureSuccess(ok)
       setCaptureRarity(data.rarity)

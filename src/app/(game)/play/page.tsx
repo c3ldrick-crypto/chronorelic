@@ -295,7 +295,7 @@ export default function PlayPage() {
         ...prev,
         capturesLeft: prev.capturesLeft !== null ? Math.max(0, prev.capturesLeft - 1) : null,
         recentRelics: result.relicId
-          ? [{ id: result.relicId, minute: result.minute ?? "", rarity: result.rarity ?? "COMMUNE", capturedAt: new Date().toISOString(), xpGained: result.xpGained ?? 0, isFused: false, historicalEvent: result.eventTitle ? { title: result.eventTitle, year: result.eventYear ?? null, description: null, curiosity: null, category: null } : null } as RelicData, ...prev.recentRelics.slice(0, 7)]
+          ? [{ id: result.relicId, minute: result.minute ?? "", rarity: (result.rarity ?? "COMMUNE") as import("@/types").Rarity, capturedAt: new Date().toISOString(), xpGained: result.xpGained ?? 0, isFused: false, historicalEvent: result.eventTitle ? { title: result.eventTitle, year: result.eventYear ?? 0 } : null } as RelicData, ...prev.recentRelics.slice(0, 7)]
           : prev.recentRelics,
         character: result.didLevelUp
           ? prev.character ? { ...prev.character, xpTotal: prev.character.xpTotal + (result.xpGained ?? 0), level: result.newLevel ?? prev.character.level } : null
