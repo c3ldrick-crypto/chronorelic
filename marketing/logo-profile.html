@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 400px;
+      height: 400px;
+      overflow: hidden;
+      background: #08081a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo {
+      width: 400px;
+      height: 400px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #08081a;
+    }
+
+    /* ── Orbes de fond ── */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .orb-1 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(107,40,200,0.22) 0%, transparent 65%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .orb-2 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(196,150,10,0.15) 0%, transparent 65%);
+      top: 55%; left: 52%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ── Cercles décoratifs ── */
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .ring-1 {
+      width: 340px; height: 340px;
+      border-color: rgba(107,40,200,0.12);
+    }
+    .ring-2 {
+      width: 290px; height: 290px;
+      border-color: rgba(196,150,10,0.08);
+    }
+
+    /* ── Sablier SVG ── */
+    .hourglass-wrap {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    svg.hourglass {
+      width: 160px;
+      height: 200px;
+      filter:
+        drop-shadow(0 0 18px rgba(232,184,75,0.7))
+        drop-shadow(0 0 40px rgba(232,184,75,0.3))
+        drop-shadow(0 0 60px rgba(107,40,200,0.3));
+    }
+
+    /* ── Texte sous le sablier ── */
+    .wordmark {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #a78bfa 0%, #f5d678 60%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+    .submark {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: rgba(196,150,10,0.5);
+      text-align: center;
+      margin-top: -8px;
+    }
+
+    /* ── Particules ── */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+<div class="logo">
+
+  <!-- Fond -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="ring ring-1"></div>
+  <div class="ring ring-2"></div>
+
+  <!-- Particules -->
+  <div class="particle" style="width:3px;height:3px;background:#c084fc;opacity:0.7;top:22%;left:28%"></div>
+  <div class="particle" style="width:2px;height:2px;background:#fcd34d;opacity:0.6;top:18%;left:68%"></div>
+  <div class="particle" style="width:4px;height:4px;background:#a78bfa;opacity:0.4;top:72%;left:24%"></div>
+  <div class="particle" style="width:2px;height:2px;background:#f5d678;opacity:0.6;top:76%;left:72%"></div>
+  <div class="particle" style="width:3px;height:3px;background:#ec4899;opacity:0.4;top:32%;left:78%"></div>
+
+  <!-- Sablier + texte -->
+  <div class="hourglass-wrap">
+
+    <svg class="hourglass" viewBox="0 0 160 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Dégradé corps sablier -->
+        <linearGradient id="bodyGrad" x1="0" y1="0" x2="160" y2="200" gradientUnits="userSpaceOnUse">
+          <stop offset="0%"   stop-color="#a78bfa" />
+          <stop offset="45%"  stop-color="#7c3aed" />
+          <stop offset="100%" stop-color="#c084fc" />
+        </linearGradient>
+
+        <!-- Dégradé sable haut -->
+        <linearGradient id="sandTopGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#fcd34d" />
+          <stop offset="100%" stop-color="#f59e0b" />
+        </linearGradient>
+
+        <!-- Dégradé sable bas -->
+        <linearGradient id="sandBotGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="#fbbf24" />
+          <stop offset="100%" stop-color="#d97706" />
+        </linearGradient>
+
+        <!-- Glow filtre -->
+        <filter id="glow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <!-- Glow sable -->
+        <filter id="sandGlow">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <!-- Clip pour sable haut -->
+        <clipPath id="clipTop">
+          <path d="M 38 18 L 122 18 L 84 96 L 76 96 Z" />
+        </clipPath>
+
+        <!-- Clip pour sable bas -->
+        <clipPath id="clipBot">
+          <path d="M 76 104 L 84 104 L 122 182 L 38 182 Z" />
+        </clipPath>
+      </defs>
+
+      <!-- ── Cadre sablier : barre top ── -->
+      <rect x="28" y="10" width="104" height="10" rx="5"
+        fill="url(#bodyGrad)" filter="url(#glow)" />
+
+      <!-- ── Cadre sablier : barre bottom ── -->
+      <rect x="28" y="180" width="104" height="10" rx="5"
+        fill="url(#bodyGrad)" filter="url(#glow)" />
+
+      <!-- ── Corps sablier : contour (stroke) ── -->
+      <!-- Partie haute (triangle inversé) -->
+      <path d="M 32 20 L 128 20 L 82 96 L 78 96 Z"
+        fill="rgba(107,40,200,0.08)"
+        stroke="url(#bodyGrad)"
+        stroke-width="2.5"
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+      <!-- Partie basse (triangle) -->
+      <path d="M 78 104 L 82 104 L 128 180 L 32 180 Z"
+        fill="rgba(107,40,200,0.06)"
+        stroke="url(#bodyGrad)"
+        stroke-width="2.5"
+        stroke-linejoin="round"
+        filter="url(#glow)" />
+
+      <!-- ── Sable haut (partiellement écoulé) ── -->
+      <g clip-path="url(#clipTop)">
+        <!-- Fond sable haut -->
+        <path d="M 38 18 L 122 18 L 84 96 L 76 96 Z"
+          fill="rgba(245,158,11,0.08)" />
+        <!-- Sable restant (55% plein — niveau bas) -->
+        <path d="M 54 18 L 106 18 L 84 62 L 76 62 Z"
+          fill="url(#sandTopGrad)"
+          opacity="0.9"
+          filter="url(#sandGlow)" />
+        <!-- Surface du sable (légère ondulation) -->
+        <path d="M 52 62 Q 80 58 108 62 L 106 18 L 54 18 Z"
+          fill="url(#sandTopGrad)"
+          opacity="0.3" />
+      </g>
+
+      <!-- ── Filet de sable (centre, trou) ── -->
+      <line x1="80" y1="96" x2="80" y2="104"
+        stroke="#fcd34d" stroke-width="2.5"
+        stroke-linecap="round"
+        filter="url(#sandGlow)"
+        opacity="0.9" />
+      <!-- Petits grains qui tombent -->
+      <circle cx="80" cy="99" r="1.2" fill="#fcd34d" opacity="0.8" />
+
+      <!-- ── Sable bas (accumulé) ── -->
+      <g clip-path="url(#clipBot)">
+        <path d="M 76 104 L 84 104 L 122 182 L 38 182 Z"
+          fill="rgba(245,158,11,0.06)" />
+        <!-- Tas de sable bas (40% rempli depuis le bas) -->
+        <path d="M 38 182 L 122 182 L 100 148 L 60 148 Z"
+          fill="url(#sandBotGrad)"
+          opacity="0.9"
+          filter="url(#sandGlow)" />
+        <!-- Surface arrondie -->
+        <path d="M 58 148 Q 80 144 102 148 L 122 182 L 38 182 Z"
+          fill="url(#sandBotGrad)"
+          opacity="0.3" />
+      </g>
+
+      <!-- ── Reflets internes ── -->
+      <line x1="48" y1="28" x2="68" y2="78"
+        stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-linecap="round" />
+      <line x1="112" y1="28" x2="92" y2="78"
+        stroke="rgba(255,255,255,0.04)" stroke-width="1" stroke-linecap="round" />
+
+      <!-- ── Coins décoratifs (petits losanges aux barres) ── -->
+      <circle cx="28"  cy="15" r="3.5" fill="#c084fc" filter="url(#glow)" />
+      <circle cx="132" cy="15" r="3.5" fill="#c084fc" filter="url(#glow)" />
+      <circle cx="28"  cy="185" r="3.5" fill="#c084fc" filter="url(#glow)" />
+      <circle cx="132" cy="185" r="3.5" fill="#c084fc" filter="url(#glow)" />
+    </svg>
+
+    <div class="wordmark">ChronoRelic</div>
+    <div class="submark">Binary Anvil</div>
+
+  </div>
+
+</div>
+</body>
+</html>

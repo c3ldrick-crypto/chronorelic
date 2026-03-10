@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guide Ko-fi — ChronoRelic / Binary Anvil</title>
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --violet:   #7c3aed;
+      --violet-l: #a78bfa;
+      --gold:     #f59e0b;
+      --gold-l:   #fcd34d;
+      --green:    #10b981;
+      --red:      #ef4444;
+      --bg:       #08081a;
+      --surface:  #0f0f24;
+      --border:   #1e1e42;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --accent:   #c084fc;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; color: #111; font-size: 12px; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .card { border: 1px solid #ddd !important; background: #f9f9f9 !important; box-shadow: none !important; }
+      h1, h2, h3 { color: #111 !important; }
+      .badge { background: #eee !important; color: #333 !important; border: 1px solid #ccc !important; }
+      a { color: #333 !important; }
+      .step-num { background: #7c3aed !important; color: #fff !important; }
+      .tag { background: #eee !important; color: #333 !important; }
+      .copybox { background: #f5f5f5 !important; border: 1px solid #ccc !important; color: #111 !important; }
+      .reward-card { border: 1px solid #ddd !important; background: #fff !important; }
+      .timeline-dot { background: #7c3aed !important; }
+      .checklist li::before { color: #7c3aed !important; }
+      .tip-box { background: #fffbeb !important; border-color: #f59e0b !important; }
+      .warn-box { background: #fef2f2 !important; border-color: #ef4444 !important; }
+      nav { display: none; }
+    }
+
+    /* ── Layout ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,8,26,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    nav .logo { font-weight: 900; font-size: 1rem; color: var(--violet-l); }
+    nav .nav-links { display: flex; gap: 1.5rem; }
+    nav .nav-links a { font-size: 0.8rem; color: var(--muted); text-decoration: none; }
+    nav .nav-links a:hover { color: var(--text); }
+    nav .print-btn {
+      background: var(--violet); color: #fff;
+      border: none; border-radius: 8px;
+      padding: 0.4rem 1rem; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.2s;
+    }
+    nav .print-btn:hover { opacity: 0.85; }
+
+    .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(160deg, rgba(124,58,237,0.12) 0%, rgba(8,8,26,0) 60%);
+      border-bottom: 1px solid var(--border);
+      padding: 4rem 1.5rem 3rem;
+      text-align: center;
+    }
+    .hero .eyebrow {
+      display: inline-block;
+      font-size: 0.7rem; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--violet-l);
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 999px; padding: 0.3rem 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900; line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .hero h1 span { background: linear-gradient(135deg, var(--violet-l), var(--gold-l)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { color: var(--muted); max-width: 560px; margin: 0 auto 2rem; font-size: 1rem; }
+    .meta-pills { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+    .meta-pills .pill {
+      font-size: 0.75rem; font-weight: 700;
+      padding: 0.35rem 0.9rem; border-radius: 999px;
+    }
+    .pill-violet { background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.35); color: var(--violet-l); }
+    .pill-gold   { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35); color: var(--gold-l); }
+    .pill-green  { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #6ee7b7; }
+
+    /* ── Sections ── */
+    .section { padding: 3rem 0; border-bottom: 1px solid var(--border); }
+    .section:last-child { border-bottom: none; }
+    .section-header { margin-bottom: 2rem; }
+    .section-header .num {
+      font-size: 0.65rem; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--violet-l); margin-bottom: 0.4rem;
+    }
+    .section-header h2 { font-size: 1.6rem; font-weight: 900; line-height: 1.2; }
+    .section-header h2 span { color: var(--gold-l); }
+    .section-header p { color: var(--muted); margin-top: 0.5rem; max-width: 600px; }
+
+    /* ── Cards ── */
+    .card {
+      background: rgba(15,15,36,0.8);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 { font-size: 0.95rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text); }
+    .card p, .card li { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: flex; gap: 1.25rem; align-items: flex-start;
+      padding: 1.5rem;
+      background: rgba(15,15,36,0.6);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    .step-num {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), #6366f1);
+      color: #fff; font-weight: 900; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 0.1rem;
+    }
+    .step-content h3 { font-size: 1rem; font-weight: 800; margin-bottom: 0.4rem; color: var(--text); }
+    .step-content p { font-size: 0.875rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .step-content .time-badge {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
+      color: #6ee7b7; border-radius: 999px; padding: 0.2rem 0.6rem;
+    }
+    .step-content .url-badge {
+      display: inline-block; font-size: 0.75rem; font-weight: 700;
+      background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3);
+      color: var(--violet-l); border-radius: 8px; padding: 0.25rem 0.7rem; margin-top: 0.4rem;
+      font-family: monospace;
+    }
+
+    /* ── Copy boxes ── */
+    .copybox {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(124,58,237,0.25);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      font-size: 0.875rem;
+      color: #c4b5fd;
+      white-space: pre-wrap;
+      font-family: inherit;
+      margin-top: 0.75rem;
+      line-height: 1.7;
+      position: relative;
+    }
+    .copybox-label {
+      font-size: 0.65rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--violet-l); margin-bottom: 0.5rem; display: block;
+    }
+    .copybox strong { color: #f0e6c8; }
+    .copybox em { color: var(--gold-l); font-style: normal; }
+
+    /* ── Rewards ── */
+    .rewards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .reward-card {
+      border-radius: 16px; padding: 1.25rem;
+      border: 1px solid var(--border);
+      background: rgba(15,15,36,0.8);
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .reward-card .price {
+      font-size: 1.5rem; font-weight: 900;
+    }
+    .reward-card .price span { font-size: 0.85rem; font-weight: 400; color: var(--muted); }
+    .reward-card h4 { font-size: 0.9rem; font-weight: 800; }
+    .reward-card ul { list-style: none; margin-top: 0.25rem; }
+    .reward-card ul li { font-size: 0.8rem; color: var(--muted); padding: 0.2rem 0; display: flex; align-items: flex-start; gap: 0.4rem; }
+    .reward-card ul li::before { content: "✓"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .r-kofi    { border-color: rgba(255,94,91,0.35);   background: rgba(255,94,91,0.05); }
+    .r-kofi    .price { color: #ff8a88; }
+    .r-kofi    h4 { color: #ff8a88; }
+    .r-silver  { border-color: rgba(148,163,184,0.35); background: rgba(148,163,184,0.04); }
+    .r-silver  .price { color: #94a3b8; }
+    .r-silver  h4 { color: #94a3b8; }
+    .r-violet  { border-color: rgba(124,58,237,0.45);  background: rgba(124,58,237,0.07); }
+    .r-violet  .price { color: var(--violet-l); }
+    .r-violet  h4 { color: var(--violet-l); }
+    .r-gold    { border-color: rgba(245,158,11,0.45);  background: rgba(245,158,11,0.06); }
+    .r-gold    .price { color: var(--gold-l); }
+    .r-gold    h4 { color: var(--gold-l); }
+    .r-myth    { border-color: rgba(236,72,153,0.45);  background: rgba(236,72,153,0.06); }
+    .r-myth    .price { color: #f9a8d4; }
+    .r-myth    h4 { color: #f9a8d4; }
+
+    /* ── Tips & warns ── */
+    .tip-box, .warn-box {
+      border-radius: 12px; padding: 1rem 1.25rem;
+      margin: 1rem 0;
+      display: flex; gap: 0.75rem; align-items: flex-start;
+      font-size: 0.875rem;
+    }
+    .tip-box  { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.3); color: #a7f3d0; }
+    .warn-box { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+    .tip-box  .icon, .warn-box .icon { flex-shrink: 0; font-size: 1rem; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; margin-top: 0.75rem; }
+    .checklist li {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.875rem; color: var(--muted);
+    }
+    .checklist li:last-child { border-bottom: none; }
+    .checklist li::before { content: "□"; font-size: 1rem; color: var(--violet-l); flex-shrink: 0; line-height: 1.4; }
+    .checklist li strong { color: var(--text); }
+
+    /* ── Timeline ── */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: ""; position: absolute; left: 0.5rem; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(to bottom, var(--violet), rgba(124,58,237,0.1));
+    }
+    .timeline-item { position: relative; margin-bottom: 2rem; }
+    .timeline-dot {
+      position: absolute; left: -1.85rem; top: 0.2rem;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--violet); border: 2px solid var(--violet-l);
+    }
+    .timeline-item .phase { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: var(--violet-l); margin-bottom: 0.25rem; }
+    .timeline-item h4 { font-size: 0.95rem; font-weight: 800; color: var(--text); margin-bottom: 0.35rem; }
+    .timeline-item p { font-size: 0.85rem; color: var(--muted); }
+
+    /* ── Grid 2 cols ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ── Tags ── */
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    .tag {
+      font-size: 0.7rem; font-weight: 700;
+      background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.25);
+      color: var(--violet-l); border-radius: 999px; padding: 0.2rem 0.6rem;
+    }
+
+    /* ── Summary table ── */
+    .summary-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .summary-table th {
+      text-align: left; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--muted); padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--border);
+    }
+    .summary-table td { padding: 0.7rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .summary-table tr:last-child td { border-bottom: none; }
+    .summary-table .ok { color: #6ee7b7; font-weight: 700; }
+    .summary-table .warn { color: var(--gold-l); }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+    /* ── Badge inline ── */
+    .badge {
+      display: inline-block; font-size: 0.7rem; font-weight: 800;
+      padding: 0.15rem 0.5rem; border-radius: 6px; vertical-align: middle;
+    }
+    .badge-green  { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+    .badge-violet { background: rgba(124,58,237,0.15); color: var(--violet-l); }
+    .badge-gold   { background: rgba(245,158,11,0.15); color: var(--gold-l); }
+    .badge-red    { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ── -->
+<nav class="no-print">
+  <div class="logo">⏳ ChronoRelic × Ko-fi</div>
+  <div class="nav-links">
+    <a href="#profil">Profil</a>
+    <a href="#pitch">Pitch</a>
+    <a href="#contreparties">Contreparties</a>
+    <a href="#checklist">Checklist</a>
+    <a href="#calendrier">Calendrier</a>
+  </div>
+  <button class="print-btn" onclick="window.print()">⬇ Exporter PDF</button>
+</nav>
+
+<!-- ── Hero ── -->
+<div class="hero">
+  <div class="eyebrow">Guide de Campagne</div>
+  <h1>Ko-fi<br /><span>ChronoRelic</span></h1>
+  <p>Tout le contenu prêt à copier-coller pour lancer ta page Ko-fi et décrocher tes premiers soutiens.</p>
+  <div class="meta-pills">
+    <span class="pill pill-violet">Binary Anvil Studio</span>
+    <span class="pill pill-gold">Jeu Indépendant</span>
+    <span class="pill pill-green">Financement participatif</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ═══ 1. CRÉER LE PROFIL ═══ -->
+  <section class="section" id="profil">
+    <div class="section-header">
+      <div class="num">01 — Configuration</div>
+      <h2>Créer le profil Ko-fi <span>étape par étape</span></h2>
+      <p>Suis ces étapes dans l'ordre sur ko-fi.com. Durée estimée : 45 minutes.</p>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Créer le compte</h3>
+          <p>Va sur <strong>ko-fi.com</strong> → <em>Sign Up</em>. Utilise l'adresse <strong>contact@binaryanvil.fr</strong> (ou provisoirement Gmail). Choisis le nom d'utilisateur :</p>
+          <div class="url-badge">ko-fi.com/chronorelic</div>
+          <div style="margin-top:0.5rem"><span class="time-badge">⏱ 5 min</span></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Photo de profil & bannière</h3>
+          <p>
+            <strong>Photo de profil :</strong> le logo ⏳ ChronoRelic sur fond sombre (#08081a), taille 400×400px.<br />
+            <strong>Bannière :</strong> 1280×640px. Crée-la sur <strong>Canva</strong> (gratuit) avec le titre "ChronoRelic — Capturez le Temps" sur fond dégradé violet→noir, et une capture d'écran du jeu à droite.
+          </p>
+          <span class="time-badge">⏱ 20 min</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Renseigner la bio courte (160 caractères max)</h3>
+          <p>Ce texte apparaît sous le nom, dans les résultats de recherche Ko-fi :</p>
+          <div class="copybox"><strong>Binary Anvil</strong> · Développeur solo. Je construis <em>ChronoRelic</em>, un RPG où chaque minute du jour est une relique à capturer. 1 440 possibilités quotidiennes.</div>
+          <span class="time-badge">⏱ 2 min</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Description longue de la page (About)</h3>
+          <p>C'est le cœur de la page — copie ce texte et adapte si besoin :</p>
+          <div class="copybox">
+<strong>👋 Bonjour, je suis [Ton Prénom], fondateur de Binary Anvil</strong>
+
+Je développe <em>ChronoRelic</em> en solo depuis [X mois] — un RPG de collection où le temps réel est ta ressource principale.
+
+<strong>🎮 Le concept en une phrase :</strong>
+Chaque minute du jour (00:00 → 23:59) cache une relique temporelle. Tu lances une capture, tu obtiens un objet de rareté aléatoire, et parfois tu découvres un événement historique narré par l'IA. Reviens chaque jour pour capturer de nouvelles minutes.
+
+<strong>✨ Ce qui rend ChronoRelic unique :</strong>
+• 1 440 reliques différentes disponibles chaque jour
+• 5 niveaux de rareté : Commune → Mythique
+• 4 classes de personnage avec arbres de talents
+• Narration historique générée par IA sur les événements marquants
+• Free-to-play éthique — sans pay-to-win
+
+<strong>💜 Pourquoi ton soutien compte</strong>
+Je suis seul développeur, sans publisher, sans investisseur. Ko-fi me permet de continuer à construire ce jeu sans compromis sur ma vision. Chaque café financé va directement dans les serveurs, les outils et le temps de développement.
+
+<strong>🗺️ Où en est le jeu ?</strong>
+Le jeu est en bêta active et jouable maintenant. La capture de reliques, les classes, les talents, les événements historiques et la narration IA sont fonctionnels.
+
+<em>Merci de croire en ce projet. ⏳</em></div>
+          <span class="time-badge">⏱ 5 min</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h3>Objectif de financement (Goal)</h3>
+          <p>Active la fonctionnalité <strong>"Goal"</strong> dans les paramètres. Configure :</p>
+          <div class="card" style="margin-top:0.75rem">
+            <h3>🎯 Objectif : 300€ — Serveurs & Dev (3 mois)</h3>
+            <p>Décrivez ce que vous financerez avec cet objectif :</p>
+            <div class="copybox" style="margin-top:0.75rem">Cet objectif couvre 3 mois de serveurs (base de données, hébergement) et me permet de dédier plus de temps au développement des prochaines fonctionnalités : mode multijoueur, app mobile, et nouveaux événements historiques.</div>
+          </div>
+          <div class="tip-box">
+            <span class="icon">💡</span>
+            <span>300€ est volontairement modeste et atteignable. Un objectif crédible crée de la dynamique. Tu peux en créer un 2e à 1 000€ pour la suite.</span>
+          </div>
+          <span class="time-badge">⏱ 5 min</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h3>Connecter le paiement</h3>
+          <p>Dans <strong>Settings → Payment</strong> : connecte ton compte <strong>Stripe</strong> (ou PayPal en secours). Ko-fi prélève <strong>0%</strong> sur les dons — seul Stripe prend ~2,5%.</p>
+          <div class="warn-box">
+            <span class="icon">⚠️</span>
+            <span>Stripe nécessite un IBAN français ou un compte bancaire pro. Prévois 2-3 jours ouvrés pour la validation.</span>
+          </div>
+          <span class="time-badge">⏱ 10 min</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <h3>Lier le site vitrine</h3>
+          <p>Dans les paramètres Ko-fi, ajoute les liens :</p>
+          <div class="copybox">Site web  → https://[ton-domaine].fr
+Twitter/X → @BinaryAnvil (crée le compte si absent)
+Discord   → [ton lien d'invitation si tu en as un]</div>
+          <span class="time-badge">⏱ 3 min</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══ 2. PITCH & TEXTES ═══ -->
+  <section class="section" id="pitch">
+    <div class="section-header">
+      <div class="num">02 — Contenu</div>
+      <h2>Textes prêts à l'emploi <span>pour chaque canal</span></h2>
+      <p>Copie-colle directement — adapte les crochets [ ] à ta situation.</p>
+    </div>
+
+    <h3 style="font-size:0.9rem; font-weight:800; color:var(--violet-l); margin-bottom:0.75rem;">Post de lancement (Reddit / forum indé)</h3>
+    <span class="copybox-label">🇫🇷 Version française</span>
+    <div class="copybox">**J'ai construit un RPG où chaque minute du jour est une relique à capturer — et ma page Ko-fi est en ligne**
+
+Salut r/indiegamedev,
+
+Je développe ChronoRelic en solo depuis [X mois]. Le concept : 1 440 reliques différentes disponibles chaque jour (une par minute, de 00:00 à 23:59). Tu captures une relique, tu obtiens une rareté aléatoire, et parfois tu tombes sur un événement historique narré par l'IA.
+
+Le jeu est en bêta, jouable gratuitement. Je lance un Ko-fi pour financer les serveurs et continuer à développer sans publisher.
+
+Si le concept vous parle : ☕ ko-fi.com/chronorelic
+
+[Screenshot ou GIF du jeu]</div>
+
+    <span class="copybox-label" style="margin-top:1.25rem; display:block">🌍 Version anglaise (r/indiegaming, Hacker News)</span>
+    <div class="copybox">**I built an RPG where each minute of the day is a collectible relic — Ko-fi just launched**
+
+Hey r/indiegaming,
+
+Solo dev here. I've been building ChronoRelic for [X months]: a time-collection RPG where every minute of the day (00:00 → 23:59) is a unique relic waiting to be captured.
+
+Each capture draws a random rarity — Common to Mythic — and rare minutes trigger historical events narrated by AI. The game runs in real-time, so each day offers 1,440 new opportunities.
+
+It's in open beta, free to play. I just opened a Ko-fi to cover servers and keep building.
+
+☕ ko-fi.com/chronorelic
+🎮 [Lien vers le jeu]
+
+Happy to answer any questions about the tech stack or game design!</div>
+
+    <hr class="divider" />
+
+    <h3 style="font-size:0.9rem; font-weight:800; color:var(--violet-l); margin-bottom:0.75rem;">Message email aux bêta-testeurs</h3>
+    <div class="copybox">Objet : ⏳ Une minute de votre temps — littéralement
+
+Bonjour [Prénom],
+
+Merci d'avoir rejoint la bêta de ChronoRelic.
+
+Je construis ce jeu en solo, et pour continuer à avancer sans compromis, j'ai ouvert une page Ko-fi. Si l'expérience vous a plu — même un café symbolique —, ça m'aide vraiment à couvrir les serveurs et à financer le développement.
+
+→ ko-fi.com/chronorelic
+
+Et si vous ne souhaitez pas contribuer financièrement, le meilleur soutien est de partager le lien du jeu autour de vous.
+
+Merci pour tout. Le temps ne s'arrête pas, et moi non plus. ⏳
+
+[Ton Prénom]
+Binary Anvil</div>
+
+    <hr class="divider" />
+
+    <h3 style="font-size:0.9rem; font-weight:800; color:var(--violet-l); margin-bottom:0.75rem;">Posts réseaux sociaux courts</h3>
+    <div class="grid-2">
+      <div>
+        <span class="copybox-label">Twitter/X (280 car.)</span>
+        <div class="copybox">Je construis un jeu solo où le temps est la ressource principale.
+
+1 440 reliques par jour. 5 niveaux de rareté. Des événements historiques narrés par IA.
+
+Ko-fi ouvert pour financer les serveurs ☕
+→ ko-fi.com/chronorelic
+
+#indiedev #gamedev #RPG</div>
+      </div>
+      <div>
+        <span class="copybox-label">LinkedIn (pour Binary Anvil)</span>
+        <div class="copybox">Binary Anvil lance sa première page Ko-fi.
+
+ChronoRelic est un RPG de collection temporelle développé en solo : chaque minute du jour cache une relique unique. Le jeu est en bêta ouverte.
+
+Pour continuer à construire ce projet de manière indépendante, je compte sur le soutien de la communauté.
+
+☕ ko-fi.com/chronorelic
+
+#indiedev #gamedev #financement</div>
+      </div>
+    </div>
+
+    <div class="tip-box" style="margin-top:1rem">
+      <span class="icon">📸</span>
+      <span><strong>Visuel indispensable :</strong> ajoute toujours un GIF ou screenshot montrant le reveal d'une relique Légendaire ou Mythique. C'est le moment le plus visuellement accrocheur du jeu — il convertit mieux qu'un texte seul.</span>
+    </div>
+  </section>
+
+  <!-- ═══ 3. CONTREPARTIES ═══ -->
+  <section class="section" id="contreparties">
+    <div class="section-header">
+      <div class="num">03 — Contreparties</div>
+      <h2>Structure des <span>paliers de soutien</span></h2>
+      <p>Ces tiers s'activent dans Ko-fi → <strong>Membership</strong> ou <strong>Shop</strong>. Commence par les dons libres, ajoute les tiers progressivement.</p>
+    </div>
+
+    <div class="rewards-grid">
+
+      <div class="reward-card r-kofi">
+        <div class="price">☕ <span>Don libre</span></div>
+        <h4>Un café</h4>
+        <ul>
+          <li>Mention dans le discord</li>
+          <li>Gratitude éternelle du dev</li>
+          <li>Accès aux devlogs publics</li>
+        </ul>
+        <div class="tags"><span class="tag">Sans obligation</span></div>
+      </div>
+
+      <div class="reward-card r-silver">
+        <div class="price">5€ <span>/unique</span></div>
+        <h4>Gardien du Temps</h4>
+        <ul>
+          <li>Badge "Soutien" sur le profil in-game</li>
+          <li>Accès aux devlogs privés</li>
+          <li>Mention dans les crédits</li>
+        </ul>
+        <div class="tags"><span class="tag">Entrée de gamme</span></div>
+      </div>
+
+      <div class="reward-card r-violet">
+        <div class="price">15€ <span>/unique</span></div>
+        <h4>Archiviste Fondateur</h4>
+        <ul>
+          <li>Tout le palier précédent</li>
+          <li>Badge exclusif "Fondateur" doré</li>
+          <li>Accès bêta prioritaire aux nouvelles features</li>
+          <li>Vote sur une prochaine fonctionnalité</li>
+        </ul>
+        <div class="tags"><span class="tag">Recommandé</span><span class="tag">Populaire</span></div>
+      </div>
+
+      <div class="reward-card r-gold">
+        <div class="price">30€ <span>/unique</span></div>
+        <h4>Chronomancien Légendaire</h4>
+        <ul>
+          <li>Tout le palier précédent</li>
+          <li>Relique exclusive "Fondateur" dans le jeu (LÉGENDAIRE)</li>
+          <li>Nom dans les crédits section spéciale</li>
+          <li>Appel Discord 1h avec le dev</li>
+        </ul>
+        <div class="tags"><span class="tag">Haut de gamme</span></div>
+      </div>
+
+      <div class="reward-card r-myth">
+        <div class="price">100€ <span>/unique</span></div>
+        <h4>Oracle Temporel ✦ Mythique</h4>
+        <ul>
+          <li>Tout le palier précédent</li>
+          <li>Relique MYTHIQUE unique personnalisée à ton nom</li>
+          <li>Consultation sur une feature de ton choix</li>
+          <li>Crédit "Soutien Exceptionnel" permanent</li>
+          <li>Limité à 5 personnes</li>
+        </ul>
+        <div class="tags"><span class="tag">Limité ×5</span><span class="tag">Premium</span></div>
+      </div>
+
+    </div>
+
+    <div class="tip-box" style="margin-top:1.5rem">
+      <span class="icon">💡</span>
+      <span><strong>Astuce Ko-fi :</strong> le palier à <strong>15€</strong> sera ton best-seller — il offre un vrai avantage concret (badge fondateur + devlogs) sans être intimidant. Mets-le en avant avec la mention "Recommandé".</span>
+    </div>
+    <div class="warn-box">
+      <span class="icon">⚠️</span>
+      <span><strong>Important :</strong> ne promets que ce que tu peux livrer. Les badges in-game sont réalisables rapidement. L'appel Discord à 30€ est chronophage — passe-le à 50€ si tu sens que ça peut être abusé.</span>
+    </div>
+  </section>
+
+  <!-- ═══ 4. CHECKLIST ═══ -->
+  <section class="section" id="checklist">
+    <div class="section-header">
+      <div class="num">04 — Avant le lancement</div>
+      <h2>Checklist <span>de mise en ligne</span></h2>
+      <p>Coche chaque point avant de partager le lien publiquement.</p>
+    </div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card">
+          <h3>🎨 Page Ko-fi</h3>
+          <ul class="checklist">
+            <li><strong>Nom d'utilisateur</strong> : @chronorelic ou @binaryanvil</li>
+            <li><strong>Photo de profil</strong> uploadée (logo ⏳)</li>
+            <li><strong>Bannière</strong> 1280×640px uploadée</li>
+            <li><strong>Bio courte</strong> remplie (160 car.)</li>
+            <li><strong>Description longue</strong> copiée & adaptée</li>
+            <li><strong>Goal</strong> configuré à 300€</li>
+            <li><strong>Stripe</strong> connecté et vérifié</li>
+            <li><strong>Liens</strong> site web + réseaux ajoutés</li>
+            <li><strong>Tiers / Membership</strong> configurés (≥ 3 paliers)</li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <h3>📣 Communication</h3>
+          <ul class="checklist">
+            <li><strong>GIF ou vidéo</strong> du gameplay prête (reveal Légendaire)</li>
+            <li><strong>Post Reddit</strong> rédigé (FR + EN)</li>
+            <li><strong>Email bêta-testeurs</strong> rédigé</li>
+            <li><strong>Post Twitter/X</strong> programmé</li>
+            <li><strong>Lien Ko-fi</strong> ajouté dans le footer du jeu</li>
+            <li><strong>Lien Ko-fi</strong> ajouté dans binary-anvil.html</li>
+            <li><strong>Page joueur</strong> : lien Ko-fi visible</li>
+          </ul>
+        </div>
+        <div class="card" style="margin-top:0">
+          <h3>⚙️ Technique</h3>
+          <ul class="checklist">
+            <li><strong>Paiement test</strong> effectué (1€ à toi-même)</li>
+            <li><strong>Email de confirmation</strong> Stripe reçu</li>
+            <li><strong>URL Ko-fi</strong> fonctionnelle en navigation privée</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ 5. CALENDRIER ═══ -->
+  <section class="section" id="calendrier">
+    <div class="section-header">
+      <div class="num">05 — Stratégie</div>
+      <h2>Calendrier de <span>lancement recommandé</span></h2>
+      <p>Plan sur 4 semaines pour maximiser la visibilité sans te surcharger.</p>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="phase">Semaine 1 — Setup</div>
+        <h4>Créer et configurer la page</h4>
+        <p>Suis les 7 étapes du guide. Ne partage pas encore le lien — peaufine les textes, valide le paiement Stripe, prépare tes visuels.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="phase">Semaine 2 — Lancement privé</div>
+        <h4>Email aux bêta-testeurs (J0)</h4>
+        <p>Envoie l'email de lancement à ta liste. C'est ton public le plus chaud — 5 à 10% de conversion est réaliste. Objectif : atteindre 20-30% de l'objectif (60-90€) avant de rendre la page publique.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="phase">Semaine 2 — Lancement public (J+2)</div>
+        <h4>Posts Reddit + Twitter + LinkedIn</h4>
+        <p>Publie en anglais sur r/indiegaming et r/indiegamedev (mardi ou mercredi matin, 9h-11h heure française = pic d'audience US). Publie en français sur r/gamedev_fr et ton LinkedIn. Réponds à <em>tous</em> les commentaires dans les 2 premières heures — l'algorithme Reddit en tient compte.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="phase">Semaine 3 — Entretien</div>
+        <h4>Premier devlog Ko-fi</h4>
+        <p>Publie une mise à jour pour les soutiens : avancement du jeu, prochaine feature, screenshot exclusif. Ça récompense les early supporters et attire de nouveaux visiteurs via les partages.</p>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="phase">Semaine 4 — Relance</div>
+        <h4>Bilan + partage de progression</h4>
+        <p>Tweet/post : "X% de l'objectif atteint en 2 semaines — merci !" avec la capture de la barre de progression Ko-fi. La preuve sociale convertit mieux qu'un nouveau pitch.</p>
+      </div>
+
+    </div>
+
+    <hr class="divider" />
+
+    <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:1rem;">Récapitulatif des plateformes à cibler</h3>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>Plateforme</th>
+          <th>Audience</th>
+          <th>Format</th>
+          <th>Priorité</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>r/indiegaming</strong></td>
+          <td>2.1M abonnés, EN</td>
+          <td>Post texte + screenshot</td>
+          <td><span class="ok">Haute ★★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>r/indiegamedev</strong></td>
+          <td>200K abonnés, EN</td>
+          <td>Post "Show your game"</td>
+          <td><span class="ok">Haute ★★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>r/gamedev_fr</strong></td>
+          <td>Communauté FR</td>
+          <td>Post de présentation</td>
+          <td><span class="warn">Moyenne ★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>Twitter/X</strong></td>
+          <td>Communauté #indiedev</td>
+          <td>GIF gameplay + lien</td>
+          <td><span class="warn">Moyenne ★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>LinkedIn</strong></td>
+          <td>Réseau pro FR</td>
+          <td>Post Binary Anvil</td>
+          <td><span class="warn">Moyenne ★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>itch.io</strong></td>
+          <td>Communauté jeux indé</td>
+          <td>Page jeu + lien Ko-fi</td>
+          <td><span class="warn">Moyenne ★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>Hacker News</strong> (Show HN)</td>
+          <td>Devs tech, EN</td>
+          <td>"I built a time-collection RPG"</td>
+          <td><span class="ok">Haute si viral ★★★</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══ 6. ERREURS À ÉVITER ═══ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="num">06 — Pièges</div>
+      <h2>Erreurs classiques <span>à éviter</span></h2>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>❌ Objectif trop élevé</h3>
+        <p>Un objectif à 10 000€ avec 0 soutien affiché dissuade. Commence à 300€ — c'est atteignable et ça crée de la dynamique. Un objectif dépassé se partage, un objectif bloqué à 3% non.</p>
+      </div>
+      <div class="card">
+        <h3>❌ Page vide ou bâclée</h3>
+        <p>Ko-fi avec juste un logo et 2 lignes de texte ne convertit pas. Le visiteur doit comprendre le jeu en moins de 10 secondes. Bannière + bio + description + visuels = obligatoire avant le lancement.</p>
+      </div>
+      <div class="card">
+        <h3>❌ Poster et disparaître</h3>
+        <p>Ne pas répondre aux commentaires Reddit dans les 2 premières heures est une erreur critique. L'engagement précoce = visibilité accrue par l'algorithme. Sois disponible le jour du lancement.</p>
+      </div>
+      <div class="card">
+        <h3>❌ Promettre trop</h3>
+        <p>Contreparties irréalistes (t-shirt, goodies physiques) = frais de port + complications. Reste sur du digital : badges in-game, devlogs, accès anticipé. Simple à livrer, valeur perçue élevée.</p>
+      </div>
+      <div class="card">
+        <h3>❌ Lancer sans visuels</h3>
+        <p>Un post sans GIF ou image du jeu passe inaperçu. Le reveal d'une relique Mythique avec les particules et la narration IA est ton meilleur argument visuel — enregistre-le en GIF ou courte vidéo.</p>
+      </div>
+      <div class="card">
+        <h3>❌ Négliger le suivi</h3>
+        <p>Un devlog posté 1 semaine après le lancement rappelle aux indécis de soutenir, et fidélise les supporteurs existants. La communication régulière est aussi importante que le lancement lui-même.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Récap final ═══ -->
+  <section class="section">
+    <div class="section-header">
+      <div class="num">Synthèse</div>
+      <h2>En résumé — <span>l'essentiel</span></h2>
+    </div>
+
+    <div class="card" style="border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.05);">
+      <table class="summary-table">
+        <tbody>
+          <tr>
+            <td><strong>Plateforme</strong></td>
+            <td>Ko-fi — ko-fi.com/chronorelic</td>
+          </tr>
+          <tr>
+            <td><strong>Objectif initial</strong></td>
+            <td>300€ (serveurs + dev 3 mois)</td>
+          </tr>
+          <tr>
+            <td><strong>Commission</strong></td>
+            <td>0% Ko-fi + ~2,5% Stripe</td>
+          </tr>
+          <tr>
+            <td><strong>Palier principal</strong></td>
+            <td>15€ — Archiviste Fondateur (badge + devlogs)</td>
+          </tr>
+          <tr>
+            <td><strong>Lancement privé</strong></td>
+            <td>Email à tes bêta-testeurs (J0)</td>
+          </tr>
+          <tr>
+            <td><strong>Lancement public</strong></td>
+            <td>Reddit EN + FR (J+2, mardi/mercredi matin)</td>
+          </tr>
+          <tr>
+            <td><strong>Visuel clé</strong></td>
+            <td>GIF du reveal d'une relique Mythique/Légendaire</td>
+          </tr>
+          <tr>
+            <td><strong>Durée de la campagne</strong></td>
+            <td>Permanente — pas de date limite sur Ko-fi</td>
+          </tr>
+          <tr>
+            <td><strong>Setup total estimé</strong></td>
+            <td>~45 min de configuration + 1h de visuels</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip-box" style="margin-top:1.5rem">
+      <span class="icon">🚀</span>
+      <span><strong>Prochaine action concrète :</strong> ouvre ko-fi.com maintenant, crée le compte avec le nom <strong>chronorelic</strong>, et reviens ici étape par étape. La configuration prend moins d'une heure.</span>
+    </div>
+  </section>
+
+  <footer style="padding: 2rem 0; text-align: center; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border);">
+    <p>Document généré pour <strong style="color:var(--violet-l)">Binary Anvil</strong> · ChronoRelic Ko-fi Campaign Guide</p>
+    <p style="margin-top:0.4rem; font-size:0.75rem">Pour exporter en PDF : <strong>Fichier → Imprimer → Enregistrer en PDF</strong> (Chrome/Edge recommandé · Format A4 Portrait)</p>
+  </footer>
+
+</div>
+
+</body>
+</html>

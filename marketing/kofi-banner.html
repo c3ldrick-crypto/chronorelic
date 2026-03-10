@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1280px;
+      height: 640px;
+      overflow: hidden;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: #08081a;
+    }
+
+    .banner {
+      width: 1280px;
+      height: 640px;
+      position: relative;
+      overflow: hidden;
+      background: #08081a;
+    }
+
+    /* ── Fond étoilé ── */
+    .stars {
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 40% 8%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 85% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 60% 75%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 48% 50%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 5%  90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 45%, rgba(255,255,255,0.3) 0%, transparent 100%);
+    }
+
+    /* ── Glow orbes ── */
+    .orb-violet {
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(107,40,200,0.35) 0%, transparent 65%);
+      top: -200px; left: -100px;
+    }
+    .orb-gold {
+      position: absolute;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(196,150,10,0.2) 0%, transparent 65%);
+      bottom: -150px; right: 320px;
+    }
+    .orb-pink {
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 65%);
+      top: 50px; right: 200px;
+    }
+
+    /* ── Grille temporelle (déco) ── */
+    .grid-lines {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(107,40,200,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(107,40,200,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    /* ── Contenu principal ── */
+    .content {
+      position: relative; z-index: 10;
+      width: 100%; height: 100%;
+      display: flex; align-items: center;
+      padding: 0 80px;
+      gap: 60px;
+    }
+
+    /* ── Gauche : texte ── */
+    .left {
+      flex: 1;
+      display: flex; flex-direction: column;
+      gap: 0;
+    }
+
+    .studio-label {
+      font-size: 13px; font-weight: 800;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(192,132,252,0.7);
+      margin-bottom: 18px;
+    }
+
+    .logo-wrap {
+      display: flex; align-items: center; gap: 18px;
+      margin-bottom: 22px;
+    }
+    .logo-icon {
+      font-size: 72px;
+      line-height: 1;
+      filter: drop-shadow(0 0 20px rgba(232,184,75,0.6));
+    }
+    .logo-text {
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .logo-main {
+      font-size: 68px; font-weight: 900; line-height: 0.9;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #a78bfa 0%, #f5d678 60%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: none;
+    }
+    .logo-sub {
+      font-size: 14px; font-weight: 700;
+      letter-spacing: 0.4em; text-transform: uppercase;
+      color: rgba(196,150,10,0.6);
+      margin-top: 6px;
+    }
+
+    .tagline {
+      font-size: 22px; font-weight: 600;
+      color: rgba(226,232,240,0.85);
+      line-height: 1.4;
+      margin-bottom: 28px;
+      max-width: 460px;
+    }
+    .tagline em {
+      font-style: normal;
+      background: linear-gradient(135deg, #c084fc, #f5d678);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .pills {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .pill {
+      font-size: 12px; font-weight: 700;
+      padding: 6px 14px; border-radius: 999px;
+    }
+    .pill-v { background: rgba(107,40,200,0.18); border: 1px solid rgba(107,40,200,0.45); color: #c084fc; }
+    .pill-g { background: rgba(196,150,10,0.14); border: 1px solid rgba(196,150,10,0.4);  color: #fcd34d; }
+    .pill-e { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.35); color: #6ee7b7; }
+
+    /* ── Droite : carte relique ── */
+    .right {
+      width: 340px;
+      display: flex; flex-direction: column; gap: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Carte relique mythique */
+    .relic-card {
+      background: linear-gradient(145deg, #1a0f35, #120b28);
+      border: 1px solid rgba(236,72,153,0.5);
+      border-radius: 20px;
+      padding: 24px 28px;
+      text-align: center;
+      box-shadow:
+        0 0 40px rgba(236,72,153,0.25),
+        0 0 80px rgba(236,72,153,0.1),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .relic-card::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(236,72,153,0.12), transparent 60%);
+    }
+    .relic-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.25em; text-transform: uppercase;
+      color: rgba(249,168,212,0.6); margin-bottom: 10px;
+    }
+    .relic-time {
+      font-size: 52px; font-weight: 900;
+      letter-spacing: 0.12em;
+      color: #fff;
+      text-shadow: 0 0 30px rgba(236,72,153,0.8), 0 0 60px rgba(155,93,229,0.4);
+      line-height: 1;
+      margin-bottom: 8px;
+      font-variant-numeric: tabular-nums;
+    }
+    .relic-rarity {
+      font-size: 13px; font-weight: 800;
+      background: linear-gradient(135deg, #f9a8d4, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .relic-event {
+      background: rgba(236,72,153,0.1);
+      border: 1px solid rgba(236,72,153,0.25);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px; color: rgba(226,232,240,0.7);
+      position: relative; z-index: 1;
+    }
+    .relic-event-label {
+      font-size: 9px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #f9a8d4; margin-bottom: 3px;
+    }
+
+    /* Carte LÉGENDAIRE */
+    .relic-card-sm {
+      background: linear-gradient(145deg, #1a1505, #120f02);
+      border: 1px solid rgba(245,158,11,0.45);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: 0 0 24px rgba(245,158,11,0.15);
+    }
+    .relic-card-sm .mini-time {
+      font-size: 28px; font-weight: 900;
+      color: #fcd34d;
+      text-shadow: 0 0 16px rgba(245,158,11,0.6);
+      letter-spacing: 0.05em;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .relic-card-sm .mini-info { flex: 1; }
+    .relic-card-sm .mini-rarity {
+      font-size: 11px; font-weight: 800;
+      background: linear-gradient(135deg, #fcd34d, #f59e0b);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .relic-card-sm .mini-event {
+      font-size: 11px; color: rgba(226,232,240,0.5); margin-top: 2px;
+    }
+
+    /* Particules déco */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* ── Ligne de séparation déco ── */
+    .separator {
+      position: absolute;
+      left: 50%; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(107,40,200,0.2), transparent);
+      transform: translateX(-50%);
+    }
+
+    /* ── Badge Binary Anvil (coin bas gauche) ── */
+    .studio-badge {
+      position: absolute;
+      bottom: 28px; left: 80px;
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(107,40,200,0.1);
+      border: 1px solid rgba(107,40,200,0.25);
+      border-radius: 999px;
+      padding: 6px 14px;
+    }
+    .studio-badge span {
+      font-size: 11px; font-weight: 700;
+      color: rgba(192,132,252,0.7);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Relic count ── */
+    .relic-count {
+      position: absolute;
+      bottom: 28px; right: 80px;
+      text-align: right;
+    }
+    .relic-count .num {
+      font-size: 28px; font-weight: 900;
+      background: linear-gradient(135deg, #a78bfa, #fcd34d);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1;
+    }
+    .relic-count .lbl {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(148,163,184,0.5);
+    }
+  </style>
+</head>
+<body>
+<div class="banner">
+
+  <!-- Fond -->
+  <div class="stars"></div>
+  <div class="orb-violet"></div>
+  <div class="orb-gold"></div>
+  <div class="orb-pink"></div>
+  <div class="grid-lines"></div>
+
+  <!-- Particules déco -->
+  <div class="particle" style="width:4px;height:4px;background:#c084fc;opacity:0.6;top:18%;left:42%"></div>
+  <div class="particle" style="width:3px;height:3px;background:#fcd34d;opacity:0.5;top:65%;left:38%"></div>
+  <div class="particle" style="width:5px;height:5px;background:#ec4899;opacity:0.4;top:30%;left:52%"></div>
+  <div class="particle" style="width:3px;height:3px;background:#a78bfa;opacity:0.6;top:75%;left:55%"></div>
+  <div class="particle" style="width:4px;height:4px;background:#fcd34d;opacity:0.4;top:12%;left:62%"></div>
+
+  <!-- Contenu -->
+  <div class="content">
+
+    <!-- Gauche -->
+    <div class="left">
+      <div class="studio-label">Binary Anvil · Indie Game Dev</div>
+
+      <div class="logo-wrap">
+        <div class="logo-icon">⏳</div>
+        <div class="logo-text">
+          <div class="logo-main">ChronoRelic</div>
+          <div class="logo-sub">RPG of Time</div>
+        </div>
+      </div>
+
+      <div class="tagline">
+        Every minute of the day hides a relic.<br />
+        <em>Capture time. Collect history.</em>
+      </div>
+
+      <div class="pills">
+        <span class="pill pill-v">⚡ Indie RPG</span>
+        <span class="pill pill-g">🔮 5 Rarity Levels</span>
+        <span class="pill pill-e">📚 AI Historical Narration</span>
+      </div>
+    </div>
+
+    <!-- Droite : reliques -->
+    <div class="right">
+
+      <!-- Carte Mythique -->
+      <div class="relic-card">
+        <div class="relic-label">Relic Captured</div>
+        <div class="relic-time">11:11</div>
+        <div class="relic-rarity">✦ Mythic Anomaly</div>
+        <div class="relic-event">
+          <div class="relic-event-label">Historical Event</div>
+          Temporal Anomaly Detected
+        </div>
+      </div>
+
+      <!-- Carte Légendaire (petite) -->
+      <div class="relic-card-sm">
+        <div class="mini-time">20:17</div>
+        <div class="mini-info">
+          <div class="mini-rarity">🟡 Legendary</div>
+          <div class="mini-event">Apollo 11 Moon Landing</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Badge Binary Anvil -->
+  <div class="studio-badge">
+    <span>🔨 BINARY ANVIL STUDIO</span>
+  </div>
+
+  <!-- Relic count -->
+  <div class="relic-count">
+    <div class="num">1,440</div>
+    <div class="lbl">relics per day</div>
+  </div>
+
+</div>
+</body>
+</html>
