@@ -377,3 +377,18 @@ model ResearchProgress {
   @@unique([userId, nodeId])
   @@index([userId])
 }
+
+// ─────────────────────────────────────────────
+// BETA WAITLIST
+// ─────────────────────────────────────────────
+
+model BetaSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  source    String   @default("landing") // "landing", "manual", "admin"
+  note      String?                      // note interne admin
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

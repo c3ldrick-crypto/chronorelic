@@ -6,7 +6,7 @@ import Image from "next/image"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { RARITY_CONFIG } from "@/types"
 import { Button } from "@/components/ui/button"
-import { ChevronDown, ArrowRight, Zap } from "lucide-react"
+import { ChevronDown, ArrowRight, Zap, Mail } from "lucide-react"
 
 const DEMO_RELICS = [
   { minute: "20:17", rarity: "LEGENDAIRE" as const, event: "Apollo 11" },
@@ -81,6 +81,125 @@ function FloatingRelic({ minute, rarity, event, delay, x, y }: {
       </div>
       {event && <div className="text-[10px] mt-0.5 truncate max-w-[100px]" style={{ color: "#5a5046" }}>{event}</div>}
     </motion.div>
+  )
+}
+
+function BetaSection() {
+  const [email, setEmail]   = useState("")
+  const [name,  setName]    = useState("")
+  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle")
+  const [msg,   setMsg]     = useState("")
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email) return
+    setStatus("loading")
+    try {
+      const r = await fetch("/api/beta", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ email: email.trim(), name: name.trim(), source: "landing" }),
+      })
+      const data = await r.json().catch(() => ({}))
+      if (r.ok) {
+        setStatus("ok")
+        setMsg(data.message ?? "Inscription enregistrée !")
+      } else {
+        setStatus("error")
+        setMsg(data.error ?? "Une erreur est survenue.")
+      }
+    } catch {
+      setStatus("error")
+      setMsg("Erreur réseau. Réessayez.")
+    }
+  }
+
+  return (
+    <section className="py-24 px-4" style={{ background: "linear-gradient(180deg, transparent, rgba(107,40,200,0.04), transparent)" }}>
+      <div className="max-w-2xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="rounded-2xl p-8 sm:p-12 text-center"
+          style={{
+            background: "linear-gradient(145deg, rgba(107,40,200,0.08), rgba(20,16,40,0.9))",
+            border: "1px solid rgba(107,40,200,0.25)",
+            boxShadow: "0 0 60px rgba(107,40,200,0.08)",
+          }}
+        >
+          <div className="text-4xl mb-4">🔮</div>
+          <h2 className="font-display text-3xl sm:text-4xl font-black mb-3">
+            <span className="text-gradient-violet">Accès Bêta Fermée</span>
+          </h2>
+          <p className="text-sm sm:text-base mb-8" style={{ color: "#9b8d7a" }}>
+            ChronoRelic est en développement actif. Rejoignez la liste d&apos;attente pour être parmi les premiers à y accéder.
+          </p>
+
+          {status === "ok" ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-xl p-6"
+              style={{ background: "rgba(110,231,183,0.08)", border: "1px solid rgba(110,231,183,0.25)" }}
+            >
+              <div className="text-3xl mb-2">✓</div>
+              <p className="font-semibold" style={{ color: "#6ee7b7" }}>{msg}</p>
+              <p className="text-xs mt-2" style={{ color: "#5a5046" }}>Nous vous contacterons dès que les accès seront disponibles.</p>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <input
+                type="text"
+                placeholder="Votre prénom (optionnel)"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(107,40,200,0.2)",
+                  color: "#f0e6c8",
+                }}
+              />
+              <div className="flex gap-3">
+                <input
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  className="flex-1 rounded-xl px-4 py-3 text-sm outline-none transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(107,40,200,0.2)",
+                    color: "#f0e6c8",
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold transition-all shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg, #5b21b6, #7c3aed)",
+                    color: "#fff",
+                    opacity: status === "loading" ? 0.6 : 1,
+                  }}
+                >
+                  <Mail className="h-4 w-4" />
+                  {status === "loading" ? "..." : "M'inscrire"}
+                </button>
+              </div>
+              {status === "error" && (
+                <p className="text-xs" style={{ color: "#f43f5e" }}>{msg}</p>
+              )}
+              <p className="text-xs" style={{ color: "#5a5046" }}>
+                Aucun spam · Désabonnement possible à tout moment
+              </p>
+            </form>
+          )}
+        </motion.div>
+      </div>
+    </section>
   )
 }
 
@@ -389,6 +508,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ──────────── BETA WAITLIST ──────────── */}
+      <BetaSection />
 
       {/* ──────────── CTA FINAL ──────────── */}
       <section className="py-32 px-4 text-center relative overflow-hidden">

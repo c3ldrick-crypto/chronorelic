@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import Link from "next/link"
-import { LayoutDashboard, Users, BookOpen, Settings, ChevronRight } from "lucide-react"
+import { LayoutDashboard, Users, BookOpen, Settings, ChevronRight, FlaskConical } from "lucide-react"
 
 const ADMIN_NAV = [
   { href: "/admin",        label: "Dashboard",    icon: LayoutDashboard },
   { href: "/admin/users",  label: "Utilisateurs", icon: Users           },
   { href: "/admin/events", label: "Événements",   icon: BookOpen        },
+  { href: "/admin/beta",   label: "Bêta Waitlist",icon: FlaskConical    },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
