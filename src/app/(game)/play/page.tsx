@@ -127,8 +127,8 @@ export default function PlayPage() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen pt-20 pb-16 px-4">
-        <div className="relative max-w-lg mx-auto space-y-10">
+      <div className="min-h-screen pt-4 pb-8 px-4">
+        <div className="relative max-w-lg mx-auto space-y-5">
 
           {player.character && (
             <motion.div

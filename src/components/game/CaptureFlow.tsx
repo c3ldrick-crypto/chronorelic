@@ -184,7 +184,7 @@ export function CaptureFlow({ capturesLeft, isPremium, playerLevel, onCaptureDon
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center gap-5">
 
         {/* ── Status bar ─────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-4 text-xs">
@@ -220,7 +220,7 @@ export function CaptureFlow({ capturesLeft, isPremium, playerLevel, onCaptureDon
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.1 }}
               transition={{ duration: 0.4 }}
-              className="relative flex flex-col items-center gap-6"
+              className="relative flex flex-col items-center gap-4"
             >
               {/* Outer glow ring */}
               <div className="absolute inset-0 -m-16 pointer-events-none" aria-hidden>
