@@ -1,175 +1,118 @@
 "use client"
 
 /**
- * NeonBackground — fond d'écran vivant pour toutes les pages du jeu.
- * Branches de néon bleu (#00c8ff) et orange (#ff6500) qui s'étirent
- * depuis les coins, avec lueurs et animations douces.
+ * NeonBackground — fond vivant neon bleu/orange.
+ * Technique "neon tube" : double passe SVG (halo épais flou + filon fin lumineux).
+ * Bleu depuis le coin haut-gauche, orange depuis le coin bas-gauche, fusion au centre.
  */
 export function NeonBackground() {
   return (
-    <div
-      className="neon-bg-root"
-      aria-hidden
-    >
-      {/* ── Fond de base ──────────────────────────────────────────────── */}
-      <div className="neon-bg-base" />
+    <div className="neon-bg-root" aria-hidden>
+      {/* ── Base sombre ─────────────────────────────────────── */}
+      <div className="neon-base" />
 
-      {/* ── Orbe bleu — haut gauche (adouci) ─────────────────────────── */}
-      <div className="neon-orb neon-orb-blue" />
+      {/* ── Orbes de couleur (halos larges et doux) ─────────── */}
+      <div className="neon-orb orb-blue-tl" />
+      <div className="neon-orb orb-orange-bl" />
+      <div className="neon-orb orb-mix" />
 
-      {/* ── Orbe orange — bas gauche (nouveau) ───────────────────────── */}
-      <div className="neon-orb neon-orb-orange" />
-
-      {/* ── Orbe bleu secondaire — centre droit (très subtil) ─────────── */}
-      <div className="neon-orb neon-orb-blue-secondary" />
-
-      {/* ── SVG branches bleu — top-left ──────────────────────────────── */}
-      <svg className="neon-svg neon-svg-blue" viewBox="0 0 900 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* ══════════════════════════════════════════════════════
+          SVG BLEU — coin haut-gauche
+          Technique double passe : 1) halo épais+flou  2) filon fin+vif
+      ══════════════════════════════════════════════════════ */}
+      <svg className="neon-svg svg-tl" viewBox="0 0 820 640" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="glow-blue" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3.5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="glow-b-fat" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="22" />
           </filter>
-          <filter id="glow-blue-soft" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="7" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="glow-b-med" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="8" />
           </filter>
         </defs>
 
-        {/* Branche principale 1 */}
-        <path
-          d="M 0 0 C 60 80, 180 120, 280 200"
-          stroke="#00c8ff" strokeWidth="1.2" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b1"
-        />
-        {/* Fork 1a */}
-        <path
-          d="M 160 110 C 220 160, 300 140, 380 180"
-          stroke="#00c8ff" strokeWidth="0.8" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b1a"
-        />
-        {/* Fork 1b */}
-        <path
-          d="M 200 150 C 240 200, 260 260, 300 320"
-          stroke="#00c8ff" strokeWidth="0.7" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b1b"
-        />
+        {/* ─── Branche B1 — diagonale principale ──────────────── */}
+        {/* halo */}
+        <path d="M -10 -10 C 90 110, 220 200, 390 300" stroke="#00c8ff" strokeWidth="44" strokeLinecap="round" opacity="0.12" filter="url(#glow-b-fat)" className="nb nb-b1-h" />
+        {/* lueur intermédiaire */}
+        <path d="M -10 -10 C 90 110, 220 200, 390 300" stroke="#00c8ff" strokeWidth="6" strokeLinecap="round" opacity="0.25" filter="url(#glow-b-med)" className="nb nb-b1-h" />
+        {/* filon vif */}
+        <path d="M -10 -10 C 90 110, 220 200, 390 300" stroke="#7eeeff" strokeWidth="1.4" strokeLinecap="round" className="nb nb-b1" />
 
-        {/* Branche principale 2 */}
-        <path
-          d="M 0 0 C 40 120, 100 220, 180 340"
-          stroke="#00c8ff" strokeWidth="1.0" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b2"
-        />
-        {/* Fork 2a */}
-        <path
-          d="M 100 200 C 160 230, 240 210, 320 240"
-          stroke="#00c8ff" strokeWidth="0.6" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b2a"
-        />
+        {/* ─── Branche B2 — horizontale douce ─────────────────── */}
+        <path d="M -10 15 C 110 38, 280 55, 500 75" stroke="#00c8ff" strokeWidth="36" strokeLinecap="round" opacity="0.10" filter="url(#glow-b-fat)" className="nb nb-b2-h" />
+        <path d="M -10 15 C 110 38, 280 55, 500 75" stroke="#00c8ff" strokeWidth="5" strokeLinecap="round" opacity="0.22" filter="url(#glow-b-med)" className="nb nb-b2-h" />
+        <path d="M -10 15 C 110 38, 280 55, 500 75" stroke="#7eeeff" strokeWidth="1.1" strokeLinecap="round" className="nb nb-b2" />
 
-        {/* Branche principale 3 — plus horizontale */}
-        <path
-          d="M 0 20 C 100 40, 240 60, 400 80"
-          stroke="#00c8ff" strokeWidth="0.9" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b3"
-        />
-        {/* Fork 3a */}
-        <path
-          d="M 240 65 C 290 100, 320 160, 350 220"
-          stroke="#00c8ff" strokeWidth="0.55" strokeLinecap="round"
-          filter="url(#glow-blue)"
-          className="neon-branch nb-b3a"
-        />
+        {/* ─── Branche B3 — descendante ────────────────────────── */}
+        <path d="M 12 -10 C 35 130, 88 250, 135 410" stroke="#00c8ff" strokeWidth="32" strokeLinecap="round" opacity="0.10" filter="url(#glow-b-fat)" className="nb nb-b3-h" />
+        <path d="M 12 -10 C 35 130, 88 250, 135 410" stroke="#00c8ff" strokeWidth="4" strokeLinecap="round" opacity="0.20" filter="url(#glow-b-med)" className="nb nb-b3-h" />
+        <path d="M 12 -10 C 35 130, 88 250, 135 410" stroke="#7eeeff" strokeWidth="0.9" strokeLinecap="round" className="nb nb-b3" />
 
-        {/* Micro-branches terminales */}
-        <path d="M 280 200 C 310 230, 340 250, 360 280" stroke="#00c8ff" strokeWidth="0.4" strokeLinecap="round" filter="url(#glow-blue-soft)" className="neon-branch nb-m1" />
-        <path d="M 180 340 C 210 360, 250 355, 290 370" stroke="#00c8ff" strokeWidth="0.4" strokeLinecap="round" filter="url(#glow-blue-soft)" className="neon-branch nb-m2" />
-        <path d="M 380 180 C 410 210, 430 240, 420 280" stroke="#00c8ff" strokeWidth="0.35" strokeLinecap="round" filter="url(#glow-blue-soft)" className="neon-branch nb-m3" />
+        {/* ─── Fork BF1 (depuis B1 ≈ 220,200) ─────────────────── */}
+        <path d="M 220 200 C 290 225, 360 215, 470 240" stroke="#00c8ff" strokeWidth="24" strokeLinecap="round" opacity="0.09" filter="url(#glow-b-fat)" className="nb nb-bf1-h" />
+        <path d="M 220 200 C 290 225, 360 215, 470 240" stroke="#00c8ff" strokeWidth="3" strokeLinecap="round" opacity="0.18" filter="url(#glow-b-med)" className="nb nb-bf1-h" />
+        <path d="M 220 200 C 290 225, 360 215, 470 240" stroke="#7eeeff" strokeWidth="0.8" strokeLinecap="round" className="nb nb-bf1" />
+
+        {/* ─── Fork BF2 (depuis B1 ≈ 280,245) ─────────────────── */}
+        <path d="M 280 245 C 305 295, 325 345, 340 410" stroke="#00c8ff" strokeWidth="20" strokeLinecap="round" opacity="0.08" filter="url(#glow-b-fat)" className="nb nb-bf2-h" />
+        <path d="M 280 245 C 305 295, 325 345, 340 410" stroke="#00c8ff" strokeWidth="2.5" strokeLinecap="round" opacity="0.16" filter="url(#glow-b-med)" className="nb nb-bf2-h" />
+        <path d="M 280 245 C 305 295, 325 345, 340 410" stroke="#7eeeff" strokeWidth="0.7" strokeLinecap="round" className="nb nb-bf2" />
+
+        {/* ─── Fork BF3 (depuis B2 ≈ 310,60) ──────────────────── */}
+        <path d="M 310 60 C 355 110, 385 170, 400 240" stroke="#00c8ff" strokeWidth="18" strokeLinecap="round" opacity="0.08" filter="url(#glow-b-fat)" className="nb nb-bf3-h" />
+        <path d="M 310 60 C 355 110, 385 170, 400 240" stroke="#00c8ff" strokeWidth="2" strokeLinecap="round" opacity="0.15" filter="url(#glow-b-med)" className="nb nb-bf3-h" />
+        <path d="M 310 60 C 355 110, 385 170, 400 240" stroke="#7eeeff" strokeWidth="0.65" strokeLinecap="round" className="nb nb-bf3" />
       </svg>
 
-      {/* ── SVG branches orange — bottom-left ────────────────────────── */}
-      <svg className="neon-svg neon-svg-orange" viewBox="0 0 900 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* ══════════════════════════════════════════════════════
+          SVG ORANGE — coin bas-gauche
+      ══════════════════════════════════════════════════════ */}
+      <svg className="neon-svg svg-bl" viewBox="0 0 820 640" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="glow-orange" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3.5" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="glow-o-fat" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur stdDeviation="22" />
           </filter>
-          <filter id="glow-orange-soft" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="7" result="blur" />
-            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          <filter id="glow-o-med" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="8" />
           </filter>
         </defs>
 
-        {/* Branche principale 1 — monte vers droite */}
-        <path
-          d="M 0 700 C 60 620, 180 580, 290 500"
-          stroke="#ff6500" strokeWidth="1.2" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o1"
-        />
-        {/* Fork 1a */}
-        <path
-          d="M 160 590 C 220 540, 310 560, 390 520"
-          stroke="#ff6500" strokeWidth="0.8" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o1a"
-        />
-        {/* Fork 1b */}
-        <path
-          d="M 200 550 C 240 500, 265 440, 310 380"
-          stroke="#ff6500" strokeWidth="0.7" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o1b"
-        />
+        {/* ─── Branche O1 — diagonale montante principale ─────── */}
+        <path d="M -10 650 C 90 530, 220 440, 390 340" stroke="#ff6500" strokeWidth="44" strokeLinecap="round" opacity="0.13" filter="url(#glow-o-fat)" className="nb nb-o1-h" />
+        <path d="M -10 650 C 90 530, 220 440, 390 340" stroke="#ff6500" strokeWidth="6" strokeLinecap="round" opacity="0.26" filter="url(#glow-o-med)" className="nb nb-o1-h" />
+        <path d="M -10 650 C 90 530, 220 440, 390 340" stroke="#ffaa55" strokeWidth="1.4" strokeLinecap="round" className="nb nb-o1" />
 
-        {/* Branche principale 2 */}
-        <path
-          d="M 0 700 C 40 580, 110 480, 200 360"
-          stroke="#ff6500" strokeWidth="1.0" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o2"
-        />
-        {/* Fork 2a */}
-        <path
-          d="M 110 490 C 170 460, 250 480, 330 460"
-          stroke="#ff6500" strokeWidth="0.6" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o2a"
-        />
+        {/* ─── Branche O2 — horizontale vers droite ───────────── */}
+        <path d="M -10 625 C 110 600, 280 585, 500 565" stroke="#ff6500" strokeWidth="36" strokeLinecap="round" opacity="0.10" filter="url(#glow-o-fat)" className="nb nb-o2-h" />
+        <path d="M -10 625 C 110 600, 280 585, 500 565" stroke="#ff6500" strokeWidth="5" strokeLinecap="round" opacity="0.22" filter="url(#glow-o-med)" className="nb nb-o2-h" />
+        <path d="M -10 625 C 110 600, 280 585, 500 565" stroke="#ffaa55" strokeWidth="1.1" strokeLinecap="round" className="nb nb-o2" />
 
-        {/* Branche principale 3 — plus horizontale */}
-        <path
-          d="M 0 680 C 100 660, 240 640, 410 620"
-          stroke="#ff6500" strokeWidth="0.9" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o3"
-        />
-        {/* Fork 3a */}
-        <path
-          d="M 250 635 C 295 600, 325 540, 358 480"
-          stroke="#ff6500" strokeWidth="0.55" strokeLinecap="round"
-          filter="url(#glow-orange)"
-          className="neon-branch nb-o3a"
-        />
+        {/* ─── Branche O3 — montante verticale ───────────────── */}
+        <path d="M 12 650 C 35 510, 88 390, 135 230" stroke="#ff6500" strokeWidth="32" strokeLinecap="round" opacity="0.10" filter="url(#glow-o-fat)" className="nb nb-o3-h" />
+        <path d="M 12 650 C 35 510, 88 390, 135 230" stroke="#ff6500" strokeWidth="4" strokeLinecap="round" opacity="0.20" filter="url(#glow-o-med)" className="nb nb-o3-h" />
+        <path d="M 12 650 C 35 510, 88 390, 135 230" stroke="#ffaa55" strokeWidth="0.9" strokeLinecap="round" className="nb nb-o3" />
 
-        {/* Micro-branches terminales */}
-        <path d="M 290 500 C 320 470, 355 450, 370 420" stroke="#ff6500" strokeWidth="0.4" strokeLinecap="round" filter="url(#glow-orange-soft)" className="neon-branch nb-om1" />
-        <path d="M 200 360 C 230 340, 270 345, 305 330" stroke="#ff6500" strokeWidth="0.4" strokeLinecap="round" filter="url(#glow-orange-soft)" className="neon-branch nb-om2" />
-        <path d="M 390 520 C 420 490, 445 460, 435 420" stroke="#ff6500" strokeWidth="0.35" strokeLinecap="round" filter="url(#glow-orange-soft)" className="neon-branch nb-om3" />
+        {/* ─── Fork OF1 (depuis O1 ≈ 220,440) ─────────────────── */}
+        <path d="M 220 440 C 290 415, 360 425, 470 400" stroke="#ff6500" strokeWidth="24" strokeLinecap="round" opacity="0.09" filter="url(#glow-o-fat)" className="nb nb-of1-h" />
+        <path d="M 220 440 C 290 415, 360 425, 470 400" stroke="#ff6500" strokeWidth="3" strokeLinecap="round" opacity="0.18" filter="url(#glow-o-med)" className="nb nb-of1-h" />
+        <path d="M 220 440 C 290 415, 360 425, 470 400" stroke="#ffaa55" strokeWidth="0.8" strokeLinecap="round" className="nb nb-of1" />
+
+        {/* ─── Fork OF2 (depuis O1 ≈ 280,395) ─────────────────── */}
+        <path d="M 280 395 C 305 345, 325 295, 340 230" stroke="#ff6500" strokeWidth="20" strokeLinecap="round" opacity="0.08" filter="url(#glow-o-fat)" className="nb nb-of2-h" />
+        <path d="M 280 395 C 305 345, 325 295, 340 230" stroke="#ff6500" strokeWidth="2.5" strokeLinecap="round" opacity="0.16" filter="url(#glow-o-med)" className="nb nb-of2-h" />
+        <path d="M 280 395 C 305 345, 325 295, 340 230" stroke="#ffaa55" strokeWidth="0.7" strokeLinecap="round" className="nb nb-of2" />
+
+        {/* ─── Fork OF3 (depuis O2 ≈ 310,580) ─────────────────── */}
+        <path d="M 310 580 C 355 535, 385 480, 400 410" stroke="#ff6500" strokeWidth="18" strokeLinecap="round" opacity="0.08" filter="url(#glow-o-fat)" className="nb nb-of3-h" />
+        <path d="M 310 580 C 355 535, 385 480, 400 410" stroke="#ff6500" strokeWidth="2" strokeLinecap="round" opacity="0.15" filter="url(#glow-o-med)" className="nb nb-of3-h" />
+        <path d="M 310 580 C 355 535, 385 480, 400 410" stroke="#ffaa55" strokeWidth="0.65" strokeLinecap="round" className="nb nb-of3" />
       </svg>
 
-      {/* ── Particules flottantes (points lumineux) ───────────────────── */}
+      {/* ── Particules flottantes ──────────────────────────── */}
       <div className="neon-particles">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className={`neon-particle neon-particle-${i}`} />
-        ))}
+        <div className="np np-0" /><div className="np np-1" /><div className="np np-2" />
+        <div className="np np-3" /><div className="np np-4" /><div className="np np-5" />
+        <div className="np np-6" /><div className="np np-7" />
       </div>
     </div>
   )
