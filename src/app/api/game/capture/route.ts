@@ -560,7 +560,8 @@ export async function POST(req: NextRequest) {
 
     const relic = await prisma.$transaction(async (tx: PrismaTx) => {
       // Create relic only for RELIQUE / HYBRIDE
-      let newRelic: { id: string; capturedAt: Date; historicalEvent: { title: string; year: number | null } | null } | null = null
+      let newRelic: { id: string; capturedAt: Date; historicalEvent: { title: string; year: number | null; description: string; curiosity: string | null; category: string | null } | null } | null = null
+      const historicalEventSelect = { title: true, year: true, description: true, curiosity: true, category: true }
       if (captureIntent === "RELIQUE" || captureIntent === "HYBRIDE") {
         newRelic = await tx.relic.create({
           data: {
@@ -576,7 +577,7 @@ export async function POST(req: NextRequest) {
               ? (await tx.historicalEvent.findFirst({ where: { minute }, select: { id: true } }))?.id
               : undefined,
           },
-          include: { historicalEvent: { select: { title: true, year: true } } },
+          include: { historicalEvent: { select: historicalEventSelect } },
         })
       } else {
         // ESSENCE mode: create a "ghost" relic to track the minute as captured
@@ -594,7 +595,7 @@ export async function POST(req: NextRequest) {
               ? (await tx.historicalEvent.findFirst({ where: { minute }, select: { id: true } }))?.id
               : undefined,
           },
-          include: { historicalEvent: { select: { title: true, year: true } } },
+          include: { historicalEvent: { select: historicalEventSelect } },
         })
       }
 
@@ -682,13 +683,16 @@ export async function POST(req: NextRequest) {
     } catch { /* ignore */ }
 
     return NextResponse.json({
-      relicId:     relic?.id,
+      relicId:          relic?.id,
       minute,
       rarity,
       xpGained,
       narration,
-      eventTitle:  relic?.historicalEvent?.title,
-      eventYear:   relic?.historicalEvent?.year,
+      eventTitle:       relic?.historicalEvent?.title,
+      eventYear:        relic?.historicalEvent?.year,
+      eventDescription: relic?.historicalEvent?.description,
+      eventCuriosity:   relic?.historicalEvent?.curiosity,
+      eventCategory:    relic?.historicalEvent?.category,
       isMythique:  rarity === "MYTHIQUE",
       didLevelUp,
       newLevel:    didLevelUp ? levelAfter : undefined,

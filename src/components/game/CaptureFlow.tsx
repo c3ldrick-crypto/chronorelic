@@ -3,34 +3,38 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
-import { Eye, Coins, Swords, Skull, Zap, Clock, RefreshCw, ChevronLeft, Sparkles, Atom } from "lucide-react"
+import { Eye, Coins, Swords, Skull, Zap, Clock, RefreshCw, ChevronLeft, Sparkles, Atom, Quote } from "lucide-react"
 import { STAKE_TIERS, type StakeTier } from "@/lib/game/essences"
 import type { TimeWindow } from "@/lib/game/windows"
+import { getRandomQuote, type TimeQuote } from "@/lib/game/quotes"
 
 type CaptureIntent = "RELIQUE" | "ESSENCE" | "HYBRIDE"
 type CapturePhase  = "idle" | "scan" | "ancrage" | "extraction" | "resultat"
 type TimingZone    = "COMMUNE" | "RARE" | "EPIQUE" | "LEGENDAIRE"
 
 export interface CaptureResult {
-  success:       boolean
-  relicId?:      string
-  minute?:       string
-  rarity?:       string
-  xpGained?:     number
-  drops?:        Record<string, number>
-  essenceDrops?: Record<string, number>
-  narration?:    string
-  eventTitle?:   string
-  eventYear?:    number
-  didLevelUp?:   boolean
-  newLevel?:     number
-  captureIntent: CaptureIntent
-  stakeTier:     StakeTier
-  lostCost?:     Record<string, number>
-  deathPending?: boolean
+  success:          boolean
+  relicId?:         string
+  minute?:          string
+  rarity?:          string
+  xpGained?:        number
+  drops?:           Record<string, number>
+  essenceDrops?:    Record<string, number>
+  narration?:       string
+  eventTitle?:      string
+  eventYear?:       number
+  eventDescription?: string
+  eventCuriosity?:  string
+  eventCategory?:   string
+  didLevelUp?:      boolean
+  newLevel?:        number
+  captureIntent:    CaptureIntent
+  stakeTier:        StakeTier
+  lostCost?:        Record<string, number>
+  deathPending?:    boolean
   heritageOptions?: unknown[]
-  message?:      string
-  consolation?:  Record<string, number>
+  message?:         string
+  consolation?:     Record<string, number>
 }
 
 interface CaptureFlowProps {
@@ -117,11 +121,11 @@ function detectAnchorZone(pos: number): AnchorZoneConfig {
 }
 
 const RARITY_RESET_DELAY: Record<string, number> = {
-  COMMUNE:    2500,
-  RARE:       3500,
-  EPIQUE:     4500,
-  LEGENDAIRE: 6000,
-  MYTHIQUE:   8000,
+  COMMUNE:    6000,
+  RARE:       9000,
+  EPIQUE:     12000,
+  LEGENDAIRE: 16000,
+  MYTHIQUE:   20000,
 }
 
 // ── Risk meter config ─────────────────────────────────────────────────────────
@@ -443,26 +447,51 @@ function GradualRevealCard({
   success,
   rarity,
   timingZone,
+  narration,
+  eventTitle,
+  eventYear,
+  eventDescription,
+  eventCuriosity,
+  quote,
 }: {
-  success:    boolean
-  rarity?:    string
-  timingZone: TimingZone | null
+  success:          boolean
+  rarity?:          string
+  timingZone:       TimingZone | null
+  narration?:       string
+  eventTitle?:      string
+  eventYear?:       number
+  eventDescription?: string
+  eventCuriosity?:  string
+  quote?:           TimeQuote
 }) {
-  const isRare    = rarity === "RARE"
-  const isEpique  = rarity === "EPIQUE"
-  const isLegen   = rarity === "LEGENDAIRE"
+  const isRare     = rarity === "RARE"
+  const isEpique   = rarity === "EPIQUE"
+  const isLegen    = rarity === "LEGENDAIRE"
   const isMythique = rarity === "MYTHIQUE"
 
   const needsFlash = success && (isRare || isEpique || isLegen || isMythique)
   const flashMs    = isMythique ? 1500 : isLegen ? 1000 : isEpique ? 650 : 350
 
-  const [revealed, setRevealed] = useState(!needsFlash)
+  const [revealed,      setRevealed]      = useState(!needsFlash)
+  const [showEvent,     setShowEvent]     = useState(false)
+  const [showQuote,     setShowQuote]     = useState(false)
+  const [showNarration, setShowNarration] = useState(false)
 
   useEffect(() => {
-    if (!needsFlash) return
-    const t = setTimeout(() => setRevealed(true), flashMs)
-    return () => clearTimeout(t)
-  }, [needsFlash, flashMs])
+    if (!needsFlash) {
+      // Commune / RARE without flash — cascade immediately
+      const t1 = setTimeout(() => setShowEvent(true),     300)
+      const t2 = setTimeout(() => setShowQuote(true),     800)
+      const t3 = setTimeout(() => setShowNarration(true), 1400)
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+    }
+    const t0 = setTimeout(() => setRevealed(true),      flashMs)
+    const t1 = setTimeout(() => setShowEvent(true),     flashMs + 400)
+    const t2 = setTimeout(() => setShowQuote(true),     flashMs + 1100)
+    const t3 = setTimeout(() => setShowNarration(true), flashMs + 2000)
+    return () => { clearTimeout(t0); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Failure
   if (!success) {
@@ -514,22 +543,22 @@ function GradualRevealCard({
     )
   }
 
-  // Reveal card
+  // Particles for EPIQUE+
   const particleCount = isMythique ? 14 : isLegen ? 10 : isEpique ? 6 : 0
   const particleClass = isMythique ? "bg-pink-300" : isLegen ? "bg-amber-300" : "bg-purple-300"
 
   return (
-    <div className="relative">
-      {/* Particles for EPIQUE+ */}
+    <div className="relative w-full space-y-3">
+      {/* Particles */}
       {particleCount > 0 && (
         <>
           {Array.from({ length: particleCount }).map((_, i) => {
-            const angle = (i / particleCount) * Math.PI * 2
+            const angle  = (i / particleCount) * Math.PI * 2
             const radius = 50 + (i % 4) * 12
             return (
               <motion.div
                 key={i}
-                className={`absolute w-1.5 h-1.5 rounded-full ${particleClass}`}
+                className={`absolute w-1.5 h-1.5 rounded-full ${particleClass} pointer-events-none`}
                 style={{ top: "50%", left: "50%", marginTop: -3, marginLeft: -3 }}
                 initial={{ x: 0, y: 0, opacity: 1 }}
                 animate={{ x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, opacity: 0 }}
@@ -540,39 +569,119 @@ function GradualRevealCard({
         </>
       )}
 
+      {/* ── Rarity badge ─────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, scale: isLegen || isMythique ? 0.5 : 0.8, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 400, damping: 22 }}
-        className={`text-center p-4 rounded-xl border shadow-2xl bg-gradient-to-br ${rarityColor} ${rarityGlow}`}
+        className={`text-center p-3 rounded-xl border shadow-2xl bg-gradient-to-br ${rarityColor} ${rarityGlow}`}
       >
         {isMythique && (
-          <motion.div
-            animate={{ rotate: [0, 8, -8, 5, -5, 0] }}
-            transition={{ duration: 0.6 }}
-            className="text-3xl mb-1"
-          >
-            🌟
-          </motion.div>
+          <motion.div animate={{ rotate: [0, 8, -8, 5, -5, 0] }} transition={{ duration: 0.6 }} className="text-2xl mb-1">🌟</motion.div>
         )}
         {isLegen && (
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-            className="text-3xl mb-1"
-          >
-            👑
-          </motion.div>
+          <motion.div initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="text-2xl mb-1">👑</motion.div>
         )}
-
-        <Zap className="h-8 w-8 text-white mx-auto mb-2" />
-        <p className="text-white font-bold text-lg">Capture réussie !</p>
-        <p className="text-white/80 text-sm font-mono">{rarity}</p>
+        <Zap className="h-6 w-6 text-white mx-auto mb-1" />
+        <p className="text-white font-bold">Capture réussie !</p>
+        <p className="text-white/80 text-xs font-mono">{rarity}</p>
         {timingZone && timingZone !== "COMMUNE" && (
-          <p className="text-white/50 text-xs mt-1">Ancrage {timingZone}</p>
+          <p className="text-white/50 text-[10px] mt-0.5">Ancrage {timingZone}</p>
         )}
       </motion.div>
+
+      {/* ── Historical event card ─────────────────────────────────── */}
+      <AnimatePresence>
+        {showEvent && eventTitle && (
+          <motion.div
+            key="event"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="rounded-xl border p-3 space-y-1"
+            style={{
+              background: "linear-gradient(145deg, rgba(196,150,10,0.06), rgba(20,16,40,0.9))",
+              borderColor: "rgba(196,150,10,0.25)",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-base">📜</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold truncate" style={{ color: "#e8b84b" }}>
+                  {eventTitle}
+                  {eventYear != null && <span className="font-normal opacity-70 ml-1">({eventYear > 0 ? eventYear : `${Math.abs(eventYear)} av. J.-C.`})</span>}
+                </p>
+              </div>
+            </div>
+            {eventDescription && (
+              <p className="text-[11px] leading-relaxed" style={{ color: "#9b8d7a" }}>
+                {eventDescription}
+              </p>
+            )}
+            {eventCuriosity && (
+              <div className="flex items-start gap-1.5 mt-1 pt-1 border-t border-amber-400/10">
+                <span className="text-xs shrink-0">💡</span>
+                <p className="text-[11px] italic" style={{ color: "#c4960a" }}>
+                  {eventCuriosity}
+                </p>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Famous quote ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showQuote && quote && (
+          <motion.div
+            key="quote"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="rounded-xl border p-3"
+            style={{
+              background: "rgba(107,40,200,0.06)",
+              borderColor: "rgba(107,40,200,0.2)",
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <Quote className="h-3.5 w-3.5 mt-0.5 shrink-0 text-violet-400 opacity-70" />
+              <div>
+                <p className="text-[11px] italic leading-relaxed" style={{ color: "#c4b5fd" }}>
+                  {quote.text}
+                </p>
+                <p className="text-[10px] mt-1 text-right" style={{ color: "#6b5a8e" }}>
+                  — {quote.author}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── AI Narration ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showNarration && narration && (
+          <motion.div
+            key="narration"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="rounded-xl border p-3"
+            style={{
+              background: "rgba(6,182,212,0.04)",
+              borderColor: "rgba(6,182,212,0.15)",
+            }}
+          >
+            <div className="flex items-start gap-2">
+              <span className="text-sm shrink-0">✨</span>
+              <p className="text-[11px] leading-relaxed italic" style={{ color: "#7dd3fc" }}>
+                {narration}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -594,10 +703,16 @@ export function CaptureFlow({
   const [selectedWindow, setWindow] = useState<string | null>(null)
   const [usesMachine, setUsesMachine] = useState(false)
   const [phase, setPhase]           = useState<CapturePhase>("idle")
-  const [captureSuccess, setCaptureSuccess] = useState<boolean | null>(null)
-  const [captureRarity, setCaptureRarity]   = useState<string | undefined>()
-  const [timingZone, setTimingZone]         = useState<TimingZone | null>(null)
-  const [isSubmitting, setIsSubmitting]     = useState(false)
+  const [captureSuccess, setCaptureSuccess]           = useState<boolean | null>(null)
+  const [captureRarity, setCaptureRarity]             = useState<string | undefined>()
+  const [timingZone, setTimingZone]                   = useState<TimingZone | null>(null)
+  const [captureNarration, setCaptureNarration]       = useState<string | undefined>()
+  const [captureEventTitle, setCaptureEventTitle]     = useState<string | undefined>()
+  const [captureEventYear, setCaptureEventYear]       = useState<number | undefined>()
+  const [captureEventDesc, setCaptureEventDesc]       = useState<string | undefined>()
+  const [captureEventCurio, setCaptureEventCurio]     = useState<string | undefined>()
+  const [captureQuote, setCaptureQuote]               = useState<TimeQuote | undefined>()
+  const [isSubmitting, setIsSubmitting]               = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const clearTimer = () => { if (timerRef.current) clearTimeout(timerRef.current) }
@@ -668,30 +783,41 @@ export function CaptureFlow({
       const ok   = !data.failed
       setCaptureSuccess(ok)
       setCaptureRarity(data.rarity)
+      if (ok) {
+        setCaptureNarration(data.narration)
+        setCaptureEventTitle(data.eventTitle)
+        setCaptureEventYear(data.eventYear)
+        setCaptureEventDesc(data.eventDescription)
+        setCaptureEventCurio(data.eventCuriosity)
+        setCaptureQuote(getRandomQuote())
+      }
 
       timerRef.current = setTimeout(() => {
         setPhase("resultat")
 
         const result: CaptureResult = {
-          success:         ok,
-          relicId:         data.relicId,
-          minute:          data.minute,
-          rarity:          data.rarity,
-          xpGained:        data.xpGained,
-          drops:           data.drops,
-          essenceDrops:    data.essenceDrops,
-          narration:       data.narration,
-          eventTitle:      data.eventTitle,
-          eventYear:       data.eventYear,
-          didLevelUp:      data.didLevelUp,
-          newLevel:        data.newLevel,
-          captureIntent:   intent,
+          success:          ok,
+          relicId:          data.relicId,
+          minute:           data.minute,
+          rarity:           data.rarity,
+          xpGained:         data.xpGained,
+          drops:            data.drops,
+          essenceDrops:     data.essenceDrops,
+          narration:        data.narration,
+          eventTitle:       data.eventTitle,
+          eventYear:        data.eventYear,
+          eventDescription: data.eventDescription,
+          eventCuriosity:   data.eventCuriosity,
+          eventCategory:    data.eventCategory,
+          didLevelUp:       data.didLevelUp,
+          newLevel:         data.newLevel,
+          captureIntent:    intent,
           stakeTier,
-          lostCost:        data.lostCost,
-          deathPending:    data.deathPending,
-          heritageOptions: data.heritageOptions,
-          message:         data.message,
-          consolation:     data.consolation,
+          lostCost:         data.lostCost,
+          deathPending:     data.deathPending,
+          heritageOptions:  data.heritageOptions,
+          message:          data.message,
+          consolation:      data.consolation,
         }
 
         onCaptureDone(result)
@@ -702,6 +828,12 @@ export function CaptureFlow({
           setPhase("idle")
           setCaptureSuccess(null)
           setCaptureRarity(undefined)
+          setCaptureNarration(undefined)
+          setCaptureEventTitle(undefined)
+          setCaptureEventYear(undefined)
+          setCaptureEventDesc(undefined)
+          setCaptureEventCurio(undefined)
+          setCaptureQuote(undefined)
           setIsSubmitting(false)
           setWindow(null)
           setUsesMachine(false)
@@ -943,7 +1075,7 @@ export function CaptureFlow({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center min-h-[280px] gap-4 relative"
+            className="flex flex-col items-center justify-start min-h-[280px] gap-4 relative overflow-y-auto max-h-[520px] pr-1"
           >
             <AnimatePresence mode="wait">
               {phase === "scan" && (
@@ -966,12 +1098,18 @@ export function CaptureFlow({
                   key="resultat"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="w-full max-w-xs"
+                  className="w-full"
                 >
                   <GradualRevealCard
                     success={captureSuccess}
                     rarity={captureRarity}
                     timingZone={timingZone}
+                    narration={captureNarration}
+                    eventTitle={captureEventTitle}
+                    eventYear={captureEventYear}
+                    eventDescription={captureEventDesc}
+                    eventCuriosity={captureEventCurio}
+                    quote={captureQuote}
                   />
                 </motion.div>
               )}
