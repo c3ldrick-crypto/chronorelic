@@ -112,7 +112,7 @@ export default function MachinePage() {
   const ml = state.machineLevel
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 max-w-2xl mx-auto">
+    <div className="min-h-screen p-4 max-w-2xl mx-auto">
       {/* Machine header */}
       <div className="text-center mb-8">
         <motion.div

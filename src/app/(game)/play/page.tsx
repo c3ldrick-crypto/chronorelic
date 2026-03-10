@@ -127,16 +127,7 @@ export default function PlayPage() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen pt-20 pb-16 px-4"
-        style={{ background: "linear-gradient(180deg, #05040e 0%, #0a0715 100%)" }}>
-
-        <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 opacity-5 rounded-full blur-3xl"
-            style={{ background: "#00c8ff" }} />
-          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 opacity-5 rounded-full blur-3xl"
-            style={{ background: "#ff6500" }} />
-        </div>
-
+      <div className="min-h-screen pt-20 pb-16 px-4">
         <div className="relative max-w-lg mx-auto space-y-10">
 
           {player.character && (

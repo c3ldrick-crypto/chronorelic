@@ -189,7 +189,7 @@ export default function ResearchPage() {
   const branchNodes = data.nodes.filter(n => n.branch === activeBranch)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 max-w-2xl mx-auto">
+    <div className="min-h-screen p-4 max-w-2xl mx-auto">
       {/* Header */}
       <div className="text-center mb-6">
         <FlaskConical className="h-10 w-10 text-amber-400 mx-auto mb-2" />

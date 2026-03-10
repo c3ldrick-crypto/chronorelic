@@ -6,16 +6,7 @@ import Link from "next/link"
 
 export default function CraftPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 pt-20 pb-16"
-      style={{ background: "linear-gradient(180deg, #05040e 0%, #0a0715 100%)" }}>
-
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
-        <div className="absolute top-1/3 left-1/3 w-96 h-96 opacity-5 rounded-full blur-3xl"
-          style={{ background: "#00c8ff" }} />
-        <div className="absolute bottom-1/3 right-1/3 w-80 h-80 opacity-5 rounded-full blur-3xl"
-          style={{ background: "#ff6500" }} />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center px-4 pt-20 pb-16">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}

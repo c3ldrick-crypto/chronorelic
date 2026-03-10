@@ -56,7 +56,7 @@ export default function ChronolithesPage() {
   const completedStories = stories.filter((s) => s.status === "COMPLETED")
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4" style={{ background: "linear-gradient(180deg, #0a0613 0%, #0f0c1d 100%)" }}>
+    <div className="min-h-screen pt-20 pb-16 px-4">
       <div className="max-w-2xl mx-auto space-y-8">
 
         {/* ── Header ─────────────────────────────────────────────────────────── */}

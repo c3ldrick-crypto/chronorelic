@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { Navbar } from "@/components/layout/Navbar"
+import { NeonBackground } from "@/components/layout/NeonBackground"
 import { levelFromXP } from "@/lib/game/xp"
 
 export default async function GameLayout({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ export default async function GameLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="min-h-screen nebula-bg">
+      <NeonBackground />
       <Navbar
         user={{
           name:           user.name ?? "Gardien",
@@ -47,7 +49,7 @@ export default async function GameLayout({ children }: { children: React.ReactNo
           level,
         }}
       />
-      <main className="pt-16 min-h-[calc(100vh-64px)]">
+      <main className="relative z-10 pt-16 min-h-[calc(100vh-64px)]">
         {children}
       </main>
     </div>
