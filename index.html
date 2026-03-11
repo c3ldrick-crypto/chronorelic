@@ -388,7 +388,7 @@
       background: linear-gradient(180deg, transparent, rgba(56,189,248,0.02), transparent);
     }
     .wip-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 16px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; margin-top: 16px;
     }
     .wip-card {
       border-radius: 24px; padding: 40px; text-decoration: none; color: var(--text);
@@ -407,6 +407,11 @@
       border: 1.5px solid rgba(232,184,75,0.2);
     }
     .wip-kairos:hover { box-shadow: 0 20px 60px rgba(232,184,75,0.12); border-color: rgba(232,184,75,0.45); }
+    .wip-echo {
+      background: linear-gradient(160deg, rgba(59,130,246,0.07), rgba(245,158,11,0.04), rgba(6,5,13,0.97));
+      border: 1.5px solid rgba(59,130,246,0.2);
+    }
+    .wip-echo:hover { box-shadow: 0 20px 60px rgba(59,130,246,0.14); border-color: rgba(59,130,246,0.45); }
     .wip-tag {
       display: inline-flex; align-items: center; gap: 6px;
       border-radius: 100px; padding: 4px 12px;
@@ -415,6 +420,7 @@
     }
     .wip-tag-cyan  { background: rgba(56,189,248,0.1);  border: 1px solid rgba(56,189,248,0.3);  color: var(--blue); }
     .wip-tag-gold  { background: rgba(232,184,75,0.1);  border: 1px solid rgba(232,184,75,0.3);  color: var(--gold); }
+    .wip-tag-echo  { background: rgba(59,130,246,0.1);  border: 1px solid rgba(245,158,11,0.35); color: #60a5fa; }
     .wip-icon { font-size: 3rem; }
     .wip-title {
       font-family: "Orbitron", sans-serif; font-size: 1.4rem; font-weight: 800;
@@ -422,6 +428,7 @@
     }
     .wip-netflix .wip-title { color: var(--blue); }
     .wip-kairos  .wip-title { color: var(--gold); }
+    .wip-echo    .wip-title { color: #60a5fa; }
     .wip-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
     .wip-features { display: flex; flex-direction: column; gap: 8px; }
     .wip-feature {
@@ -433,6 +440,7 @@
     }
     .wip-netflix .wip-feature-dot { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
     .wip-kairos  .wip-feature-dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+    .wip-echo    .wip-feature-dot { background: #60a5fa;     box-shadow: 0 0 6px rgba(59,130,246,0.7); }
     .wip-cta {
       margin-top: auto; display: inline-flex; align-items: center; gap: 6px;
       font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em;
@@ -440,6 +448,7 @@
     }
     .wip-netflix .wip-cta { color: var(--blue); }
     .wip-kairos  .wip-cta { color: var(--gold); }
+    .wip-echo    .wip-cta { color: #60a5fa; }
     .wip-segments {
       display: flex; align-items: center; gap: 6px; padding: 12px 0;
     }
@@ -463,7 +472,8 @@
     .wip-choice-hist { background: rgba(232,184,75,0.08); border: 1px solid rgba(232,184,75,0.3); color: var(--gold); }
     .wip-choice-alt  { background: rgba(192,132,252,0.08); border: 1px solid rgba(192,132,252,0.3); color: var(--violet); }
     #wip .fade-up { opacity: 1 !important; transform: none !important; }
-    @media (max-width: 900px) { .wip-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1100px) { .wip-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 700px)  { .wip-grid { grid-template-columns: 1fr; } }
 
     /* ─── Contact/CTA ────────────────────────────────────────────────────────── */
     .cta-section {
@@ -1024,6 +1034,43 @@
           <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
 
+        <!-- RELIQUE ÉCHO -->
+        <a href="marketing/visual/chronorelic-echo.html" class="wip-card wip-echo">
+          <div>
+            <div class="wip-tag wip-tag-echo" style="margin-bottom:20px">🔊 COOPÉRATIF · En développement</div>
+            <div class="wip-icon">🔊</div>
+          </div>
+          <div>
+            <h3 class="wip-title">RELIQUE ÉCHO</h3>
+            <p class="wip-subtitle" style="margin-top:4px;font-size:0.8rem;color:#f59e0b;letter-spacing:0.05em;font-weight:600;text-transform:uppercase">Fragment de Mémoire Partagée</p>
+            <p class="wip-desc" style="margin-top:10px">
+              Deux voix. Deux époques. Un écho à travers les siècles. Collectez les 8 fragments pour révéler la vérité commune entre deux âmes séparées par le temps.
+            </p>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Progression des fragments</div>
+            <div class="wip-segments">
+              <div class="wip-seg-dot" style="background:#3b82f6;box-shadow:0 0 8px #3b82f6;animation:pulse 2s ease-in-out infinite"></div>
+              <div class="wip-seg-line" style="background:linear-gradient(90deg,rgba(59,130,246,0.4),rgba(245,158,11,0.2))"></div>
+              <div class="wip-seg-dot" style="background:rgba(59,130,246,0.4);box-shadow:0 0 6px rgba(59,130,246,0.4)"></div>
+              <div class="wip-seg-line" style="background:linear-gradient(90deg,rgba(59,130,246,0.2),rgba(245,158,11,0.1))"></div>
+              <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(59,130,246,0.3)"></div>
+              <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
+              <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(245,158,11,0.3)"></div>
+              <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
+              <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(245,158,11,0.2)"></div>
+            </div>
+            <div style="font-size:0.72rem;color:var(--muted)">Fragment 1/8 débloqué · 7 restants</div>
+          </div>
+          <div class="wip-features">
+            <div class="wip-feature"><div class="wip-feature-dot"></div>8 fragments par histoire · Deux lignes temporelles</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation croisée — voix alternées à travers les siècles</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Thème bleu/ambre — mémoire partagée &amp; résonance</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Collecte coopérative entre joueurs possible</div>
+          </div>
+          <div class="wip-cta">Voir le Presskit complet →</div>
+        </a>
+
       </div>
     </div>
   </section>
@@ -1148,6 +1195,7 @@
         <a href="#galerie">Galerie</a>
         <a href="#roadmap">Développement</a>
         <a href="#wip" style="color:var(--blue)">🔧 Work In Progress</a>
+        <a href="marketing/visual/chronorelic-echo.html" style="color:#60a5fa">🔊 Relique Écho</a>
       </div>
       <div class="footer-col">
         <h4>Communauté</h4>
