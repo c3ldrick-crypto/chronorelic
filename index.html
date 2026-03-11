@@ -401,9 +401,10 @@
       animation: pulse 2s ease-in-out infinite;
     }
     .wip-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; margin-top: 16px;
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; margin-top: 16px;
     }
     .wip-card {
+      flex: 0 0 calc(33.333% - 19px); min-width: 260px; max-width: 420px;
       border-radius: 28px; padding: 0; text-decoration: none; color: var(--text);
       transition: transform 0.35s cubic-bezier(0.22,1,0.36,1), box-shadow 0.35s, border-color 0.35s;
       position: relative; overflow: hidden;
@@ -608,8 +609,8 @@
     .wip-kairos  .wip-stat-val { color: var(--gold); }
     .wip-echo    .wip-stat-val { color: #60a5fa; }
     #wip .fade-up { opacity: 1 !important; transform: none !important; }
-    @media (max-width: 1400px) { .wip-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); } }
-    @media (max-width: 700px)  { .wip-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px)  { .wip-card { flex: 0 0 calc(50% - 14px); } }
+    @media (max-width: 600px)  { .wip-card { flex: 0 0 100%; max-width: 100%; } }
 
     /* ─── Contact/CTA ────────────────────────────────────────────────────────── */
     .cta-section {
