@@ -401,7 +401,7 @@
       animation: pulse 2s ease-in-out infinite;
     }
     .wip-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 28px; margin-top: 16px;
+      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 28px; margin-top: 16px;
     }
     .wip-card {
       border-radius: 28px; padding: 0; text-decoration: none; color: var(--text);
@@ -448,6 +448,31 @@
     .wip-echo::before { background: radial-gradient(ellipse at 0% 0%, rgba(59,130,246,0.07), transparent 65%); }
     .wip-echo:hover { box-shadow: 0 24px 80px rgba(59,130,246,0.14), 0 0 0 1px rgba(59,130,246,0.5); border-color: rgba(59,130,246,0.5); }
     .wip-echo .wip-card-top-bar { background: linear-gradient(90deg, rgba(59,130,246,0.8), rgba(245,158,11,0.5)); }
+
+    .wip-anomaly {
+      background: linear-gradient(160deg, rgba(245,158,11,0.08) 0%, rgba(124,58,237,0.05) 50%, rgba(15,12,29,0.99) 75%);
+      border: 1.5px solid rgba(245,158,11,0.22);
+    }
+    .wip-anomaly::before { background: radial-gradient(ellipse at 0% 0%, rgba(245,158,11,0.09), transparent 65%); }
+    .wip-anomaly:hover { box-shadow: 0 24px 80px rgba(245,158,11,0.16), 0 0 0 1px rgba(245,158,11,0.5); border-color: rgba(245,158,11,0.5); }
+    .wip-anomaly .wip-card-top-bar { background: linear-gradient(90deg, rgba(245,158,11,0.9), rgba(124,58,237,0.5)); }
+    .wip-anomaly .wip-title { color: #f59e0b; text-shadow: 0 0 20px rgba(245,158,11,0.4); }
+    .wip-anomaly .wip-card-subtitle { color: #f59e0b; }
+    .wip-anomaly .wip-feature-dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.7); }
+    .wip-anomaly .wip-cta { color: #f59e0b; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); }
+    .wip-anomaly .wip-stat-val { color: #f59e0b; }
+    .wip-tag-anomaly { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); color: #f59e0b; }
+
+    /* Anomaly category mini-pills */
+    .anomaly-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+    .anomaly-cat-pill {
+      font-family: "Orbitron", sans-serif; font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.12em; padding: 3px 9px; border-radius: 999px;
+    }
+    .anomaly-cat-pill.fav  { background: rgba(34,211,238,0.1);   border: 1px solid rgba(34,211,238,0.3);  color: #22d3ee; }
+    .anomaly-cat-pill.pert { background: rgba(239,68,68,0.1);    border: 1px solid rgba(239,68,68,0.3);   color: #f87171; }
+    .anomaly-cat-pill.inst { background: rgba(245,158,11,0.1);   border: 1px solid rgba(245,158,11,0.3);  color: #f59e0b; }
+    .anomaly-cat-pill.rare { background: rgba(124,58,237,0.12);  border: 1px solid rgba(124,58,237,0.35); color: #a78bfa; }
 
     .wip-card-top-bar {
       height: 3px; width: 100%; border-radius: 28px 28px 0 0; flex-shrink: 0;
@@ -559,7 +584,7 @@
     .wip-kairos  .wip-stat-val { color: var(--gold); }
     .wip-echo    .wip-stat-val { color: #60a5fa; }
     #wip .fade-up { opacity: 1 !important; transform: none !important; }
-    @media (max-width: 1100px) { .wip-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 1400px) { .wip-grid { grid-template-columns: 1fr 1fr; } }
     @media (max-width: 700px)  { .wip-grid { grid-template-columns: 1fr; } }
 
     /* ─── Contact/CTA ────────────────────────────────────────────────────────── */
@@ -1044,7 +1069,7 @@
         <div class="divider" style="margin:12px auto 20px"></div>
         <h2 class="section-title" style="text-align:center">Work In <span>Progress</span></h2>
         <p class="section-body" style="text-align:center;margin:0 auto 56px">
-          Deux nouvelles mécaniques de ChronoRelic actuellement en développement et testées en Bêta fermée.
+          Trois nouvelles mécaniques de ChronoRelic actuellement en développement et testées en Bêta fermée.
           Cliquez sur une carte pour découvrir le presskit complet.
         </p>
       </div>
@@ -1154,6 +1179,40 @@
             <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation croisée — voix alternées à travers les siècles</div>
             <div class="wip-feature"><div class="wip-feature-dot"></div>Thème bleu/ambre — mémoire partagée &amp; résonance</div>
             <div class="wip-feature"><div class="wip-feature-dot"></div>Collecte coopérative entre joueurs possible</div>
+          </div>
+          <div class="wip-cta">Voir le Presskit complet →</div>
+        </a>
+
+        <!-- ANOMALIES TEMPORELLES -->
+        <a href="marketing/visual/chronorelic-anomalies.html" class="wip-card wip-anomaly">
+          <div>
+            <div class="wip-tag wip-tag-anomaly" style="margin-bottom:20px">⚡ SYSTÈME PASSIF · BÊTA</div>
+            <div class="wip-icon">⚡</div>
+          </div>
+          <div>
+            <h3 class="wip-title">ANOMALIES TEMPORELLES</h3>
+            <p class="wip-card-subtitle" style="margin-top:4px;font-size:0.8rem;letter-spacing:0.05em;font-weight:600;text-transform:uppercase">La Météo du Temps</p>
+            <p class="wip-desc" style="margin-top:10px">
+              25 perturbations temporelles déclenchées automatiquement au fil de la journée. Bonus, malus ou les deux à la fois — chaque joueur traverse les mêmes épreuves. Le temps devient imprévisible.
+            </p>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">4 catégories d'anomalies</div>
+            <div class="anomaly-cats">
+              <span class="anomaly-cat-pill fav">FAVORABLE · 7</span>
+              <span class="anomaly-cat-pill pert">PERTURBATION · 5</span>
+              <span class="anomaly-cat-pill inst">INSTABLE · 9</span>
+              <span class="anomaly-cat-pill rare">RARE · 4</span>
+            </div>
+            <div style="margin-top:12px;background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.12);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.5">
+              Planning déterministe — même météo pour tous les joueurs (seed = date du jour)
+            </div>
+          </div>
+          <div class="wip-features">
+            <div class="wip-feature"><div class="wip-feature-dot"></div>25 anomalies · 4 catégories · Planning déterministe</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Durée 5-15 min · Gaps de calme 15-50 min</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Effets réels en capture (rareté, XP, multi-reliques)</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Découverte progressive — le futur est inconnu</div>
           </div>
           <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
