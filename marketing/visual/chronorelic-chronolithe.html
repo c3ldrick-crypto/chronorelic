@@ -883,10 +883,10 @@
       <div class="hero-inner">
         <div class="hero-badge">Chronolithe · 10% de chance par capture</div>
         <h1 class="hero-title">CHRONOLITHE</h1>
-        <p class="hero-sub-line">20 récits historiques. 5 segments. Une saga révélée au fil du temps.</p>
+        <p class="hero-sub-line">20 récits originaux sur le temps. 5 segments. Une saga révélée capture après capture.</p>
         <p class="hero-desc">
-          Comme une série historique, la Chronolithe se dévoile en épisodes.
-          Chaque capture d'une RELIQUE peut déclencher un nouveau segment — et l'Histoire se raconte à travers vous.
+          Comme une série narrative, le Chronolithe se dévoile en épisodes.
+          Chaque capture d'une RELIQUE peut déclencher un nouveau segment — et une histoire inédite sur le temps se révèle, fragment après fragment.
         </p>
         <!-- Animated 5-dot progress -->
         <div class="hero-segments">
@@ -920,7 +920,7 @@
         <div class="step-card" data-step="ÉTAPE 01">
           <span class="step-icon">🎲</span>
           <div class="step-title">Capturez une RELIQUE</div>
-          <p class="step-desc">À chaque capture d'une RELIQUE, le système tire au sort : <strong style="color:var(--cyan)">10% de chance</strong> de déclencher un événement Chronolithe.</p>
+          <p class="step-desc">À chaque capture d'une RELIQUE, le système tire au sort : <strong style="color:var(--cyan)">10% de chance</strong> de déclencher un fragment Chronolithe.</p>
         </div>
 
         <div class="step-arrow">
@@ -933,7 +933,7 @@
         <div class="step-card" data-step="ÉTAPE 02">
           <span class="step-icon">📜</span>
           <div class="step-title">Un segment se révèle</div>
-          <p class="step-desc">Une tablette apparaît — narration IA avec <strong style="color:var(--cyan)">effet typewriter</strong>, fond pierre et lueurs cyan. L'Histoire prend vie.</p>
+          <p class="step-desc">Une tablette apparaît — Une tablette de pierre s'illumine — texte révélé en typewriter, fond sombre et lueurs cyan. Le récit prend vie, segment après segment.</p>
         </div>
 
         <div class="step-arrow">
@@ -1184,26 +1184,26 @@
     /* ── Stories Grid ────────────────────────────────────── */
     (function () {
       const stories = [
-        { icon: '📜', era: 'Venise, 1497',         title: 'Le Voyage de Cabot' },
-        { icon: '🎨', era: 'Florence, 1503',        title: "L'Atelier de Léonard" },
-        { icon: '⚓', era: 'Séville, 1519',         title: 'Le Tour du Monde de Magellan' },
-        { icon: '🌍', era: 'Amérique, 1620',        title: 'Le Mayflower' },
-        { icon: '🍎', era: 'Cambridge, 1666',       title: 'La Pomme de Newton' },
-        { icon: '⚡', era: 'Philadelphie, 1752',    title: "L'Expérience du Cerf-Volant" },
-        { icon: '🗽', era: 'Paris, 1789',           title: 'La Bastille' },
-        { icon: '🧪', era: 'Londres, 1796',         title: 'Le Vaccin de Jenner' },
-        { icon: '🔭', era: 'Padoue, 1610',          title: 'Galilée et les Lunes' },
-        { icon: '🚂', era: 'Manchester, 1830',      title: 'La Locomotive de Stephenson' },
-        { icon: '📡', era: 'Menlo Park, 1879',      title: "L'Ampoule d'Edison" },
-        { icon: '🛳️', era: 'Southampton, 1912',    title: 'Le Titanic' },
-        { icon: '✈️', era: 'Kitty Hawk, 1903',     title: 'Le Vol des Frères Wright' },
-        { icon: '💊', era: 'Londres, 1928',         title: 'La Pénicilline de Fleming' },
-        { icon: '🌕', era: 'Houston, 1969',         title: 'Apollo 11' },
-        { icon: '🧬', era: 'Cambridge, 1953',       title: "L'ADN de Watson & Crick" },
-        { icon: '🧱', era: 'Berlin, 1989',          title: 'La Chute du Mur' },
-        { icon: '💻', era: 'Genève, 1991',          title: 'Le World Wide Web' },
-        { icon: '🎭', era: 'Stratford, 1599',       title: 'Hamlet de Shakespeare' },
-        { icon: '⚛️', era: 'Chicago, 1942',        title: 'La Réaction Nucléaire de Fermi' },
+        { icon: '⏳', theme: 'La fin du temps',             title: 'Le Sablier Brisé' },
+        { icon: '🧊', theme: 'La mémoire de la Terre',      title: 'La Mémoire du Glacier' },
+        { icon: '🌋', theme: 'Le temps arrêté',             title: "L'Heure Immobile de Pompéi" },
+        { icon: '🌐', theme: "L'heure universelle",         title: 'Le Dernier Méridien' },
+        { icon: '🪖', theme: 'Le temps en guerre',          title: "L'Horloge de la Tranchée" },
+        { icon: '🌑', theme: 'Le temps comme arbitre',      title: "L'Éclipse Qui Arrêta une Guerre" },
+        { icon: '📚', theme: 'La mémoire perdue',           title: 'La Bibliothèque Sans Fin' },
+        { icon: '🦬', theme: "L'art comme mémoire",         title: 'Vingt Mille Ans de Nuit' },
+        { icon: '⭐', theme: 'Le temps de la lumière',      title: 'Le Navigateur des Étoiles Mortes' },
+        { icon: '🕰️', theme: 'Le temps comme objet',       title: 'La Minute Volée' },
+        { icon: '📅', theme: "Les jours qui n'ont pas existé", title: "L'Étrange Mort du Calendrier" },
+        { icon: '📡', theme: 'Les messages dans le temps',  title: 'Le Signal du Futur' },
+        { icon: '🍎', theme: "L'intuition du temps",        title: 'Newton et la Pomme Noire' },
+        { icon: '☢️', theme: 'Le temps gravé dans la matière', title: "Les Ombres d'Hiroshima" },
+        { icon: '🧠', theme: 'La mémoire infinie',          title: 'La Femme Qui Se Souvient de Tout' },
+        { icon: '🪖', theme: 'Le temps nié',                title: 'Les Soldats du Temps Arrêté' },
+        { icon: '🔔', theme: 'La peur de la fin du temps',  title: "L'Anomalie de l'An Mil" },
+        { icon: '🐢', theme: 'Le temps dans le vivant',     title: 'La Tortue de Darwin' },
+        { icon: '⚙️', theme: 'Le temps et la mort',        title: "L'Horloger de Prague" },
+        { icon: '💫', theme: 'Le temps de la lumière',      title: "L'Étoile Que Nous N'Avons Pas Vue Mourir" },
       ];
 
       const grid = document.getElementById('stories-grid');
@@ -1212,7 +1212,7 @@
         card.className = 'story-card';
         card.innerHTML = `
           <span class="story-icon">${s.icon}</span>
-          <div class="story-era">${s.era}</div>
+          <div class="story-era">${s.theme}</div>
           <div class="story-title">${s.title}</div>
         `;
         grid.appendChild(card);
