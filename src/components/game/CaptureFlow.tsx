@@ -4,9 +4,14 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import { Zap, Clock, Sparkles } from "lucide-react"
+import dynamic from "next/dynamic"
 import { ChronolitheReveal } from "@/components/game/ChronolitheReveal"
 import type { ChronolitheDropResult } from "@/lib/game/chronolithe"
+import type { EchoDropResult } from "@/lib/game/echoRelic"
+import { ECHO_STORIES } from "@/lib/game/echoRelic"
 import { getRandomQuote, type TimeQuote } from "@/lib/game/quotes"
+
+const EchoRelicRevealLazy = dynamic(() => import("@/components/game/EchoRelicReveal"), { ssr: false })
 
 export interface CaptureResult {
   success:            boolean
@@ -25,6 +30,7 @@ export interface CaptureResult {
   message?:           string
   completedEnigmas?:  Array<{ id: string; title: string; difficulty: string; reward: { xp: number; label: string } }>
   chronolitheSegment?: ChronolitheDropResult
+  echoReveal?:         EchoDropResult
   newlyCompletedChains?: Array<{ chainId: string; label: string }>
 }
 
@@ -57,6 +63,8 @@ export function CaptureFlow({ capturesLeft, isPremium, playerLevel, onCaptureDon
   const [quote, setQuote]         = useState<TimeQuote | null>(null)
   const [showChronolithe, setShowChronolithe] = useState(false)
   const [chronolitheSegment, setChronolitheSegment] = useState<ChronolitheDropResult | null>(null)
+  const [showEchoReveal, setShowEchoReveal] = useState(false)
+  const [echoRevealData, setEchoRevealData] = useState<EchoDropResult | null>(null)
   const [pulseHour, setPulseHour]   = useState(false)
   const [pulseMinute, setPulseMinute] = useState(false)
   const lastMinuteRef = useRef("")
@@ -129,6 +137,13 @@ export function CaptureFlow({ capturesLeft, isPremium, playerLevel, onCaptureDon
         setTimeout(() => setShowChronolithe(true), 800)
       }
 
+      // Echo relic reveal
+      if (data.echoReveal) {
+        setEchoRevealData(data.echoReveal)
+        const delay = data.chronolitheSegment ? 1600 : 800
+        setTimeout(() => setShowEchoReveal(true), delay)
+      }
+
       onCaptureDone(captureResult)
 
       // Level up toast
@@ -165,12 +180,31 @@ export function CaptureFlow({ capturesLeft, isPremium, playerLevel, onCaptureDon
     setResult(null)
     setShowChronolithe(false)
     setChronolitheSegment(null)
+    setShowEchoReveal(false)
+    setEchoRevealData(null)
     onRefreshPlayer()
   }, [onRefreshPlayer])
 
   const rarity = result?.rarity ? RARITY_DISPLAY[result.rarity] ?? RARITY_DISPLAY.COMMUNE : null
   const [hh = "00", mm = "00"] = currentMinute.split(":")
   void clock // used in the clock display effect
+
+  // Build echo reveal props by looking up story data
+  const echoRevealProps = echoRevealData ? (() => {
+    const story = ECHO_STORIES.find(s => s.id === echoRevealData.storyId)
+    return {
+      ...echoRevealData,
+      fragmentIndex: echoRevealData.fragment.index,
+      fragmentText:  echoRevealData.fragment.text,
+      fragmentHint:  echoRevealData.fragment.hint,
+      voiceAName:    story?.voiceA.name   ?? "",
+      voiceAPeriod:  story?.voiceA.period ?? "",
+      voiceBName:    story?.voiceB.name   ?? "",
+      voiceBPeriod:  story?.voiceB.period ?? "",
+      convergenceTitle: echoRevealData.isConvergence ? story?.convergenceTitle : undefined,
+      convergenceText:  echoRevealData.isConvergence ? story?.convergenceText  : undefined,
+    }
+  })() : null
 
   return (
     <>
@@ -180,6 +214,16 @@ export function CaptureFlow({ capturesLeft, isPremium, playerLevel, onCaptureDon
           <ChronolitheReveal
             drop={chronolitheSegment}
             onDone={() => setShowChronolithe(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Echo Relic overlay ─────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showEchoReveal && echoRevealProps && (
+          <EchoRelicRevealLazy
+            echoReveal={echoRevealProps}
+            onClose={() => setShowEchoReveal(false)}
           />
         )}
       </AnimatePresence>

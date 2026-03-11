@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { signOut } from "next-auth/react"
 import { cn, formatShards } from "@/lib/utils"
 import {
-  Clock, Grid3X3, Package, Hammer, Sword,
+  Clock, Grid3X3, Package, Hammer, Sword, Radio,
   LogOut, Menu, X, Coins, Zap, LayoutDashboard,
 } from "lucide-react"
 
@@ -27,8 +27,9 @@ const NAV_LINKS = [
   { href: "/play",        label: "Capturer",     icon: Clock,    desc: "Capturez des reliques temporelles" },
   { href: "/collection",  label: "Collection",   icon: Grid3X3,  desc: "Votre calendrier de reliques (365 jours) et Chronolithes" },
   { href: "/inventory",   label: "Inventaire",   icon: Package,  desc: "Gérez et consultez vos reliques" },
-  { href: "/herolithes",  label: "Kairos",         icon: Sword,   desc: "Reliques Kairos — aventures historiques branchées, l'Histoire entre vos mains" },
-  { href: "/craft",       label: "Craft",        icon: Hammer,   desc: "Crafting temporel — bientôt disponible" },
+  { href: "/herolithes",  label: "Kairos",   icon: Sword,  desc: "Reliques Kairos — aventures historiques branchées, l'Histoire entre vos mains" },
+  { href: "/echolites",   label: "Échos",    icon: Radio,  desc: "Reliques Écho — deux voix à travers les siècles" },
+  { href: "/craft",       label: "Craft",    icon: Hammer, desc: "Crafting temporel — bientôt disponible" },
 ]
 
 export function Navbar({ user }: NavbarProps) {

@@ -75,6 +75,7 @@ model User {
   questClaims          QuestClaim[]
   chronolitheProgress  ChronolitheProgress[]
   heroRelicProgress    HeroRelicProgress[]
+  echoRelicProgress    EchoRelicProgress[]
 
   @@index([email])
 }
@@ -251,6 +252,31 @@ model ChronolitheProgress {
 // ─────────────────────────────────────────────
 // HERO RELIC (aventures branchées)
 // ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// RELIQUE ÉCHO (fragments de deux voix)
+// ─────────────────────────────────────────────
+
+enum EchoStatus {
+  IN_PROGRESS
+  REVEALED
+}
+
+model EchoRelicProgress {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId    String
+  fragmentsA Int        @default(0)
+  fragmentsB Int        @default(0)
+  status     EchoStatus @default(IN_PROGRESS)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([userId, status])
+}
 
 enum HeroStatus {
   IN_PROGRESS

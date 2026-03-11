@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
   FlaskConical, RotateCcw, Save, CheckCircle2, AlertTriangle,
   ChevronDown, Zap, BookOpen, Star, ToggleLeft, ToggleRight,
-  Sword, RefreshCw,
+  Sword, RefreshCw, Radio,
 } from "lucide-react"
 import type { TestConfig } from "@/lib/testConfig"
 import { DEFAULT_TEST_CONFIG } from "@/lib/testConfig"
@@ -19,6 +19,15 @@ const RARITIES = [
   { value: "LEGENDAIRE", label: "Légendaire",                color: "#fbbf24" },
   { value: "MYTHIQUE",   label: "Mythique",                  color: "#f472b6" },
 ] as const
+
+// ── Liste des 5 histoires Echo ────────────────────────────────────────────────
+const ECHO_STORIES_LIST = [
+  { id: "echo_01", icon: "🐀", title: "L'Écho de la Peste",    voiceA: "Frère Anselmo 1347", voiceB: "Sarah Okonkwo 2020" },
+  { id: "echo_02", icon: "🪖", title: "L'Écho du Soldat",      voiceA: "Henri Dupont 1916",  voiceB: "Carlos Reyes 1968"  },
+  { id: "echo_03", icon: "🎨", title: "L'Écho de l'Artiste",   voiceA: "Michel-Ange 1512",   voiceB: "Mark Rothko 1969"   },
+  { id: "echo_04", icon: "🦁", title: "L'Écho du Vieux Sage",  voiceA: "Da Vinci 1519",      voiceB: "Picasso 1972"       },
+  { id: "echo_05", icon: "🕯️", title: "L'Écho de la Mère",    voiceA: "Livia, Rome 79",     voiceB: "Hana Novak 1944"    },
+]
 
 // ── Liste des 5 histoires Kairos ──────────────────────────────────────────────
 const KAIROS_STORIES = [
@@ -450,6 +459,41 @@ export default function LootLabPage() {
           </AnimatePresence>
         </Section>
 
+        {/* ── Relique Écho ── */}
+        <Section title="Relique Écho forcée" icon={Radio} accent="#8b5cf6">
+          <Toggle
+            checked={cfg.forceEcho ?? false}
+            onChange={v => patch({ forceEcho: v })}
+            label="Forcer un drop Relique Écho"
+            description="Déclenche systématiquement la révélation d'un fragment Écho (sans écriture DB — test uniquement)."
+          />
+          <AnimatePresence>
+            {cfg.forceEcho && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-2 overflow-hidden">
+                <label className="text-xs font-bold uppercase tracking-wider" style={{ color: "#64748b" }}>
+                  Histoire à révéler
+                </label>
+                <Select<string | null>
+                  value={cfg.echoStoryId ?? null}
+                  onChange={v => patch({ echoStoryId: v })}
+                  options={[
+                    { value: null, label: "Aléatoire", color: "#64748b" },
+                    ...ECHO_STORIES_LIST.map(s => ({
+                      value: s.id,
+                      label: `${s.icon}  ${s.title} — ${s.voiceA} ↔ ${s.voiceB}`,
+                      color: "#8b5cf6",
+                    })),
+                  ]}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Section>
+
         {/* ── Capture — bypass minute ── */}
         <Section title="Paramètres de capture" icon={RefreshCw} accent="#94a3b8">
           <Toggle
@@ -507,6 +551,15 @@ export default function LootLabPage() {
                 {cfg.forceKairos
                   ? <span style={{ color: "#d4a017", fontWeight: 700 }}>
                       {KAIROS_STORIES.find(s => s.id === cfg.kairosStoryId)?.title ?? "Aléatoire"}
+                    </span>
+                  : <span style={{ color: "#475569" }}>Désactivé</span>
+                }
+              </li>
+              <li>
+                <span style={{ color: "#64748b" }}>Relique Écho :</span>{" "}
+                {cfg.forceEcho
+                  ? <span style={{ color: "#8b5cf6", fontWeight: 700 }}>
+                      {ECHO_STORIES_LIST.find(s => s.id === cfg.echoStoryId)?.title ?? "Aléatoire"}
                     </span>
                   : <span style={{ color: "#475569" }}>Désactivé</span>
                 }

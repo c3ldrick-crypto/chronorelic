@@ -16,6 +16,9 @@ export interface TestConfig {
   // Kairos (Relique Kairos)
   forceKairos:          boolean
   kairosStoryId:        string | null
+  // Echo (Relique Écho)
+  forceEcho:            boolean
+  echoStoryId:          string | null
   // Capture
   bypassMinuteUniqueness: boolean
 }
@@ -32,5 +35,7 @@ export const DEFAULT_TEST_CONFIG: TestConfig = {
   chronolitheStoryId:     null,
   forceKairos:            false,
   kairosStoryId:          null,
+  forceEcho:              false,
+  echoStoryId:            null,
   bypassMinuteUniqueness: false,
 }

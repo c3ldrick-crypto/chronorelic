@@ -16,6 +16,13 @@ import {
   type ChronolitheDropResult,
 } from "@/lib/game/chronolithe"
 import { HERO_STORIES, getRandomHeroStory } from "@/lib/game/heroRelic"
+import {
+  ECHO_STORIES,
+  ECHO_DROP_CHANCE,
+  ECHO_FRAGMENTS_PER_VOICE,
+  getRandomEchoStory,
+  type EchoDropResult,
+} from "@/lib/game/echoRelic"
 
 const HERO_DROP_CHANCE = 0.10
 
@@ -418,6 +425,108 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── ECHO RELIC drop check ─────────────────────────────────────────────────
+    let echoReveal: EchoDropResult | undefined
+
+    // Test mode : force drop Echo sans écriture DB
+    if (testActive && testCfg?.forceEcho) {
+      const storyId   = testCfg.echoStoryId ?? "echo_01"
+      const testStory = ECHO_STORIES.find(s => s.id === storyId) ?? ECHO_STORIES[0]
+      // Determine voice: alternate A/B for test
+      const voice = Math.random() < 0.5 ? "A" as const : "B" as const
+      const voiceData = voice === "A" ? testStory.voiceA : testStory.voiceB
+      const fragment  = voiceData.fragments[0]
+      echoReveal = {
+        storyId:       testStory.id,
+        storyTitle:    testStory.title,
+        storyIcon:     testStory.icon,
+        voice,
+        fragment,
+        fragmentsA:    voice === "A" ? 1 : 0,
+        fragmentsB:    voice === "B" ? 1 : 0,
+        isFirstFragment: true,
+        isConvergence:   false,
+      }
+    }
+
+    if (!echoReveal && Math.random() < ECHO_DROP_CHANCE) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const allEcho = await (prisma as any).echoRelicProgress.findMany({
+          where:  { userId },
+          select: { storyId: true, fragmentsA: true, fragmentsB: true, status: true },
+        })
+
+        // Prefer in-progress stories, then unseen
+        const inProgressEcho = allEcho.filter(e => e.status === "IN_PROGRESS")
+        const seenEchoIds    = new Set(allEcho.map(e => e.storyId))
+        const unseenEcho     = ECHO_STORIES.filter(s => !seenEchoIds.has(s.id))
+
+        let targetEchoProgress: typeof allEcho[0] | undefined
+        let targetEchoStory    = getRandomEchoStory()
+        let isFirstFrag        = false
+
+        if (unseenEcho.length > 0) {
+          targetEchoStory    = unseenEcho[Math.floor(Math.random() * unseenEcho.length)]
+          isFirstFrag        = true
+        } else if (inProgressEcho.length > 0) {
+          const pick = inProgressEcho[Math.floor(Math.random() * inProgressEcho.length)]
+          const found = ECHO_STORIES.find(s => s.id === pick.storyId)
+          if (found) { targetEchoStory = found; targetEchoProgress = pick }
+        } else if (allEcho.length > 0) {
+          // All revealed — pick a random story (no new progress)
+          targetEchoStory = getRandomEchoStory()
+          targetEchoProgress = allEcho.find(e => e.storyId === targetEchoStory.id)
+        }
+
+        const currentA = targetEchoProgress?.fragmentsA ?? 0
+        const currentB = targetEchoProgress?.fragmentsB ?? 0
+
+        // Determine next voice: whichever has fewer fragments; if equal, alternate randomly
+        const voice: "A" | "B" = currentA <= currentB ? "A" : "B"
+        const voiceData = voice === "A" ? targetEchoStory.voiceA : targetEchoStory.voiceB
+        const currentCount = voice === "A" ? currentA : currentB
+
+        if (currentCount < ECHO_FRAGMENTS_PER_VOICE) {
+          const fragment   = voiceData.fragments[currentCount]
+          const newA       = voice === "A" ? currentA + 1 : currentA
+          const newB       = voice === "B" ? currentB + 1 : currentB
+          const isConvergence = newA >= ECHO_FRAGMENTS_PER_VOICE && newB >= ECHO_FRAGMENTS_PER_VOICE
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          await (prisma as any).echoRelicProgress.upsert({
+            where:  { userId_storyId: { userId, storyId: targetEchoStory.id } },
+            create: {
+              userId,
+              storyId:    targetEchoStory.id,
+              fragmentsA: newA,
+              fragmentsB: newB,
+              status:     isConvergence ? "REVEALED" : "IN_PROGRESS",
+            },
+            update: {
+              fragmentsA: newA,
+              fragmentsB: newB,
+              status:     isConvergence ? "REVEALED" : "IN_PROGRESS",
+            },
+          })
+
+          echoReveal = {
+            storyId:         targetEchoStory.id,
+            storyTitle:      targetEchoStory.title,
+            storyIcon:       targetEchoStory.icon,
+            voice,
+            fragment,
+            fragmentsA:      newA,
+            fragmentsB:      newB,
+            isFirstFragment: isFirstFrag,
+            isConvergence,
+          }
+        }
+      } catch (echoErr) {
+        console.error("[capture] Echo relic drop failed (non-blocking):", echoErr)
+      }
+    }
+
     // ── Enigma completion check (XP only — no resource rewards) ───────────────
     let completedEnigmas: Array<{ id: string; title: string; difficulty: string; reward: { xp: number; label: string } }> = []
     try {
@@ -491,6 +600,7 @@ export async function POST(req: NextRequest) {
       newlyCompletedChains,
       chronolitheSegment,
       heroReveal,
+      echoReveal,
       relic: {
         id: relic.id, minute, rarity, xpGained,
         capturedAt: relic.capturedAt, isFused: false,
