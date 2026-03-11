@@ -401,7 +401,7 @@
       animation: pulse 2s ease-in-out infinite;
     }
     .wip-grid {
-      display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 28px; margin-top: 16px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 28px; margin-top: 16px;
     }
     .wip-card {
       border-radius: 28px; padding: 0; text-decoration: none; color: var(--text);
@@ -462,6 +462,30 @@
     .wip-anomaly .wip-cta { color: #f59e0b; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); }
     .wip-anomaly .wip-stat-val { color: #f59e0b; }
     .wip-tag-anomaly { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35); color: #f59e0b; }
+
+    /* Ensembles — émeraude/vert ensorcellement */
+    .wip-sets {
+      background: linear-gradient(160deg, rgba(16,185,129,0.09) 0%, rgba(5,150,105,0.05) 40%, rgba(15,12,29,0.99) 75%);
+      border: 1.5px solid rgba(16,185,129,0.22);
+    }
+    .wip-sets::before { background: radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.09), transparent 65%); }
+    .wip-sets:hover { box-shadow: 0 24px 80px rgba(16,185,129,0.18), 0 0 0 1px rgba(16,185,129,0.5); border-color: rgba(16,185,129,0.5); }
+    .wip-sets .wip-card-top-bar { background: linear-gradient(90deg, rgba(16,185,129,0.9), rgba(124,58,237,0.4)); }
+    .wip-sets .wip-title { color: #34d399; text-shadow: 0 0 20px rgba(16,185,129,0.5); }
+    .wip-sets .wip-card-subtitle { color: #34d399; }
+    .wip-sets .wip-feature-dot { background: #34d399; box-shadow: 0 0 6px rgba(16,185,129,0.7); }
+    .wip-sets .wip-cta { color: #34d399; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); }
+    .wip-tag-sets { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.35); color: #34d399; }
+    .set-rarity-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+    .set-rarity-pill {
+      font-family: "Orbitron", sans-serif; font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.12em; padding: 3px 9px; border-radius: 999px;
+    }
+    .set-rarity-pill.normal  { background: rgba(148,163,184,0.1);  border: 1px solid rgba(148,163,184,0.3); color: #94a3b8; }
+    .set-rarity-pill.magic   { background: rgba(96,165,250,0.1);   border: 1px solid rgba(96,165,250,0.3);  color: #60a5fa; }
+    .set-rarity-pill.rare    { background: rgba(250,204,21,0.1);   border: 1px solid rgba(250,204,21,0.3);  color: #facc15; }
+    .set-rarity-pill.set     { background: rgba(16,185,129,0.12);  border: 1px solid rgba(16,185,129,0.4);  color: #34d399; }
+    .set-rarity-pill.unique  { background: rgba(249,115,22,0.1);   border: 1px solid rgba(249,115,22,0.3);  color: #fb923c; }
 
     /* Anomaly category mini-pills */
     .anomaly-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
@@ -584,7 +608,7 @@
     .wip-kairos  .wip-stat-val { color: var(--gold); }
     .wip-echo    .wip-stat-val { color: #60a5fa; }
     #wip .fade-up { opacity: 1 !important; transform: none !important; }
-    @media (max-width: 1400px) { .wip-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 1400px) { .wip-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); } }
     @media (max-width: 700px)  { .wip-grid { grid-template-columns: 1fr; } }
 
     /* ─── Contact/CTA ────────────────────────────────────────────────────────── */
@@ -1069,7 +1093,7 @@
         <div class="divider" style="margin:12px auto 20px"></div>
         <h2 class="section-title" style="text-align:center">Work In <span>Progress</span></h2>
         <p class="section-body" style="text-align:center;margin:0 auto 56px">
-          Trois nouvelles mécaniques de ChronoRelic actuellement en développement et testées en Bêta fermée.
+          Cinq mécaniques de ChronoRelic actuellement en développement et testées en Bêta fermée.
           Cliquez sur une carte pour découvrir le presskit complet.
         </p>
       </div>
@@ -1216,6 +1240,44 @@
           </div>
           <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
+
+        <!-- ENSEMBLES D'OBJETS -->
+        <div class="wip-card wip-sets">
+          <div class="wip-card-top-bar"></div>
+          <div class="wip-card-inner">
+            <div>
+              <div class="wip-tag wip-tag-sets" style="margin-bottom:20px">⚔️ ÉQUIPEMENT · En développement</div>
+              <div class="wip-icon">🛡️</div>
+            </div>
+            <div>
+              <h3 class="wip-title">ENSEMBLES D'OBJETS</h3>
+              <p class="wip-card-subtitle" style="margin-top:4px;font-size:0.8rem;color:#34d399;letter-spacing:0.05em;font-weight:600;text-transform:uppercase">Équipement D2-style · Bonus de Set</p>
+              <p class="wip-desc" style="margin-top:10px">
+                12 ensembles thématiques inspirés de Diablo II — chaque set de 3 pièces (tête, torse, pieds) confère des bonus puissants à 2/3 et 3/3 pièces. Infobulle comparative en temps réel.
+              </p>
+            </div>
+            <div>
+              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Hiérarchie des raretés</div>
+              <div class="set-rarity-pills">
+                <span class="set-rarity-pill normal">NORMALE</span>
+                <span class="set-rarity-pill magic">MAGIQUE</span>
+                <span class="set-rarity-pill rare">RARE</span>
+                <span class="set-rarity-pill set">ENSEMBLE ✦</span>
+                <span class="set-rarity-pill unique">UNIQUE</span>
+              </div>
+              <div style="margin-top:12px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.12);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.5">
+                Cinématique de révélation : sceau → fracture → bonus de set débloqué
+              </div>
+            </div>
+            <div class="wip-features">
+              <div class="wip-feature"><div class="wip-feature-dot"></div>12 ensembles · 36 objets (tête/torse/pieds)</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Bonus progressifs : 2/3 pièces puis 3/3 pièces</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Infobulle D2 avec comparatif ▲vert / ▼rouge</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Stats FOR / AGI / INT / CON — 4 classes jouables</div>
+            </div>
+            <div class="wip-cta" style="cursor:default">Presskit à venir →</div>
+          </div>
+        </div>
 
       </div>
     </div>
