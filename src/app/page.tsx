@@ -573,7 +573,7 @@ export default function LandingPage() {
               </Link>
             </motion.div>
 
-            {/* RELIQUE HÉRO */}
+            {/* RELIQUE KAIROS */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -587,32 +587,39 @@ export default function LandingPage() {
               }}
             >
               <div className="flex items-start gap-3">
-                <div className="text-4xl shrink-0">⚔️</div>
+                <div className="text-4xl shrink-0">⚡</div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="font-bold text-base" style={{ color: "#d4a017" }}>RELIQUE HÉRO</span>
+                    <span className="font-bold text-base" style={{ color: "#d4a017" }}>RELIQUE KAIROS</span>
                     <span className="text-xs rounded px-2 py-0.5 font-bold"
                       style={{ background: "rgba(212,160,23,0.12)", color: "#e8c96a", border: "1px solid rgba(212,160,23,0.3)" }}>
-                      WIP
+                      Bêta
                     </span>
                   </div>
                   <p className="text-sm" style={{ color: "#9b8d7a" }}>
-                    Aventures historiques branchées interactives — inspirées des livres dont vous êtes le héros. Vos choix façonnent l&apos;Histoire.
+                    Aventures historiques branchées — vous êtes l&apos;acteur du passé. Vos choix façonnent l&apos;Histoire et créent de nouvelles chronologies.
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3 text-xs" style={{ color: "#64748b" }}>
-                <span>⚔️ 5 aventures</span>
+                <span>⚡ 5 aventures</span>
                 <span>·</span>
                 <span>🌀 Fins multiples</span>
                 <span>·</span>
-                <span>STANDARD & COMPLEXE</span>
+                <span>Paradoxes & COMPLEXE</span>
               </div>
-              <Link href="/login"
-                className="self-start inline-flex items-center gap-2 rounded px-4 py-2 text-xs font-bold transition-all"
-                style={{ background: "rgba(212,160,23,0.08)", border: "1px solid rgba(212,160,23,0.25)", color: "#d4a017" }}>
-                Découvrir les Reliques Héro →
-              </Link>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Link href="/promo/kairos"
+                  className="self-start inline-flex items-center gap-2 rounded px-4 py-2 text-xs font-bold transition-all"
+                  style={{ background: "rgba(212,160,23,0.08)", border: "1px solid rgba(212,160,23,0.25)", color: "#d4a017" }}>
+                  Découvrir la Relique Kairos →
+                </Link>
+                <Link href="/login"
+                  className="self-start inline-flex items-center gap-2 rounded px-4 py-2 text-xs font-bold transition-all"
+                  style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.25)", color: "#a78bfa" }}>
+                  Jouer →
+                </Link>
+              </div>
             </motion.div>
           </div>
         </div>

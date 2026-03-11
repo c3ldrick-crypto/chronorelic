@@ -102,7 +102,7 @@ export default function HerolithesPage() {
             </motion.div>
             <h1 className="text-2xl font-black tracking-wide"
               style={{ color: "#e2e8f0", textShadow: "0 0 30px rgba(212,160,23,0.3)" }}>
-              Reliques Héro
+              Reliques Kairos
             </h1>
             <p className="text-sm" style={{ color: "#64748b" }}>
               L&apos;Histoire entre vos mains — aventures branchées interactives
@@ -140,7 +140,7 @@ export default function HerolithesPage() {
             >
               <p className="text-4xl">⚔️</p>
               <p className="text-base font-bold" style={{ color: "#94a3b8" }}>
-                Aucune Relique Héro découverte
+                Aucune Relique Kairos découverte
               </p>
               <p className="text-sm" style={{ color: "#64748b" }}>
                 Continuez à capturer des reliques — des aventures historiques branchées apparaissent lors de vos captures.

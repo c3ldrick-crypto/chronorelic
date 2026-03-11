@@ -87,24 +87,31 @@ export async function POST(req: NextRequest) {
     const minute      = clientMinute ?? formatMinute()
     const captureDate = formatCaptureDate()
 
-    // Uniqueness check
-    const existing = await prisma.relic.findUnique({
-      where:  { userId_captureDate_minute: { userId, captureDate, minute } },
-      select: { id: true },
-    })
-    if (existing) {
-      return NextResponse.json(
-        { error: `La minute ${minute} est déjà capturée aujourd'hui !`, alreadyCaptured: true },
-        { status: 409 }
-      )
+    // ── Test config early-read (needed for bypassMinuteUniqueness) ────────────
+    const testCfgEarly   = await cache.get<import("@/lib/testConfig").TestConfig>(REDIS_KEYS.testConfig())
+    const testActiveEarly = !!(testCfgEarly?.active)
+    const bypassUniqueness = testActiveEarly && !!(testCfgEarly?.bypassMinuteUniqueness)
+
+    // Uniqueness check (skippable in test mode)
+    if (!bypassUniqueness) {
+      const existing = await prisma.relic.findUnique({
+        where:  { userId_captureDate_minute: { userId, captureDate, minute } },
+        select: { id: true },
+      })
+      if (existing) {
+        return NextResponse.json(
+          { error: `La minute ${minute} est déjà capturée aujourd'hui !`, alreadyCaptured: true },
+          { status: 409 }
+        )
+      }
     }
 
     const isNewDay = !user.streakData?.lastPlayedAt ||
       new Date(user.streakData.lastPlayedAt).toDateString() !== new Date().toDateString()
 
-    // ── Test config (Admin Loot Lab) ───────────────────────────────────────────
-    const testCfg    = await cache.get<import("@/lib/testConfig").TestConfig>(REDIS_KEYS.testConfig())
-    const testActive = !!(testCfg?.active)
+    // ── Test config (Admin Loot Lab) — reuse early read ───────────────────────
+    const testCfg    = testCfgEarly
+    const testActive = testActiveEarly
 
     const boostActive = !!(await cache.get(REDIS_KEYS.boostActive(userId)))
     const rarity = (testActive && testCfg?.forceRarity)
@@ -321,7 +328,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── HERO RELIC drop check ─────────────────────────────────────────────────
+    // ── KAIROS RELIC drop check ───────────────────────────────────────────────
     let heroReveal: {
       storyId:    string
       storyTitle: string
@@ -332,7 +339,22 @@ export async function POST(req: NextRequest) {
       year:       string
     } | undefined
 
-    if (Math.random() < HERO_DROP_CHANCE) {
+    // Test mode : force drop Kairos sans écriture DB
+    if (testActive && testCfg?.forceKairos) {
+      const storyId    = testCfg.kairosStoryId ?? "hero_01"
+      const testStory  = HERO_STORIES.find(s => s.id === storyId) ?? HERO_STORIES[0]
+      heroReveal = {
+        storyId:    testStory.id,
+        storyTitle: testStory.title,
+        storyIcon:  testStory.icon,
+        startId:    testStory.startId,
+        difficulty: testStory.difficulty,
+        era:        testStory.era,
+        year:       testStory.year,
+      }
+    }
+
+    if (!heroReveal && Math.random() < HERO_DROP_CHANCE) {
       try {
         const existingHero = await prisma.heroRelicProgress.findMany({
           where:  { userId },

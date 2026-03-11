@@ -101,7 +101,7 @@ export default function PlayPage() {
 
   if (!player) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center" style={{ minHeight: "calc(100vh - 64px)" }}>
         <motion.div
           className="w-8 h-8 rounded-full border-2"
           style={{ borderColor: "rgba(0,200,255,0.3)", borderTopColor: "#00c8ff" }}
@@ -127,7 +127,7 @@ export default function PlayPage() {
         )}
       </AnimatePresence>
 
-      <div className="min-h-screen pt-4 pb-8 px-4">
+      <div className="pt-4 pb-4 px-4">
         <div className="relative max-w-lg mx-auto space-y-5">
 
           {player.character && (

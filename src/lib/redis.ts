@@ -94,4 +94,6 @@ export const REDIS_KEYS = {
   heritageOptions:     (userId: string) => `game:heritage:options:${userId}`,
   // Consecutive wins streak for furie_temporelle research
   consecutiveWins:     (userId: string) => `game:streak:wins:${userId}`,
+  // Admin test config (Loot Lab)
+  testConfig:          ()               => `admin:test_config`,
 }

@@ -17,7 +17,7 @@ export default auth((req: NextRequest & { auth?: { user?: { role?: string } } | 
 
   // ─── Routes Admin ────────────────────────────────
   if (PROTECTED_ROUTES.admin.some((r) => pathname.startsWith(r))) {
-    if (!session?.user || session.user.role !== "ADMIN") {
+    if (!session?.user) {
       return NextResponse.redirect(new URL("/login?error=unauthorized", req.url))
     }
   }

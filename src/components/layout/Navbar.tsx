@@ -27,7 +27,7 @@ const NAV_LINKS = [
   { href: "/play",        label: "Capturer",     icon: Clock,    desc: "Capturez des reliques temporelles" },
   { href: "/collection",  label: "Collection",   icon: Grid3X3,  desc: "Votre calendrier de reliques (365 jours) et Chronolithes" },
   { href: "/inventory",   label: "Inventaire",   icon: Package,  desc: "Gérez et consultez vos reliques" },
-  { href: "/herolithes",  label: "Reliques Héro", icon: Sword,   desc: "Aventures historiques branchées — l'Histoire entre vos mains" },
+  { href: "/herolithes",  label: "Kairos",         icon: Sword,   desc: "Reliques Kairos — aventures historiques branchées, l'Histoire entre vos mains" },
   { href: "/craft",       label: "Craft",        icon: Hammer,   desc: "Crafting temporel — bientôt disponible" },
 ]
 
