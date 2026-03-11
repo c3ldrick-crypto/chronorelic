@@ -383,6 +383,87 @@
     .philo-title { font-family: "Orbitron", sans-serif; font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 10px; letter-spacing: 0.05em; }
     .philo-body  { font-size: 0.85rem; color: var(--muted); line-height: 1.7; }
 
+    /* ─── Work In Progress ─────────────────────────────────────────────────── */
+    .wip-section {
+      background: linear-gradient(180deg, transparent, rgba(56,189,248,0.02), transparent);
+    }
+    .wip-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 16px;
+    }
+    .wip-card {
+      border-radius: 24px; padding: 40px; text-decoration: none; color: var(--text);
+      transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .wip-card:hover { transform: translateY(-6px); }
+    .wip-netflix {
+      background: linear-gradient(160deg, rgba(56,189,248,0.07), rgba(6,5,13,0.97));
+      border: 1.5px solid rgba(56,189,248,0.2);
+    }
+    .wip-netflix:hover { box-shadow: 0 20px 60px rgba(56,189,248,0.12); border-color: rgba(56,189,248,0.45); }
+    .wip-kairos {
+      background: linear-gradient(160deg, rgba(232,184,75,0.07), rgba(6,5,13,0.97));
+      border: 1.5px solid rgba(232,184,75,0.2);
+    }
+    .wip-kairos:hover { box-shadow: 0 20px 60px rgba(232,184,75,0.12); border-color: rgba(232,184,75,0.45); }
+    .wip-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 100px; padding: 4px 12px;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      width: fit-content;
+    }
+    .wip-tag-cyan  { background: rgba(56,189,248,0.1);  border: 1px solid rgba(56,189,248,0.3);  color: var(--blue); }
+    .wip-tag-gold  { background: rgba(232,184,75,0.1);  border: 1px solid rgba(232,184,75,0.3);  color: var(--gold); }
+    .wip-icon { font-size: 3rem; }
+    .wip-title {
+      font-family: "Orbitron", sans-serif; font-size: 1.4rem; font-weight: 800;
+      line-height: 1.1; margin: 0;
+    }
+    .wip-netflix .wip-title { color: var(--blue); }
+    .wip-kairos  .wip-title { color: var(--gold); }
+    .wip-desc { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+    .wip-features { display: flex; flex-direction: column; gap: 8px; }
+    .wip-feature {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.82rem; color: #94a3b8;
+    }
+    .wip-feature-dot {
+      width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+    }
+    .wip-netflix .wip-feature-dot { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+    .wip-kairos  .wip-feature-dot { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+    .wip-cta {
+      margin-top: auto; display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em;
+      padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .wip-netflix .wip-cta { color: var(--blue); }
+    .wip-kairos  .wip-cta { color: var(--gold); }
+    .wip-segments {
+      display: flex; align-items: center; gap: 6px; padding: 12px 0;
+    }
+    .wip-seg-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(56,189,248,0.25); border: 1px solid rgba(56,189,248,0.4);
+    }
+    .wip-seg-dot.active {
+      background: var(--blue); box-shadow: 0 0 8px var(--blue);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .wip-seg-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(90deg, rgba(56,189,248,0.3), rgba(56,189,248,0.1));
+    }
+    .wip-choices { display: flex; flex-direction: column; gap: 8px; }
+    .wip-choice {
+      padding: 10px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .wip-choice-hist { background: rgba(232,184,75,0.08); border: 1px solid rgba(232,184,75,0.3); color: var(--gold); }
+    .wip-choice-alt  { background: rgba(192,132,252,0.08); border: 1px solid rgba(192,132,252,0.3); color: var(--violet); }
+    @media (max-width: 900px) { .wip-grid { grid-template-columns: 1fr; } }
+
     /* ─── Contact/CTA ────────────────────────────────────────────────────────── */
     .cta-section {
       text-align: center; padding: 120px 24px;
@@ -577,6 +658,7 @@
         <a href="#jeu">Le Jeu</a>
         <a href="#galerie">Galerie</a>
         <a href="#roadmap">Roadmap</a>
+        <a href="#wip" style="color:var(--blue);font-weight:700;">🔧 Work In Progress</a>
         <a href="#beta" style="color:var(--gold);font-weight:700;">🎮 Bêta</a>
         <a href="https://ko-fi.com/U7U61VQDQ6" target="_blank" rel="noopener" style="color:#ff5f5b;font-weight:700;display:flex;align-items:center;gap:5px;">☕ Soutenir</a>
         <a href="#contact" class="nav-cta">Nous contacter</a>
@@ -856,6 +938,95 @@
     </div>
   </section>
 
+  <!-- Work In Progress -->
+  <section id="wip" class="wip-section">
+    <div class="container">
+      <div class="fade-up" style="text-align:center">
+        <p class="section-eyebrow" style="text-align:center">Développement Actif</p>
+        <div class="divider" style="margin:12px auto 20px"></div>
+        <h2 class="section-title" style="text-align:center">Work In <span>Progress</span></h2>
+        <p class="section-body" style="text-align:center;margin:0 auto 56px">
+          Deux nouvelles mécaniques de ChronoRelic actuellement en développement et testées en Bêta fermée.
+          Cliquez sur une carte pour découvrir le presskit complet.
+        </p>
+      </div>
+
+      <div class="wip-grid fade-up" style="transition-delay:0.2s">
+
+        <!-- RELIQUE NETFLIX -->
+        <a href="marketing/visual/chronorelic-netflix.html" class="wip-card wip-netflix">
+          <div>
+            <div class="wip-tag wip-tag-cyan" style="margin-bottom:20px">📺 NARRATIF · BÊTA</div>
+            <div class="wip-icon">📜</div>
+          </div>
+          <div>
+            <h3 class="wip-title">RELIQUE NETFLIX</h3>
+            <p class="wip-desc" style="margin-top:10px">
+              20 récits historiques dévoilés en 5 segments séquentiels. Chaque capture d'une RELIQUE
+              peut déclencher un nouveau chapitre — narration IA, révélation cinématique sur fond de pierre ancienne.
+            </p>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Progression d'une histoire</div>
+            <div class="wip-segments">
+              <div class="wip-seg-dot active"></div>
+              <div class="wip-seg-line"></div>
+              <div class="wip-seg-dot" style="background:rgba(56,189,248,0.5);box-shadow:0 0 6px rgba(56,189,248,0.5)"></div>
+              <div class="wip-seg-line"></div>
+              <div class="wip-seg-dot"></div>
+              <div class="wip-seg-line"></div>
+              <div class="wip-seg-dot"></div>
+              <div class="wip-seg-line"></div>
+              <div class="wip-seg-dot"></div>
+            </div>
+            <div style="font-size:0.72rem;color:var(--muted)">Segment 1/5 débloqué · 4 restants</div>
+          </div>
+          <div class="wip-features">
+            <div class="wip-feature"><div class="wip-feature-dot"></div>20 histoires · Événements réels (1497–1991)</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Narration IA générée pour ÉPIQUE+</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation cinématique typewriter</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Max 3 histoires actives simultanément</div>
+          </div>
+          <div class="wip-cta">Voir le Presskit complet →</div>
+        </a>
+
+        <!-- RELIQUE KAIROS -->
+        <a href="marketing/visual/chronorelic-kairos.html" class="wip-card wip-kairos">
+          <div>
+            <div class="wip-tag wip-tag-gold" style="margin-bottom:20px">⚡ INTERACTIF · BÊTA</div>
+            <div class="wip-icon">⚔️</div>
+          </div>
+          <div>
+            <h3 class="wip-title">RELIQUE KAIROS</h3>
+            <p class="wip-desc" style="margin-top:10px">
+              Aventures historiques branchées — <em>Livres dont vous êtes le Héros</em>.
+              Sarajevo 1914, Berlin 1989, la Lune 1969… Chaque choix réécrit l'Histoire ou
+              provoque un <strong style="color:#ef4444">Paradoxe Temporel</strong>.
+            </p>
+          </div>
+          <div>
+            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Exemple de choix</div>
+            <div style="background:rgba(232,184,75,0.04);border:1px solid rgba(232,184,75,0.15);border-radius:12px;padding:12px;font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px">
+              "Schabowski vient d'annoncer l'ouverture du Mur. La foule grossit devant votre checkpoint. Votre décision ?"
+            </div>
+            <div class="wip-choices">
+              <div class="wip-choice wip-choice-hist">⚖️ Ouvrir progressivement — tamponner les passeports</div>
+              <div class="wip-choice wip-choice-alt">🌀 Laisser passer sans contrôle</div>
+            </div>
+          </div>
+          <div class="wip-features">
+            <div class="wip-feature"><div class="wip-feature-dot"></div>5 aventures (3 STANDARD + 2 COMPLEXE)</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Fins Historique, Alternative ou Paradoxe</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation sépia/doré distincte</div>
+            <div class="wip-feature"><div class="wip-feature-dot"></div>Kairos (καιρός) — l'instant décisif grec</div>
+          </div>
+          <div class="wip-cta">Voir le Presskit complet →</div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
   <!-- Bêta Fermée — Inscription Newsletter -->
   <section id="beta" class="beta-section">
     <div class="container">
@@ -975,6 +1146,7 @@
         <a href="#jeu">Le Jeu</a>
         <a href="#galerie">Galerie</a>
         <a href="#roadmap">Développement</a>
+        <a href="#wip" style="color:var(--blue)">🔧 Work In Progress</a>
       </div>
       <div class="footer-col">
         <h4>Communauté</h4>

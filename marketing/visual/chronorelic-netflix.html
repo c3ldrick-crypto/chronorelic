@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relique Netflix — ChronoRelic · Binary Anvil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Reset & Variables ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cyan:      #38bdf8;
+      --cyan-dim:  rgba(56,189,248,0.3);
+      --cyan-glow: rgba(56,189,248,0.15);
+      --stone:     #78716c;
+      --amber:     #d97706;
+      --amber-dim: rgba(217,119,6,0.25);
+      --dark:      #06050d;
+      --dark-card: #0d0c18;
+      --dark-edge: #12111f;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --violet:    #c084fc;
+      --gold:      #fbbf24;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: var(--dark);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ─── Star Background ───────────────────────────────── */
+    #stars-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── Sticky Nav ────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(6,5,13,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(56,189,248,0.12);
+      padding: 0 2rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .nav-logo-mark {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: 13px;
+      color: var(--dark);
+      letter-spacing: -1px;
+      flex-shrink: 0;
+    }
+
+    .nav-name {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    .nav-name span {
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-back:hover { color: var(--cyan); }
+
+    .nav-back svg { width: 14px; height: 14px; }
+
+    /* ─── Layout Helpers ────────────────────────────────── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    section { padding: 5rem 0; }
+
+    .section-label {
+      display: inline-block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      border: 1px solid var(--cyan-dim);
+      border-radius: 20px;
+      padding: 4px 14px;
+      margin-bottom: 1.2rem;
+      background: var(--cyan-glow);
+    }
+
+    .section-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+    }
+
+    .section-header {
+      margin-bottom: 3.5rem;
+    }
+
+    /* ─── HERO ──────────────────────────────────────────── */
+    #hero {
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      padding: 6rem 0 4rem;
+      position: relative;
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 50% 30%, rgba(56,189,248,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 80% 60%, rgba(192,132,252,0.05) 0%, transparent 60%);
+      z-index: 0;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      width: 100%;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.25);
+      border-radius: 30px;
+      padding: 6px 18px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 2rem;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.8rem, 8vw, 6.5rem);
+      line-height: 1;
+      letter-spacing: 0.04em;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #ffffff 0%, var(--cyan) 50%, rgba(56,189,248,0.6) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 40px rgba(56,189,248,0.3));
+    }
+
+    .hero-sub-line {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(0.8rem, 2vw, 1.15rem);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--stone);
+      margin-bottom: 2rem;
+    }
+
+    .hero-desc {
+      max-width: 640px;
+      margin: 0 auto 3rem;
+      font-size: 1.05rem;
+      color: rgba(226,232,240,0.75);
+      line-height: 1.8;
+    }
+
+    /* 5-dot progress bar */
+    .hero-segments {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2.5rem;
+    }
+
+    .seg-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px var(--cyan), 0 0 24px rgba(56,189,248,0.4);
+      position: relative;
+    }
+
+    .seg-dot:nth-child(1) { animation: seg-pulse 3s ease-in-out 0s infinite; }
+    .seg-dot:nth-child(3) { animation: seg-pulse 3s ease-in-out 0.4s infinite; }
+    .seg-dot:nth-child(5) { animation: seg-pulse 3s ease-in-out 0.8s infinite; }
+    .seg-dot:nth-child(7) { animation: seg-pulse 3s ease-in-out 1.2s infinite; }
+    .seg-dot:nth-child(9) { animation: seg-pulse 3s ease-in-out 1.6s infinite; }
+
+    @keyframes seg-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 12px var(--cyan), 0 0 24px rgba(56,189,248,0.4); }
+      50% { opacity: 0.4; transform: scale(0.6); box-shadow: 0 0 4px var(--cyan); }
+    }
+
+    .seg-line {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), rgba(56,189,248,0.2));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .seg-line::after {
+      content: '';
+      position: absolute;
+      left: -100%;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+      animation: seg-sweep 3s ease-in-out infinite;
+    }
+
+    .seg-line:nth-child(2) { animation-delay: 0.2s; }
+    .seg-line:nth-child(4) { animation-delay: 0.6s; }
+    .seg-line:nth-child(6) { animation-delay: 1.0s; }
+    .seg-line:nth-child(8) { animation-delay: 1.4s; }
+
+    @keyframes seg-sweep {
+      0% { left: -100%; }
+      50%, 100% { left: 100%; }
+    }
+
+    .hero-seg-label {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* ─── HOW IT WORKS ─────────────────────────────────── */
+    #how {
+      background: linear-gradient(180deg, var(--dark) 0%, var(--dark-edge) 50%, var(--dark) 100%);
+    }
+
+    .steps-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+    }
+
+    .step-card {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+      background: var(--dark-card);
+      border: 1px solid rgba(56,189,248,0.12);
+      border-radius: 16px;
+      padding: 2.2rem 1.8rem;
+      text-align: center;
+      position: relative;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .step-card:hover {
+      border-color: rgba(56,189,248,0.4);
+      transform: translateY(-4px);
+    }
+
+    .step-card::before {
+      content: attr(data-step);
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--dark-card);
+      border: 1px solid rgba(56,189,248,0.3);
+      color: var(--cyan);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 10px;
+      border-radius: 10px;
+    }
+
+    .step-icon {
+      font-size: 2.8rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .step-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+    }
+
+    .step-desc {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .step-arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      padding-top: 2rem;
+      color: var(--cyan-dim);
+      flex-shrink: 0;
+    }
+
+    .step-arrow svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--cyan);
+      opacity: 0.5;
+    }
+
+    @media (max-width: 680px) {
+      .step-arrow { display: none; }
+      .steps-row { gap: 1.5rem; }
+    }
+
+    /* ─── DEMO RÉVÉLATION ──────────────────────────────── */
+    #demo {
+      position: relative;
+    }
+
+    .demo-tablet {
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .tablet-frame {
+      background: linear-gradient(160deg, #0f0e1c 0%, #0a0916 50%, #0d0c18 100%);
+      border: 1px solid rgba(56,189,248,0.25);
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow:
+        0 0 0 1px rgba(56,189,248,0.08),
+        0 0 40px rgba(56,189,248,0.08),
+        0 0 80px rgba(56,189,248,0.04),
+        inset 0 1px 0 rgba(56,189,248,0.1);
+      animation: tablet-appear 1s ease-out both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tablet-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(56,189,248,0.015) 3px,
+        rgba(56,189,248,0.015) 4px
+      );
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    @keyframes tablet-appear {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .tablet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.2rem;
+      border-bottom: 1px solid rgba(56,189,248,0.12);
+    }
+
+    .tablet-story-id {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--cyan);
+    }
+
+    .tablet-reveal-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.2);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--cyan);
+      letter-spacing: 0.08em;
+    }
+
+    .tablet-reveal-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse-dot 1.5s ease-in-out infinite;
+    }
+
+    .tablet-story-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 1.2rem;
+      letter-spacing: 0.06em;
+    }
+
+    .tablet-text {
+      font-size: 0.95rem;
+      line-height: 1.9;
+      color: rgba(226,232,240,0.85);
+      min-height: 120px;
+      font-style: italic;
+      position: relative;
+    }
+
+    #typewriter-text::after {
+      content: '|';
+      color: var(--cyan);
+      animation: blink-cursor 0.8s step-end infinite;
+    }
+
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .tablet-progress {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(56,189,248,0.1);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .progress-label {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
+    }
+
+    .progress-count {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(56,189,248,0.08);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.8rem;
+    }
+
+    .progress-bar-fill {
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--cyan), rgba(56,189,248,0.6));
+      border-radius: 6px;
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .progress-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1px solid rgba(56,189,248,0.3);
+      background: transparent;
+    }
+
+    .progress-dot.done {
+      background: var(--cyan);
+      border-color: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+
+    .progress-dot.active {
+      background: rgba(56,189,248,0.3);
+      border-color: var(--cyan);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .next-segment-note {
+      font-size: 11px;
+      color: var(--stone);
+      text-align: right;
+      font-style: italic;
+      letter-spacing: 0.03em;
+    }
+
+    /* ─── STORY GRID ───────────────────────────────────── */
+    #stories {
+      background: linear-gradient(180deg, var(--dark) 0%, var(--dark-edge) 100%);
+    }
+
+    .stories-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 900px) { .stories-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 620px) { .stories-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .story-card {
+      background: var(--dark-card);
+      border: 1px solid rgba(56,189,248,0.08);
+      border-radius: 12px;
+      padding: 1.2rem 1rem;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      cursor: default;
+    }
+
+    .story-card:hover {
+      border-color: rgba(56,189,248,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(56,189,248,0.06);
+    }
+
+    .story-icon {
+      font-size: 1.6rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .story-era {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 0.3rem;
+    }
+
+    .story-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* ─── PROGRESSION SYSTÈME ──────────────────────────── */
+    #progression {
+      position: relative;
+    }
+
+    .prog-visual {
+      max-width: 760px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .prog-nodes {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2.5rem;
+    }
+
+    .prog-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .prog-node-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .prog-node-circle.locked {
+      border-color: rgba(120,113,108,0.3);
+      color: rgba(120,113,108,0.4);
+      background: rgba(120,113,108,0.04);
+    }
+
+    .prog-node-circle.unlocked {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(56,189,248,0.08);
+      box-shadow: 0 0 20px rgba(56,189,248,0.25), 0 0 40px rgba(56,189,248,0.1);
+      animation: node-pulse 2.5s ease-in-out infinite;
+    }
+
+    .prog-node-circle.completed {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(251,191,36,0.08);
+      box-shadow: 0 0 20px rgba(251,191,36,0.2);
+    }
+
+    @keyframes node-pulse {
+      0%, 100% { box-shadow: 0 0 20px rgba(56,189,248,0.25), 0 0 40px rgba(56,189,248,0.1); }
+      50% { box-shadow: 0 0 30px rgba(56,189,248,0.4), 0 0 60px rgba(56,189,248,0.15); }
+    }
+
+    .prog-node-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .prog-node-label.locked { color: rgba(120,113,108,0.4); }
+    .prog-node-label.unlocked { color: var(--cyan); }
+    .prog-node-label.completed { color: var(--gold); }
+
+    .prog-connector {
+      flex: 1;
+      max-width: 80px;
+      height: 2px;
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .prog-connector.done {
+      background: linear-gradient(90deg, var(--gold), rgba(251,191,36,0.3));
+    }
+
+    .prog-connector.active {
+      background: linear-gradient(90deg, var(--cyan), rgba(120,113,108,0.2));
+    }
+
+    .prog-connector.future {
+      background: rgba(120,113,108,0.15);
+    }
+
+    .prog-rules {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .prog-rule {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--dark-card);
+      border: 1px solid rgba(56,189,248,0.1);
+      border-radius: 10px;
+      padding: 0.8rem 1.2rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .prog-rule-icon {
+      font-size: 1.1rem;
+    }
+
+    .prog-rule strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ─── CTA FINAL ────────────────────────────────────── */
+    #cta {
+      text-align: center;
+      padding: 6rem 0;
+      position: relative;
+    }
+
+    #cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(56,189,248,0.06) 0%, transparent 70%);
+    }
+
+    .cta-inner { position: relative; z-index: 1; }
+
+    .cta-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.8rem;
+    }
+
+    .cta-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, var(--cyan), rgba(56,189,248,0.7));
+      color: var(--dark);
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 1rem 2.5rem;
+      border-radius: 50px;
+      transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+      box-shadow: 0 0 24px rgba(56,189,248,0.3), 0 0 48px rgba(56,189,248,0.1);
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 0 36px rgba(56,189,248,0.5), 0 0 72px rgba(56,189,248,0.15);
+      filter: brightness(1.1);
+    }
+
+    .btn-cta svg { width: 16px; height: 16px; }
+
+    /* ─── Divider ───────────────────────────────────────── */
+    .divider {
+      width: 80px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+      margin: 0 auto 1.5rem;
+    }
+
+    /* ─── Footer ────────────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid rgba(56,189,248,0.08);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--cyan); }
+
+    /* ─── Glow separator ─────────────────────────────────── */
+    .section-glow-sep {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.2) 20%, rgba(56,189,248,0.4) 50%, rgba(56,189,248,0.2) 80%, transparent 100%);
+      margin: 0;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Star canvas -->
+  <canvas id="stars-canvas"></canvas>
+
+  <!-- ─── NAV ─────────────────────────────────────────── -->
+  <nav>
+    <a class="nav-brand" href="../../index.html">
+      <div class="nav-logo-mark">BA</div>
+      <span class="nav-name">Binary Anvil <span>· ChronoRelic</span></span>
+    </a>
+    <a class="nav-back" href="../../index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Retour
+    </a>
+  </nav>
+
+  <!-- ─── HERO ─────────────────────────────────────────── -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-inner">
+        <div class="hero-badge">Relique Netflix · 10% de chance par capture</div>
+        <h1 class="hero-title">RELIQUE NETFLIX</h1>
+        <p class="hero-sub-line">20 récits historiques. 5 segments. Une saga révélée au fil du temps.</p>
+        <p class="hero-desc">
+          Comme une série historique, la Relique Netflix se dévoile en épisodes.
+          Chaque capture d'une RELIQUE peut déclencher un nouveau segment — et l'Histoire se raconte à travers vous.
+        </p>
+        <!-- Animated 5-dot progress -->
+        <div class="hero-segments">
+          <div class="seg-dot"></div>
+          <div class="seg-line"></div>
+          <div class="seg-dot"></div>
+          <div class="seg-line"></div>
+          <div class="seg-dot"></div>
+          <div class="seg-line"></div>
+          <div class="seg-dot"></div>
+          <div class="seg-line"></div>
+          <div class="seg-dot"></div>
+        </div>
+        <p class="hero-seg-label">5 segments · déblocage séquentiel</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-glow-sep"></div>
+
+  <!-- ─── COMMENT ÇA MARCHE ────────────────────────────── -->
+  <section id="how">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Mécanique de jeu</div>
+        <h2 class="section-title">Comment ça marche</h2>
+        <p class="section-subtitle">Un système narratif déclenché par vos captures — simple, mais profond.</p>
+      </div>
+
+      <div class="steps-row">
+        <div class="step-card" data-step="ÉTAPE 01">
+          <span class="step-icon">🎲</span>
+          <div class="step-title">Capturez une RELIQUE</div>
+          <p class="step-desc">À chaque capture d'une RELIQUE, le système tire au sort : <strong style="color:var(--cyan)">10% de chance</strong> de déclencher un événement Chronolithe.</p>
+        </div>
+
+        <div class="step-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+
+        <div class="step-card" data-step="ÉTAPE 02">
+          <span class="step-icon">📜</span>
+          <div class="step-title">Un segment se révèle</div>
+          <p class="step-desc">Une tablette apparaît — narration IA avec <strong style="color:var(--cyan)">effet typewriter</strong>, fond pierre et lueurs cyan. L'Histoire prend vie.</p>
+        </div>
+
+        <div class="step-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </div>
+
+        <div class="step-card" data-step="ÉTAPE 03">
+          <span class="step-icon">⏳</span>
+          <div class="step-title">Progressez vers la fin</div>
+          <p class="step-desc"><strong style="color:var(--cyan)">5 segments</strong> par histoire, déblocage séquentiel. Impossible de sauter — chaque révélation mérite d'être gagnée.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-glow-sep"></div>
+
+  <!-- ─── DEMO RÉVÉLATION ──────────────────────────────── -->
+  <section id="demo">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Expérience de jeu</div>
+        <h2 class="section-title">La Révélation en Pratique</h2>
+        <p class="section-subtitle">Voici ce que le joueur voit lorsqu'un segment se débloque.</p>
+      </div>
+
+      <div class="demo-tablet">
+        <div class="tablet-frame">
+          <div class="tablet-header">
+            <span class="tablet-story-id">CHRONOLITHE_01</span>
+            <span class="tablet-reveal-badge">Segment débloqué</span>
+          </div>
+
+          <div class="tablet-story-title">L'ATELIER DE LÉONARD</div>
+
+          <div class="tablet-text">
+            <span id="typewriter-text"></span>
+          </div>
+
+          <div class="tablet-progress">
+            <div class="progress-header">
+              <span class="progress-label">Progression</span>
+              <span class="progress-count">Segment 1 / 5</span>
+            </div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="prog-fill"></div>
+            </div>
+            <div class="progress-dots">
+              <div class="progress-dot done"></div>
+              <div class="progress-dot active"></div>
+              <div class="progress-dot"></div>
+              <div class="progress-dot"></div>
+              <div class="progress-dot"></div>
+            </div>
+            <div class="next-segment-note">Prochain segment : prochaine capture RELIQUE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-glow-sep"></div>
+
+  <!-- ─── LES 20 HISTOIRES ─────────────────────────────── -->
+  <section id="stories">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Catalogue narratif</div>
+        <h2 class="section-title">Les 20 Histoires</h2>
+        <p class="section-subtitle">Vingt récits à travers l'Histoire de l'humanité. Chacun attend d'être découvert.</p>
+      </div>
+
+      <div class="stories-grid" id="stories-grid"></div>
+    </div>
+  </section>
+
+  <div class="section-glow-sep"></div>
+
+  <!-- ─── PROGRESSION SYSTÈME ──────────────────────────── -->
+  <section id="progression">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">Système de déblocage</div>
+        <h2 class="section-title">Progression Système</h2>
+        <p class="section-subtitle">Chaque histoire progresse indépendamment. Trois aventures simultanées maximum.</p>
+      </div>
+
+      <div class="prog-visual">
+        <div class="prog-nodes">
+          <div class="prog-node">
+            <div class="prog-node-circle completed">✓</div>
+            <span class="prog-node-label completed">Seg. 1</span>
+          </div>
+          <div class="prog-connector done"></div>
+          <div class="prog-node">
+            <div class="prog-node-circle completed">✓</div>
+            <span class="prog-node-label completed">Seg. 2</span>
+          </div>
+          <div class="prog-connector active"></div>
+          <div class="prog-node">
+            <div class="prog-node-circle unlocked">3</div>
+            <span class="prog-node-label unlocked">Seg. 3</span>
+          </div>
+          <div class="prog-connector future"></div>
+          <div class="prog-node">
+            <div class="prog-node-circle locked">4</div>
+            <span class="prog-node-label locked">Seg. 4</span>
+          </div>
+          <div class="prog-connector future"></div>
+          <div class="prog-node">
+            <div class="prog-node-circle locked">5</div>
+            <span class="prog-node-label locked">Seg. 5</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="prog-rules">
+          <div class="prog-rule">
+            <span class="prog-rule-icon">🔢</span>
+            <span>Maximum <strong>3 histoires actives</strong> simultanément</span>
+          </div>
+          <div class="prog-rule">
+            <span class="prog-rule-icon">🔒</span>
+            <span>Déblocage <strong>séquentiel</strong> — impossible de sauter un segment</span>
+          </div>
+          <div class="prog-rule">
+            <span class="prog-rule-icon">🎲</span>
+            <span><strong>10% de chance</strong> par capture RELIQUE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-glow-sep"></div>
+
+  <!-- ─── CTA ──────────────────────────────────────────── -->
+  <section id="cta">
+    <div class="container">
+      <div class="cta-inner">
+        <div class="hero-badge" style="margin-bottom:1.5rem;">ChronoRelic · Binary Anvil Studio</div>
+        <h2 class="cta-title">Prêt à écrire l'Histoire ?</h2>
+        <p class="cta-sub">Capturez votre première RELIQUE et découvrez quel récit vous attend.</p>
+        <a href="#" class="btn-cta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          Jouer à ChronoRelic
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ───────────────────────────────────────── -->
+  <footer>
+    <div class="container">
+      <p>
+        © 2025 <a href="../../index.html">Binary Anvil Studio</a> — ChronoRelic · Presskit Relique Netflix
+        &nbsp;·&nbsp;
+        Tous droits réservés
+      </p>
+    </div>
+  </footer>
+
+  <!-- ─── SCRIPTS ──────────────────────────────────────── -->
+  <script>
+    /* ── Star Canvas ─────────────────────────────────────── */
+    (function () {
+      const canvas = document.getElementById('stars-canvas');
+      const ctx = canvas.getContext('2d');
+      let W, H, stars = [];
+
+      function resize () {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = document.body.scrollHeight;
+      }
+
+      function initStars () {
+        stars = [];
+        const count = Math.floor((W * H) / 6000);
+        for (let i = 0; i < count; i++) {
+          stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.2 + 0.2,
+            a: Math.random(),
+            speed: Math.random() * 0.003 + 0.001,
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+      }
+
+      let frame = 0;
+      function draw () {
+        ctx.clearRect(0, 0, W, H);
+        frame++;
+        for (const s of stars) {
+          const alpha = s.a * (0.5 + 0.5 * Math.sin(frame * s.speed + s.phase));
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(226,232,240,${alpha})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      initStars();
+      draw();
+
+      window.addEventListener('resize', () => { resize(); initStars(); });
+    })();
+
+    /* ── Typewriter ──────────────────────────────────────── */
+    (function () {
+      const el = document.getElementById('typewriter-text');
+      const text = "An 1503. L'atelier de Léonard de Vinci, Florence. Parmi les esquisses d'inventions impossibles, un carnet chiffré. La femme qui pose — Mona Lisa — vous regarde, et son sourire cache un secret que seul Léonard connaît.";
+      let i = 0;
+      let started = false;
+
+      function startTyping () {
+        if (started) return;
+        started = true;
+        const interval = setInterval(() => {
+          if (i < text.length) {
+            el.textContent = text.slice(0, ++i);
+          } else {
+            clearInterval(interval);
+          }
+        }, 28);
+      }
+
+      // Start when demo section is visible
+      const observer = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting) {
+          setTimeout(startTyping, 400);
+          observer.disconnect();
+        }
+      }, { threshold: 0.3 });
+
+      observer.observe(document.getElementById('demo'));
+    })();
+
+    /* ── Stories Grid ────────────────────────────────────── */
+    (function () {
+      const stories = [
+        { icon: '📜', era: 'Venise, 1497',         title: 'Le Voyage de Cabot' },
+        { icon: '🎨', era: 'Florence, 1503',        title: "L'Atelier de Léonard" },
+        { icon: '⚓', era: 'Séville, 1519',         title: 'Le Tour du Monde de Magellan' },
+        { icon: '🌍', era: 'Amérique, 1620',        title: 'Le Mayflower' },
+        { icon: '🍎', era: 'Cambridge, 1666',       title: 'La Pomme de Newton' },
+        { icon: '⚡', era: 'Philadelphie, 1752',    title: "L'Expérience du Cerf-Volant" },
+        { icon: '🗽', era: 'Paris, 1789',           title: 'La Bastille' },
+        { icon: '🧪', era: 'Londres, 1796',         title: 'Le Vaccin de Jenner' },
+        { icon: '🔭', era: 'Padoue, 1610',          title: 'Galilée et les Lunes' },
+        { icon: '🚂', era: 'Manchester, 1830',      title: 'La Locomotive de Stephenson' },
+        { icon: '📡', era: 'Menlo Park, 1879',      title: "L'Ampoule d'Edison" },
+        { icon: '🛳️', era: 'Southampton, 1912',    title: 'Le Titanic' },
+        { icon: '✈️', era: 'Kitty Hawk, 1903',     title: 'Le Vol des Frères Wright' },
+        { icon: '💊', era: 'Londres, 1928',         title: 'La Pénicilline de Fleming' },
+        { icon: '🌕', era: 'Houston, 1969',         title: 'Apollo 11' },
+        { icon: '🧬', era: 'Cambridge, 1953',       title: "L'ADN de Watson & Crick" },
+        { icon: '🧱', era: 'Berlin, 1989',          title: 'La Chute du Mur' },
+        { icon: '💻', era: 'Genève, 1991',          title: 'Le World Wide Web' },
+        { icon: '🎭', era: 'Stratford, 1599',       title: 'Hamlet de Shakespeare' },
+        { icon: '⚛️', era: 'Chicago, 1942',        title: 'La Réaction Nucléaire de Fermi' },
+      ];
+
+      const grid = document.getElementById('stories-grid');
+      stories.forEach(s => {
+        const card = document.createElement('div');
+        card.className = 'story-card';
+        card.innerHTML = `
+          <span class="story-icon">${s.icon}</span>
+          <div class="story-era">${s.era}</div>
+          <div class="story-title">${s.title}</div>
+        `;
+        grid.appendChild(card);
+      });
+    })();
+
+    /* ── Scroll reveal (subtle fade-in) ──────────────────── */
+    (function () {
+      const els = document.querySelectorAll('.step-card, .story-card, .prog-node, .prog-rule');
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.style.opacity = '1';
+            e.target.style.transform = e.target.style.transform
+              ? e.target.style.transform.replace('translateY(18px)', 'translateY(0)')
+              : 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.15 });
+
+      els.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(18px)';
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        observer.observe(el);
+      });
+    })();
+  </script>
+</body>
+</html>
