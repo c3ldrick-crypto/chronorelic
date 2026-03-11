@@ -15,6 +15,9 @@ import {
   getStoryById,
   type ChronolitheDropResult,
 } from "@/lib/game/chronolithe"
+import { HERO_STORIES, getRandomHeroStory } from "@/lib/game/heroRelic"
+
+const HERO_DROP_CHANCE = 0.10
 
 export async function POST(req: NextRequest) {
   try {
@@ -99,16 +102,26 @@ export async function POST(req: NextRequest) {
     const isNewDay = !user.streakData?.lastPlayedAt ||
       new Date(user.streakData.lastPlayedAt).toDateString() !== new Date().toDateString()
 
-    // ── Rarity draw (level-gated) ─────────────────────────────────────────────
+    // ── Test config (Admin Loot Lab) ───────────────────────────────────────────
+    const testCfg    = await cache.get<import("@/lib/testConfig").TestConfig>(REDIS_KEYS.testConfig())
+    const testActive = !!(testCfg?.active)
+
     const boostActive = !!(await cache.get(REDIS_KEYS.boostActive(userId)))
-    const rarity = drawRarity({
-      characterClass: charClass,
-      boostActive,
-      playerLevel:    charLevel,
-    })
+    const rarity = (testActive && testCfg?.forceRarity)
+      ? testCfg.forceRarity
+      : drawRarity({ characterClass: charClass, boostActive, playerLevel: charLevel })
 
     const isSecret = isSecretMinute(minute)
-    const event    = getEventForMinute(minute)
+    const event    = (testActive && testCfg?.forceEvent)
+      ? {
+          minute,
+          title:       testCfg.eventTitle       ?? "Événement test",
+          year:        testCfg.eventYear        ?? 2000,
+          description: testCfg.eventDescription ?? "",
+          curiosity:   testCfg.eventCuriosity   ?? "",
+          category:    "Technologie" as const,
+        }
+      : getEventForMinute(minute)
 
     // ── XP ──────────────────────────────────────────────────────────────────
     const xpGained = calculateXP({
@@ -195,7 +208,30 @@ export async function POST(req: NextRequest) {
 
     // ── CHRONOLITHE drop check ────────────────────────────────────────────────
     let chronolitheSegment: ChronolitheDropResult | undefined
-    if (Math.random() < CHRONOLITHE_DROP_CHANCE) {
+
+    // Test mode : force drop sans écriture DB
+    if (testActive && testCfg?.forceChronolithe) {
+      const storyId   = testCfg.chronolitheStoryId ?? "chrono_01"
+      const testStory = getStoryById(storyId)
+      if (testStory) {
+        const seg = testStory.segments[0]
+        chronolitheSegment = {
+          storyId:       testStory.id,
+          storyTitle:    testStory.title,
+          storyIcon:     testStory.icon,
+          theme:         testStory.theme,
+          segmentIndex:  1,
+          segmentTitle:  seg.title,
+          segmentText:   seg.text,
+          segmentHook:   seg.hook,
+          isNewStory:    true,
+          isCompleted:   false,
+          totalSegments: testStory.segments.length,
+        }
+      }
+    }
+
+    if (!chronolitheSegment && Math.random() < CHRONOLITHE_DROP_CHANCE) {
       try {
         const [activeStories, allSeen] = await Promise.all([
           prisma.chronolitheProgress.findMany({
@@ -285,6 +321,81 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // ── HERO RELIC drop check ─────────────────────────────────────────────────
+    let heroReveal: {
+      storyId:    string
+      storyTitle: string
+      storyIcon:  string
+      startId:    string
+      difficulty: string
+      era:        string
+      year:       string
+    } | undefined
+
+    if (Math.random() < HERO_DROP_CHANCE) {
+      try {
+        const existingHero = await prisma.heroRelicProgress.findMany({
+          where:  { userId },
+          select: { storyId: true, status: true },
+        })
+        const inProgressHero = existingHero.filter(h => h.status === "IN_PROGRESS")
+        const seenHeroIds    = new Set(existingHero.map(h => h.storyId))
+
+        let targetHeroStory = inProgressHero.length > 0
+          ? (getRandomHeroStory()) // will be filtered below
+          : undefined
+
+        // Prefer unseen stories, then in-progress
+        const unseenHero = HERO_STORIES.filter(s => !seenHeroIds.has(s.id))
+        if (unseenHero.length > 0) {
+          targetHeroStory = unseenHero[Math.floor(Math.random() * unseenHero.length)]
+        } else if (inProgressHero.length > 0) {
+          const pick = inProgressHero[Math.floor(Math.random() * inProgressHero.length)]
+          const found = HERO_STORIES.find(s => s.id === pick.storyId)
+          if (found) targetHeroStory = found
+        } else if (existingHero.length > 0) {
+          // All done — pick a random one to replay
+          targetHeroStory = getRandomHeroStory()
+        } else {
+          targetHeroStory = getRandomHeroStory()
+        }
+
+        if (targetHeroStory) {
+          await prisma.heroRelicProgress.upsert({
+            where:  { userId_storyId: { userId, storyId: targetHeroStory.id } },
+            create: {
+              userId,
+              storyId:        targetHeroStory.id,
+              currentSegment: targetHeroStory.startId,
+              choicesPath:    [],
+              status:         "IN_PROGRESS",
+            },
+            update: {
+              // Only update if not already completed/dead
+              ...(existingHero.find(h => h.storyId === targetHeroStory!.id && h.status === "IN_PROGRESS")
+                ? {} // already in progress — don't reset
+                : seenHeroIds.has(targetHeroStory.id)
+                  ? {} // already seen — don't overwrite
+                  : { currentSegment: targetHeroStory.startId, status: "IN_PROGRESS", choicesPath: [] }
+              ),
+            },
+          })
+
+          heroReveal = {
+            storyId:    targetHeroStory.id,
+            storyTitle: targetHeroStory.title,
+            storyIcon:  targetHeroStory.icon,
+            startId:    targetHeroStory.startId,
+            difficulty: targetHeroStory.difficulty,
+            era:        targetHeroStory.era,
+            year:       targetHeroStory.year,
+          }
+        }
+      } catch (heroErr) {
+        console.error("[capture] Hero relic drop failed (non-blocking):", heroErr)
+      }
+    }
+
     // ── Enigma completion check (XP only — no resource rewards) ───────────────
     let completedEnigmas: Array<{ id: string; title: string; difficulty: string; reward: { xp: number; label: string } }> = []
     try {
@@ -357,6 +468,7 @@ export async function POST(req: NextRequest) {
       completedEnigmas,
       newlyCompletedChains,
       chronolitheSegment,
+      heroReveal,
       relic: {
         id: relic.id, minute, rarity, xpGained,
         capturedAt: relic.capturedAt, isFused: false,

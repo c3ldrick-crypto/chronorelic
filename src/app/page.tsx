@@ -509,6 +509,115 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ──────────── RELIQUES SPÉCIALES (WIP) ──────────── */}
+      <section className="py-24 px-4" style={{ background: "linear-gradient(180deg, transparent, rgba(196,150,10,0.03), transparent)" }}>
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 rounded px-3 py-1 mb-4 text-xs font-bold tracking-widest uppercase"
+              style={{ background: "rgba(196,150,10,0.1)", border: "1px solid rgba(196,150,10,0.25)", color: "#e8b84b" }}>
+              ⚗️ En développement
+            </div>
+            <h2 className="font-display text-3xl sm:text-4xl font-black mb-3">
+              <span className="text-gradient-gold">Reliques Spéciales</span>
+            </h2>
+            <p className="text-base max-w-xl mx-auto" style={{ color: "#9b8d7a" }}>
+              Certaines captures déclenchent des expériences narratives uniques — bien au-delà d&apos;une simple relique.
+            </p>
+          </motion.div>
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            {/* RELIQUE NETFLIX */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="panel-relic p-6 flex flex-col gap-4"
+              style={{
+                background: "linear-gradient(145deg, rgba(3,36,58,0.9), rgba(13,11,7,0.9))",
+                borderColor: "rgba(103,232,249,0.3)",
+                boxShadow: "0 0 24px rgba(103,232,249,0.08)",
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-4xl shrink-0">🪨</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="font-bold text-base" style={{ color: "#67e8f9" }}>RELIQUE NETFLIX</span>
+                    <span className="text-xs rounded px-2 py-0.5 font-bold"
+                      style={{ background: "rgba(103,232,249,0.12)", color: "#67e8f9", border: "1px solid rgba(103,232,249,0.25)" }}>
+                      Bêta
+                    </span>
+                  </div>
+                  <p className="text-sm" style={{ color: "#9b8d7a" }}>
+                    Récits narratifs séquentiels en 5 épisodes débloqués au fil de vos captures. Plongez dans les mystères gravés dans la pierre.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs" style={{ color: "#64748b" }}>
+                <span>📺 20 histoires</span>
+                <span>·</span>
+                <span>🪨 5 épisodes chacune</span>
+                <span>·</span>
+                <span>10% de chance par capture</span>
+              </div>
+              <Link href="/login"
+                className="self-start inline-flex items-center gap-2 rounded px-4 py-2 text-xs font-bold transition-all"
+                style={{ background: "rgba(103,232,249,0.08)", border: "1px solid rgba(103,232,249,0.25)", color: "#67e8f9" }}>
+                Explorer les Chronolithes →
+              </Link>
+            </motion.div>
+
+            {/* RELIQUE HÉRO */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="panel-relic p-6 flex flex-col gap-4"
+              style={{
+                background: "linear-gradient(145deg, rgba(26,20,0,0.9), rgba(13,11,7,0.9))",
+                borderColor: "rgba(212,160,23,0.35)",
+                boxShadow: "0 0 24px rgba(212,160,23,0.08)",
+              }}
+            >
+              <div className="flex items-start gap-3">
+                <div className="text-4xl shrink-0">⚔️</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="font-bold text-base" style={{ color: "#d4a017" }}>RELIQUE HÉRO</span>
+                    <span className="text-xs rounded px-2 py-0.5 font-bold"
+                      style={{ background: "rgba(212,160,23,0.12)", color: "#e8c96a", border: "1px solid rgba(212,160,23,0.3)" }}>
+                      WIP
+                    </span>
+                  </div>
+                  <p className="text-sm" style={{ color: "#9b8d7a" }}>
+                    Aventures historiques branchées interactives — inspirées des livres dont vous êtes le héros. Vos choix façonnent l&apos;Histoire.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-xs" style={{ color: "#64748b" }}>
+                <span>⚔️ 5 aventures</span>
+                <span>·</span>
+                <span>🌀 Fins multiples</span>
+                <span>·</span>
+                <span>STANDARD & COMPLEXE</span>
+              </div>
+              <Link href="/login"
+                className="self-start inline-flex items-center gap-2 rounded px-4 py-2 text-xs font-bold transition-all"
+                style={{ background: "rgba(212,160,23,0.08)", border: "1px solid rgba(212,160,23,0.25)", color: "#d4a017" }}>
+                Découvrir les Reliques Héro →
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* ──────────── BETA WAITLIST ──────────── */}
       <BetaSection />
 

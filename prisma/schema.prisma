@@ -74,6 +74,7 @@ model User {
   auditLogs            AuditLog[]
   questClaims          QuestClaim[]
   chronolitheProgress  ChronolitheProgress[]
+  heroRelicProgress    HeroRelicProgress[]
 
   @@index([email])
 }
@@ -241,6 +242,39 @@ model ChronolitheProgress {
   startedAt        DateTime          @default(now())
   completedAt      DateTime?
   updatedAt        DateTime          @updatedAt
+
+  @@unique([userId, storyId])
+  @@index([userId])
+  @@index([userId, status])
+}
+
+// ─────────────────────────────────────────────
+// HERO RELIC (aventures branchées)
+// ─────────────────────────────────────────────
+
+enum HeroStatus {
+  IN_PROGRESS
+  COMPLETED
+  DEAD
+}
+
+enum HeroEndType {
+  HISTORICAL
+  ALTERNATE
+}
+
+model HeroRelicProgress {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storyId        String
+  currentSegment String       @default("start")
+  choicesPath    Json         @default("[]")
+  status         HeroStatus   @default(IN_PROGRESS)
+  endType        HeroEndType?
+  startedAt      DateTime     @default(now())
+  completedAt    DateTime?
+  updatedAt      DateTime     @updatedAt
 
   @@unique([userId, storyId])
   @@index([userId])
