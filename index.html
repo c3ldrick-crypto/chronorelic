@@ -419,8 +419,22 @@
     .wip-card:hover::before { opacity: 1; }
     .wip-card:hover { transform: translateY(-8px); }
     .wip-card-inner {
-      padding: 36px 36px 32px;
-      display: flex; flex-direction: column; gap: 22px; flex: 1;
+      padding: 28px 28px 24px;
+      display: flex; flex-direction: column; gap: 18px; flex: 1;
+    }
+    .wip-card-head {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .wip-card-body {
+      flex: 1;
+    }
+    .wip-card-demo {
+      height: 120px; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
     }
 
     /* Chronolithe — bleu arctique */
@@ -1103,162 +1117,156 @@
 
         <!-- CHRONOLITHE -->
         <a href="marketing/visual/chronorelic-chronolithe.html" class="wip-card wip-netflix">
-          <div>
-            <div class="wip-tag wip-tag-cyan" style="margin-bottom:20px">📺 NARRATIF · BÊTA</div>
-            <div class="wip-icon">📜</div>
-          </div>
-          <div>
-            <h3 class="wip-title">CHRONOLITHE</h3>
-            <p class="wip-desc" style="margin-top:10px">
-              20 récits originaux autour du thème du temps, dévoilés en 5 segments séquentiels. Chaque capture d'une RELIQUE
-              peut déclencher un nouveau fragment — révélation cinématique sur fond de pierre ancienne.
-            </p>
-          </div>
-          <div>
-            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Progression d'une histoire</div>
-            <div class="wip-segments">
-              <div class="wip-seg-dot active"></div>
-              <div class="wip-seg-line"></div>
-              <div class="wip-seg-dot" style="background:rgba(56,189,248,0.5);box-shadow:0 0 6px rgba(56,189,248,0.5)"></div>
-              <div class="wip-seg-line"></div>
-              <div class="wip-seg-dot"></div>
-              <div class="wip-seg-line"></div>
-              <div class="wip-seg-dot"></div>
-              <div class="wip-seg-line"></div>
-              <div class="wip-seg-dot"></div>
+          <div class="wip-card-top-bar"></div>
+          <div class="wip-card-inner">
+            <div class="wip-card-head">
+              <div class="wip-tag wip-tag-cyan">📺 NARRATIF · BÊTA</div>
+              <div class="wip-icon">📜</div>
             </div>
-            <div style="font-size:0.72rem;color:var(--muted)">Segment 1/5 débloqué · 4 restants</div>
+            <div class="wip-card-body">
+              <h3 class="wip-title">CHRONOLITHE</h3>
+              <p class="wip-desc">20 récits originaux dévoilés en 5 segments séquentiels. Chaque capture d'une RELIQUE peut déclencher un nouveau fragment — révélation cinématique sur fond de pierre ancienne.</p>
+            </div>
+            <div class="wip-card-demo">
+              <div class="wip-demo-label">Progression d'une histoire</div>
+              <div class="wip-segments">
+                <div class="wip-seg-dot active"></div>
+                <div class="wip-seg-line"></div>
+                <div class="wip-seg-dot" style="background:rgba(56,189,248,0.5);box-shadow:0 0 6px rgba(56,189,248,0.5)"></div>
+                <div class="wip-seg-line"></div>
+                <div class="wip-seg-dot"></div>
+                <div class="wip-seg-line"></div>
+                <div class="wip-seg-dot"></div>
+                <div class="wip-seg-line"></div>
+                <div class="wip-seg-dot"></div>
+              </div>
+              <div style="font-size:0.72rem;color:var(--muted)">Segment 1/5 débloqué · 4 restants</div>
+            </div>
+            <div class="wip-features">
+              <div class="wip-feature"><div class="wip-feature-dot"></div>20 histoires · Événements réels (1497–1991)</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Récits originaux — thèmes autour du temps</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation cinématique typewriter</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Max 3 histoires actives simultanément</div>
+            </div>
+            <div class="wip-cta">Voir le Presskit complet →</div>
           </div>
-          <div class="wip-features">
-            <div class="wip-feature"><div class="wip-feature-dot"></div>20 histoires · Événements réels (1497–1991)</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Récits originaux — thèmes autour du temps</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation cinématique typewriter</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Max 3 histoires actives simultanément</div>
-          </div>
-          <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
 
         <!-- RELIQUE KAIROS -->
         <a href="marketing/visual/chronorelic-kairos.html" class="wip-card wip-kairos">
-          <div>
-            <div class="wip-tag wip-tag-gold" style="margin-bottom:20px">⚡ INTERACTIF · BÊTA</div>
-            <div class="wip-icon">⚔️</div>
-          </div>
-          <div>
-            <h3 class="wip-title">RELIQUE KAIROS</h3>
-            <p class="wip-desc" style="margin-top:10px">
-              Aventures historiques branchées — <em>Livres dont vous êtes le Héros</em>.
-              Sarajevo 1914, Berlin 1989, la Lune 1969… Chaque choix réécrit l'Histoire ou
-              provoque un <strong style="color:#ef4444">Paradoxe Temporel</strong>.
-            </p>
-          </div>
-          <div>
-            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Exemple de choix</div>
-            <div style="background:rgba(232,184,75,0.04);border:1px solid rgba(232,184,75,0.15);border-radius:12px;padding:12px;font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px">
-              "Schabowski vient d'annoncer l'ouverture du Mur. La foule grossit devant votre checkpoint. Votre décision ?"
+          <div class="wip-card-top-bar"></div>
+          <div class="wip-card-inner">
+            <div class="wip-card-head">
+              <div class="wip-tag wip-tag-gold">⚡ INTERACTIF · BÊTA</div>
+              <div class="wip-icon">⚔️</div>
             </div>
-            <div class="wip-choices">
-              <div class="wip-choice wip-choice-hist">⚖️ Ouvrir progressivement — tamponner les passeports</div>
-              <div class="wip-choice wip-choice-alt">🌀 Laisser passer sans contrôle</div>
+            <div class="wip-card-body">
+              <h3 class="wip-title">RELIQUE KAIROS</h3>
+              <p class="wip-desc">Aventures historiques branchées — <em>Livres dont vous êtes le Héros</em>. Sarajevo 1914, Berlin 1989, la Lune 1969… Chaque choix réécrit l'Histoire ou provoque un <strong style="color:#ef4444">Paradoxe Temporel</strong>.</p>
             </div>
+            <div class="wip-card-demo">
+              <div class="wip-demo-label">Exemple de choix</div>
+              <div class="wip-choices">
+                <div class="wip-choice wip-choice-hist">⚖️ Ouvrir progressivement — tamponner les passeports</div>
+                <div class="wip-choice wip-choice-alt">🌀 Laisser passer sans contrôle</div>
+              </div>
+            </div>
+            <div class="wip-features">
+              <div class="wip-feature"><div class="wip-feature-dot"></div>5 aventures (3 STANDARD + 2 COMPLEXE)</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Fins Historique, Alternative ou Paradoxe</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation sépia/doré distincte</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Kairos (καιρός) — l'instant décisif grec</div>
+            </div>
+            <div class="wip-cta">Voir le Presskit complet →</div>
           </div>
-          <div class="wip-features">
-            <div class="wip-feature"><div class="wip-feature-dot"></div>5 aventures (3 STANDARD + 2 COMPLEXE)</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Fins Historique, Alternative ou Paradoxe</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation sépia/doré distincte</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Kairos (καιρός) — l'instant décisif grec</div>
-          </div>
-          <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
 
         <!-- RELIQUE ÉCHO -->
         <a href="marketing/visual/chronorelic-echo.html" class="wip-card wip-echo">
-          <div>
-            <div class="wip-tag wip-tag-echo" style="margin-bottom:20px">🔊 COOPÉRATIF · En développement</div>
-            <div class="wip-icon">🔊</div>
-          </div>
-          <div>
-            <h3 class="wip-title">RELIQUE ÉCHO</h3>
-            <p class="wip-subtitle" style="margin-top:4px;font-size:0.8rem;color:#f59e0b;letter-spacing:0.05em;font-weight:600;text-transform:uppercase">Fragment de Mémoire Partagée</p>
-            <p class="wip-desc" style="margin-top:10px">
-              Deux voix. Deux époques. Un écho à travers les siècles. Collectez les 8 fragments pour révéler la vérité commune entre deux âmes séparées par le temps.
-            </p>
-          </div>
-          <div>
-            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Progression des fragments</div>
-            <div class="wip-segments">
-              <div class="wip-seg-dot" style="background:#3b82f6;box-shadow:0 0 8px #3b82f6;animation:pulse 2s ease-in-out infinite"></div>
-              <div class="wip-seg-line" style="background:linear-gradient(90deg,rgba(59,130,246,0.4),rgba(245,158,11,0.2))"></div>
-              <div class="wip-seg-dot" style="background:rgba(59,130,246,0.4);box-shadow:0 0 6px rgba(59,130,246,0.4)"></div>
-              <div class="wip-seg-line" style="background:linear-gradient(90deg,rgba(59,130,246,0.2),rgba(245,158,11,0.1))"></div>
-              <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(59,130,246,0.3)"></div>
-              <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
-              <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(245,158,11,0.3)"></div>
-              <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
-              <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(245,158,11,0.2)"></div>
+          <div class="wip-card-top-bar"></div>
+          <div class="wip-card-inner">
+            <div class="wip-card-head">
+              <div class="wip-tag wip-tag-echo">🔊 COOPÉRATIF · En développement</div>
+              <div class="wip-icon">🔊</div>
             </div>
-            <div style="font-size:0.72rem;color:var(--muted)">Fragment 1/8 débloqué · 7 restants</div>
+            <div class="wip-card-body">
+              <h3 class="wip-title">RELIQUE ÉCHO</h3>
+              <p class="wip-card-subtitle">Fragment de Mémoire Partagée</p>
+              <p class="wip-desc">Deux voix. Deux époques. Un écho à travers les siècles. Collectez les 8 fragments pour révéler la vérité commune entre deux âmes séparées par le temps.</p>
+            </div>
+            <div class="wip-card-demo">
+              <div class="wip-demo-label">Progression des fragments</div>
+              <div class="wip-segments">
+                <div class="wip-seg-dot" style="background:#3b82f6;box-shadow:0 0 8px #3b82f6;animation:pulse 2s ease-in-out infinite"></div>
+                <div class="wip-seg-line" style="background:linear-gradient(90deg,rgba(59,130,246,0.4),rgba(245,158,11,0.2))"></div>
+                <div class="wip-seg-dot" style="background:rgba(59,130,246,0.4)"></div>
+                <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
+                <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(59,130,246,0.3)"></div>
+                <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
+                <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(245,158,11,0.3)"></div>
+                <div class="wip-seg-line" style="background:rgba(245,158,11,0.1)"></div>
+                <div class="wip-seg-dot" style="background:rgba(107,40,200,0.25);border:1px solid rgba(245,158,11,0.2)"></div>
+              </div>
+              <div style="font-size:0.72rem;color:var(--muted)">Fragment 1/8 débloqué · 7 restants</div>
+            </div>
+            <div class="wip-features">
+              <div class="wip-feature"><div class="wip-feature-dot"></div>8 fragments par histoire · Deux lignes temporelles</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation croisée — voix alternées à travers les siècles</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Thème bleu/ambre — mémoire partagée &amp; résonance</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Collecte coopérative entre joueurs possible</div>
+            </div>
+            <div class="wip-cta">Voir le Presskit complet →</div>
           </div>
-          <div class="wip-features">
-            <div class="wip-feature"><div class="wip-feature-dot"></div>8 fragments par histoire · Deux lignes temporelles</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Révélation croisée — voix alternées à travers les siècles</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Thème bleu/ambre — mémoire partagée &amp; résonance</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Collecte coopérative entre joueurs possible</div>
-          </div>
-          <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
 
         <!-- ANOMALIES TEMPORELLES -->
         <a href="marketing/visual/chronorelic-anomalies.html" class="wip-card wip-anomaly">
-          <div>
-            <div class="wip-tag wip-tag-anomaly" style="margin-bottom:20px">⚡ SYSTÈME PASSIF · BÊTA</div>
-            <div class="wip-icon">⚡</div>
-          </div>
-          <div>
-            <h3 class="wip-title">ANOMALIES TEMPORELLES</h3>
-            <p class="wip-card-subtitle" style="margin-top:4px;font-size:0.8rem;letter-spacing:0.05em;font-weight:600;text-transform:uppercase">La Météo du Temps</p>
-            <p class="wip-desc" style="margin-top:10px">
-              25 perturbations temporelles déclenchées automatiquement au fil de la journée. Bonus, malus ou les deux à la fois — chaque joueur traverse les mêmes épreuves. Le temps devient imprévisible.
-            </p>
-          </div>
-          <div>
-            <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">4 catégories d'anomalies</div>
-            <div class="anomaly-cats">
-              <span class="anomaly-cat-pill fav">FAVORABLE · 7</span>
-              <span class="anomaly-cat-pill pert">PERTURBATION · 5</span>
-              <span class="anomaly-cat-pill inst">INSTABLE · 9</span>
-              <span class="anomaly-cat-pill rare">RARE · 4</span>
+          <div class="wip-card-top-bar"></div>
+          <div class="wip-card-inner">
+            <div class="wip-card-head">
+              <div class="wip-tag wip-tag-anomaly">⚡ SYSTÈME PASSIF · BÊTA</div>
+              <div class="wip-icon">⚡</div>
             </div>
-            <div style="margin-top:12px;background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.12);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.5">
-              Planning déterministe — même météo pour tous les joueurs (seed = date du jour)
+            <div class="wip-card-body">
+              <h3 class="wip-title">ANOMALIES TEMPORELLES</h3>
+              <p class="wip-card-subtitle">La Météo du Temps</p>
+              <p class="wip-desc">25 perturbations déclenchées automatiquement au fil de la journée. Bonus, malus ou les deux — chaque joueur traverse les mêmes épreuves. Le temps devient imprévisible.</p>
             </div>
+            <div class="wip-card-demo">
+              <div class="wip-demo-label">4 catégories d'anomalies</div>
+              <div class="anomaly-cats">
+                <span class="anomaly-cat-pill fav">FAVORABLE · 7</span>
+                <span class="anomaly-cat-pill pert">PERTURBATION · 5</span>
+                <span class="anomaly-cat-pill inst">INSTABLE · 9</span>
+                <span class="anomaly-cat-pill rare">RARE · 4</span>
+              </div>
+              <div style="margin-top:10px;font-size:0.73rem;color:var(--muted)">Seed déterministe — même météo pour tous les joueurs</div>
+            </div>
+            <div class="wip-features">
+              <div class="wip-feature"><div class="wip-feature-dot"></div>25 anomalies · 4 catégories · Planning déterministe</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Durée 5-15 min · Gaps de calme 15-50 min</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Effets réels en capture (rareté, XP, multi-reliques)</div>
+              <div class="wip-feature"><div class="wip-feature-dot"></div>Découverte progressive — le futur est inconnu</div>
+            </div>
+            <div class="wip-cta">Voir le Presskit complet →</div>
           </div>
-          <div class="wip-features">
-            <div class="wip-feature"><div class="wip-feature-dot"></div>25 anomalies · 4 catégories · Planning déterministe</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Durée 5-15 min · Gaps de calme 15-50 min</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Effets réels en capture (rareté, XP, multi-reliques)</div>
-            <div class="wip-feature"><div class="wip-feature-dot"></div>Découverte progressive — le futur est inconnu</div>
-          </div>
-          <div class="wip-cta">Voir le Presskit complet →</div>
         </a>
 
         <!-- ENSEMBLES D'OBJETS -->
         <a href="marketing/visual/chronorelic-sets.html" class="wip-card wip-sets">
           <div class="wip-card-top-bar"></div>
           <div class="wip-card-inner">
-            <div>
-              <div class="wip-tag wip-tag-sets" style="margin-bottom:20px">⚔️ ÉQUIPEMENT · En développement</div>
+            <div class="wip-card-head">
+              <div class="wip-tag wip-tag-sets">⚔️ ÉQUIPEMENT · En développement</div>
               <div class="wip-icon">🛡️</div>
             </div>
-            <div>
+            <div class="wip-card-body">
               <h3 class="wip-title">ENSEMBLES D'OBJETS</h3>
-              <p class="wip-card-subtitle" style="margin-top:4px;font-size:0.8rem;color:#34d399;letter-spacing:0.05em;font-weight:600;text-transform:uppercase">Équipement D2-style · Bonus de Set</p>
-              <p class="wip-desc" style="margin-top:10px">
-                12 ensembles thématiques inspirés de Diablo II — chaque set de 3 pièces (tête, torse, pieds) confère des bonus puissants à 2/3 et 3/3 pièces. Infobulle comparative en temps réel.
-              </p>
+              <p class="wip-card-subtitle">Équipement D2-style · Bonus de Set</p>
+              <p class="wip-desc">12 ensembles thématiques — chaque set de 3 pièces confère des bonus puissants à 2/3 et 3/3 pièces. Infobulle comparative ▲/▼ en temps réel.</p>
             </div>
-            <div>
-              <div style="font-size:0.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px">Hiérarchie des raretés</div>
+            <div class="wip-card-demo">
+              <div class="wip-demo-label">Hiérarchie des raretés</div>
               <div class="set-rarity-pills">
                 <span class="set-rarity-pill normal">NORMALE</span>
                 <span class="set-rarity-pill magic">MAGIQUE</span>
@@ -1266,9 +1274,7 @@
                 <span class="set-rarity-pill set">ENSEMBLE ✦</span>
                 <span class="set-rarity-pill unique">UNIQUE</span>
               </div>
-              <div style="margin-top:12px;background:rgba(16,185,129,0.04);border:1px solid rgba(16,185,129,0.12);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--muted);line-height:1.5">
-                Cinématique de révélation : sceau → fracture → bonus de set débloqué
-              </div>
+              <div style="margin-top:10px;font-size:0.73rem;color:var(--muted)">Cinématique : sceau → fracture → bonus de set débloqué</div>
             </div>
             <div class="wip-features">
               <div class="wip-feature"><div class="wip-feature-dot"></div>12 ensembles · 36 objets (tête/torse/pieds)</div>
